@@ -1,0 +1,23 @@
+{
+  "name": "triple-taste-rpa",
+  "version": "0.0.1",
+  "description": "Triple Taste Munchies RPA",
+  "scripts": {
+    "start": "cucumber-js -c cucumber.js",
+    "preresults": "allure -q generate results/allure/ -c -o results/allure/html/",
+    "results": "allure open results/allure/html/"
+  },
+  "keywords": [],
+  "author": "iamkenos <alexis.matunog@gmail.com>",
+  "license": "ISC",
+  "dependencies": {
+    "@iamkenos/kyoko": "^0.4.1",
+    "@playwright/browser-chromium": "^1.46.1",
+    "google-drive-getfilelist": "^1.0.5",
+    "googleapis": "^142.0.0",
+    "luxon": "^3.5.0"
+  },
+  "devDependencies": {
+    "@types/luxon": "^3.4.2"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "cucumber.glue": [
+    "node_modules/@iamkenos/kyoko/src/core/gherkin/**/*.{steps,glue}.ts",
+    "fixtures/**/*.{steps,glue}.ts"
+  ],
+  "editor.formatOnSave": true,
+  "eslint.validate": ["typescript"],
+  "editor.codeActionsOnSave": { "source.fixAll.eslint": "explicit" },
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "[javascript]": { "editor.formatOnSave": false },
+  "[typescript]": { "editor.formatOnSave": false }
+}
