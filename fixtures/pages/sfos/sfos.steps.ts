@@ -13,5 +13,6 @@ Before({}, async function (this: This) {
 
 When("I download new sfos invoices", async function (this: This) {
   await this.sfos.login();
+  await this.sfos.showAllInvoices();
   await this.sfos.downloadNewInvoices();
 });
