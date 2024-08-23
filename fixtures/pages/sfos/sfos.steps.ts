@@ -1,4 +1,4 @@
-import { Before, When } from "@cucumber/cucumber";
+import { Before, When, Status } from "@cucumber/cucumber";
 import { SFOSPage } from "./sfos.page";
 
 import type { This as BaseThis } from "../base.steps";
@@ -15,4 +15,9 @@ When("I download new sfos invoices", async function (this: This) {
   await this.sfos.login();
   await this.sfos.showAllInvoices();
   await this.sfos.downloadNewInvoices();
+
+  const hasNewInvoices = this.parameters.driveFilesToUpload.length > 0;
+  if (!hasNewInvoices) {
+    return Status.SKIPPED;
+  }
 });
