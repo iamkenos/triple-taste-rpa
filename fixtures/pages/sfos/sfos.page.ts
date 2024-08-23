@@ -28,11 +28,11 @@ export class SFOSPage extends BasePage {
 
   private async generatePDFFor(file: string) {
     const trigger = async () => {
-      const condition = async () => await this.lnkPrintPDF().isVisible();
-      await this.clickUntil(this.btnGenerateSOA(), condition);
+      const conditions = this.lnkPrintPDF().given().displayed();
+      await this.btnGenerateSOA().clickUntil(conditions)
       await this.lnkPrintPDF().click();
     }
-    await this.downloadFile(trigger, file)
+    await this.page.downloadFile(trigger, file)
   }
 
   private async getInvoiceTableColumnContents(label: string) {
@@ -68,20 +68,16 @@ export class SFOSPage extends BasePage {
 
   async login() {
     const { SFOS_USERNAME, SFOS_PASSWORD } = process.env;
-    await this.navigateUrl(this.url);
+    await this.navigate();
     await this.tfEmail().fill(SFOS_USERNAME);
     await this.tfPassword().fill(SFOS_PASSWORD);
     await this.btnSignIn().click();
-
-    const condition = async () => (await this.trSOSInvoiceList().count()) > 0;
-    await this.poll(condition);
+    await this.trSOSInvoiceList().given().countMoreThan(0).poll();
   }
 
   async showAllInvoices() {
     await this.ddlShowAll().selectOption("All");
-
-    const condition = async () => (await this.trSOSInvoiceList().count()) > 10;
-    await this.poll(condition);
+    await this.trSOSInvoiceList().given().countMoreThan(10).poll();
   }
 
   async downloadNewInvoices() {
