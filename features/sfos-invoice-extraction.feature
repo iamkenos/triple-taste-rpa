@@ -4,5 +4,7 @@ Feature: SFOS Invoice Extraction
     Given I have a list of latest sfos invoices
 
   Scenario: Download & Upload
-    When I download new sfos invoices
+    When I login to sfos
+     And I show all invoices
+     And I download new sfos invoices
     Then I upload the downloaded sfos invoices to the drive

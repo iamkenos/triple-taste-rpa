@@ -17,7 +17,7 @@ export class BasePage extends PageObject<Parameters> {
     try {
       await expect.poll(async() => {
         return await condition();
-      }, { intervals: [250], timeout: this.config.timeout + 250 }).toBe(true);
+      }, { intervals: [250], timeout: 25000 + 250 }).toBe(true);
     } catch (e) {
       throw new Error(`Polling exception: ${e}`);
     }
