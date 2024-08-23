@@ -4,6 +4,12 @@
     <img width="33%" src="./favicon.png">
 </p>
 
+<p align="center" width="100%">
+    <a href="https://github.com/iamkenos/triple-taste-rpa/actions/workflows/rpa.yml">
+        <img alt="RPA" src="https://github.com/iamkenos/triple-taste-rpa/actions/workflows/rpa.yml/badge.svg">
+    </a>
+</p>
+
 ## Requirements
 
 - NodeJS ≥ 20.10.0 or ≤ LTS
