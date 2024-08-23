@@ -11,7 +11,7 @@
   "author": "iamkenos <alexis.matunog@gmail.com>",
   "license": "ISC",
   "dependencies": {
-    "@iamkenos/kyoko": "^0.4.1",
+    "@iamkenos/kyoko": "^0.4.2",
     "@playwright/browser-chromium": "^1.46.1",
     "google-drive-getfilelist": "^1.0.5",
     "googleapis": "^142.0.0",

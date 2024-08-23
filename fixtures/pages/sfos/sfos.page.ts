@@ -1,7 +1,6 @@
-import path from "path";
 import { DateTime } from "luxon";
 
-import { BasePage } from "../base.page";
+import { BasePage } from "~/fixtures/pages/base.page";
 
 export class SFOSPage extends BasePage {
   url = "https://sfosv2.shakeys.solutions/Identity/Account/Login";
@@ -26,12 +25,12 @@ export class SFOSPage extends BasePage {
     return index;
   }
 
-  private async generatePDFs() {
+  private async generatePDFFor(file: string) {
     const trigger = async () => {
       await this.btnGenerateSOA().click();
       await this.btnGenerateSOA().locator("//following-sibling::*//a[contains(., 'PDF')]").click();
     }
-    await this.downloadFile(trigger)
+    await this.page.downloadFile(trigger, file)
   }
 
   private async getInvoiceTableColumnContents(label: string) {
@@ -87,15 +86,19 @@ export class SFOSPage extends BasePage {
     const uploadedIds = this.getUploadedIdsForThisQuarter();
     const wantedIds = scopedIds.filter(item => uploadedIds.indexOf(item) < 0);
 
+    const downloads = [];
     for (let i = 0; i < wantedIds.length; i++) {
       const wantedId = wantedIds[i];
       const row = scopedIds.findIndex(i => i === wantedId);
+      const dtstr = this.getDateTimeFromSOADate(availableSOADates[i]).toFormat("yyyyLLdd");
+      const filename = `${dtstr}_PC_OR_${wantedId}.pdf`;
+
       await this.cbxSOSInvoice(row).check();
-      await this.generatePDFs();
+      await this.generatePDFFor(filename);
       await this.cbxSOSInvoice(row).uncheck();
+      downloads.push(filename)
     }
 
-    this.parameters.driveFilesToUpload = wantedIds
-      .map((i, idx) => `${this.getDateTimeFromSOADate(availableSOADates[idx]).toFormat("yyyyLLdd")}_PC_OR_${i}.pdf`);
+    this.parameters.driveFilesToUpload = downloads;
   }
 }

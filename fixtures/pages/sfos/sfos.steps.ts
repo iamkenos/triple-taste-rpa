@@ -1,7 +1,7 @@
 import { Before, When, Status } from "@cucumber/cucumber";
 import { SFOSPage } from "./sfos.page";
 
-import type { This as BaseThis } from "../base.steps";
+import type { This as BaseThis } from "~/fixtures/pages/base.steps";
 
 export interface This extends BaseThis {
   sfos: SFOSPage;

@@ -5,9 +5,9 @@ import { DateTime } from "luxon";
 import { google } from "googleapis";
 import { GetFileList, GetFolderTree } from "google-drive-getfilelist";
 
-import { BasePage } from "../base.page";
+import { BasePage as BaseService } from "~/fixtures/pages/base.page";
 
-export class GDrivePage extends BasePage {
+export class GDriveService extends BaseService {
   url = "https://www.googleapis.com/auth/drive";
   title = "";
 
@@ -59,7 +59,7 @@ export class GDrivePage extends BasePage {
       return id;
     }
 
-    return '';
+    return "";
   }
 
   private async uploadFile(args: { name: string, mimeType: string, folderId: string, body: any }) {
@@ -85,16 +85,15 @@ export class GDrivePage extends BasePage {
   }
 
   async uploadDownloadedSFOSInvoices() {
+    const { downloadsDir } = this.config;
     const { driveFilesToUpload } = this.parameters;
 
     const mimeType = "application/pdf";
     const folderId = await this.getCurrentDayQFolderId();
-    const downloadsDir = this.getDownloadsDir();
-    const downloads = fs.readdirSync(this.getDownloadsDir());
 
-    for (let i = 0; i < downloads.length; i++) {
-      const download = downloads[i];
-      const name = driveFilesToUpload.find(i => i.includes(download));
+    for (let i = 0; i < driveFilesToUpload.length; i++) {
+      const download = driveFilesToUpload[i];
+      const name = driveFilesToUpload[i];
       const filepath = path.join(downloadsDir, download)
       const body = fs.createReadStream(filepath)
       await this.uploadFile({ name, mimeType, folderId, body })

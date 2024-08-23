@@ -1,14 +1,14 @@
 import { Before, Given, Then } from "@cucumber/cucumber";
-import { GDrivePage } from "./gdrive.page";
+import { GDriveService } from "./gdrive.service";
 
-import type { This as BaseThis } from "../base.steps";
+import type { This as BaseThis } from "~/fixtures/pages/base.steps";
 
 export interface This extends BaseThis {
-  gdrive: GDrivePage;
+  gdrive: GDriveService;
 }
 
 Before({}, async function (this: This) {
-  this.gdrive = new GDrivePage();
+  this.gdrive = new GDriveService();
 });
 
 Given("I have a list of latest sfos invoices", async function (this: This) {

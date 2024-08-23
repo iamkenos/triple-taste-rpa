@@ -10,7 +10,10 @@
     "outDir": "build",
     "skipLibCheck": true,
     "target": "ESNext",
-    "types": ["@iamkenos/kyoko"]
+    "paths": {
+      "~": ["./"],
+      "~/*": ["./*"]
+    }
   },
   "include": ["./**/**.ts", "./**/**.js"]
 }
