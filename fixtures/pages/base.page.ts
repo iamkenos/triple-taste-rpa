@@ -7,6 +7,11 @@ export class BasePage extends PageObject<Parameters> {
   url = "";
   title = "";
 
+  protected getDownloadsDir() {
+    const { downloadsDir } = global.world.config;
+    return downloadsDir;
+  }
+
   protected async downloadFile(trigger: () => Promise<void>) {
     let filepath: string;
 
@@ -17,9 +22,7 @@ export class BasePage extends PageObject<Parameters> {
       const download = await event;
       const suggestedFilename = download.suggestedFilename();
 
-      const { downloadsDir } = global.world.config;
-      filepath = path.join(downloadsDir, suggestedFilename);
-
+      filepath = path.join(this.getDownloadsDir(), suggestedFilename);
       await download.saveAs(filepath);
     } catch (e) {
       throw new Error(`Unable to download file: ${e}`);

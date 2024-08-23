@@ -5,4 +5,4 @@ Feature: SFOS Invoice Extraction
 
   Scenario: Download & Upload
     When I download new sfos invoices
-    Then I upload the downloaded files to the drive
+    Then I upload the downloaded sfos invoices to the drive

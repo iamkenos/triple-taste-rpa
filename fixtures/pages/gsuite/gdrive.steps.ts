@@ -15,6 +15,6 @@ Given("I have a list of latest sfos invoices", async function (this: This) {
   this.parameters.driveSfosInvoices = await this.gdrive.getSFOSInvoices();
 });
 
-Then("I upload the downloaded files to the drive", async function (this: This) {
-  await this.gdrive.uploadFiles();
+Then("I upload the downloaded sfos invoices to the drive", async function (this: This) {
+  await this.gdrive.uploadDownloadedSFOSInvoices();
 });

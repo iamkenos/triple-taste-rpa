@@ -1,3 +1,6 @@
+import fs from "fs";
+import path from "path";
+
 import { DateTime } from "luxon";
 import { google } from "googleapis";
 import { GetFileList, GetFolderTree } from "google-drive-getfilelist";
@@ -59,6 +62,15 @@ export class GDrivePage extends BasePage {
     return '';
   }
 
+  private async uploadFile(args: { name: string, mimeType: string, folderId: string, body: any }) {
+    const { name, mimeType, folderId, body } = args;
+
+    await this.drive.connection.files.create({
+      requestBody: { name, parents: [folderId] },
+      media: { mimeType, body },
+    });
+  }
+
   async getSFOSInvoices() {
     const id = await this.getCurrentDayQFolderId();
     const { fileList } = id ? await this.getFileList(id) : { fileList: [] };
@@ -72,18 +84,20 @@ export class GDrivePage extends BasePage {
     return fileList as string[];
   }
 
-  async uploadFiles() {
-    const { GDRIVE_RECEIPTS_FOLDER } = process.env;
-    await this.drive.connection.files.create({
-      requestBody: {
-        name: "hello world.txt",
-        mimeType: "text/plain",
-        parents: [GDRIVE_RECEIPTS_FOLDER],
-      },
-      media: {
-        mimeType: "text/plain",
-        body: "Hello World",
-      },
-    });
+  async uploadDownloadedSFOSInvoices() {
+    const { driveFilesToUpload } = this.parameters;
+
+    const mimeType = "application/pdf";
+    const folderId = await this.getCurrentDayQFolderId();
+    const downloadsDir = this.getDownloadsDir();
+    const downloads = fs.readdirSync(this.getDownloadsDir());
+
+    for (let i = 0; i < downloads.length; i++) {
+      const download = downloads[i];
+      const name = driveFilesToUpload.find(i => i.includes(download));
+      const filepath = path.join(downloadsDir, download)
+      const body = fs.createReadStream(filepath)
+      await this.uploadFile({ name, mimeType, folderId, body })
+    }
   }
 }

@@ -43,10 +43,10 @@ export class SFOSPage extends BasePage {
   private async getRowsForThisQuarter() {
     const availableSOADates = await this.getInvoiceTableColumnContents("SOA Date");
     const rowsForThisQuarter = availableSOADates
-      .map((i, idx) => ({ idx, r: this.isDateOnThisQuarter(i, "LLLL dd, yyyy") }))
+      .map((i, idx) => ({ idx, r: this.isSOADateForThisQuarter(i) }))
       .filter(i => i.r)
       .map(i => i.idx)
-    return rowsForThisQuarter;
+    return { rowsForThisQuarter, availableSOADates };
   }
 
   private getUploadedIdsForThisQuarter() {
@@ -57,8 +57,12 @@ export class SFOSPage extends BasePage {
     return uploadedIdsForThisQuarter;
   }
 
-  private isDateOnThisQuarter(text: string, fmt: string) {
-    return DateTime.fromFormat(text, fmt).quarter === DateTime.now().quarter;
+  private getDateTimeFromSOADate(soaDate: string) {
+    return DateTime.fromFormat(soaDate, "LLLL dd, yyyy");
+  }
+
+  private isSOADateForThisQuarter(soaDate: string) {
+    return this.getDateTimeFromSOADate(soaDate).quarter === DateTime.now().quarter;
   }
 
   async login() {
@@ -76,7 +80,7 @@ export class SFOSPage extends BasePage {
   }
 
   async downloadNewInvoices() {
-    const rowsForThisQuarter = await this.getRowsForThisQuarter();
+    const { rowsForThisQuarter, availableSOADates } = await this.getRowsForThisQuarter();
     const availableIds = await this.getInvoiceTableColumnContents("Invoice Id");
 
     const scopedIds = rowsForThisQuarter.map(i => availableIds[i]);
@@ -90,5 +94,8 @@ export class SFOSPage extends BasePage {
       await this.generatePDFs();
       await this.cbxSOSInvoice(row).uncheck();
     }
+
+    this.parameters.driveFilesToUpload = wantedIds
+      .map((i, idx) => `${this.getDateTimeFromSOADate(availableSOADates[idx]).toFormat("yyyyLLdd")}_PC_OR_${i}.pdf`);
   }
 }
