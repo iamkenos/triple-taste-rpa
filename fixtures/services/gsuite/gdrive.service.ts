@@ -17,7 +17,7 @@ export class GDriveService extends BaseService {
   private connect() {
     const { GDRIVE_CLIENT_EMAIL, GDRIVE_PKEY } = process.env;
     const { JWT } = google.auth;
-    const auth = new JWT(GDRIVE_CLIENT_EMAIL, null, GDRIVE_PKEY, [this.url]);
+    const auth = new JWT(GDRIVE_CLIENT_EMAIL, null, GDRIVE_PKEY.replace(/\|/g,"\n"), [this.url]);
     const connection = google.drive({ version: "v3", auth });
     return { auth, connection };
   }

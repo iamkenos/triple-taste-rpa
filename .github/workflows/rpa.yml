@@ -1,0 +1,31 @@
+name: RPA
+
+on:
+  schedule:
+    - cron: "0 22 * * *"
+
+  workflow_dispatch:
+
+jobs:
+  default:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Setup node
+        run: echo "NODE_VERSION=$(cat .nvmrc)" >> $GITHUB_OUTPUT
+        id: nvm
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ steps.nvm.outputs.NODE_VERSION }}
+      - name: Install dependencies
+        run: npm install
+      - name: Start RPA
+        env:
+          SFOS_USERNAME: "${{ secrets.SFOS_USERNAME }}"
+          SFOS_PASSWORD: "${{ secrets.SFOS_PASSWORD }}"
+          GDRIVE_RECEIPTS_FOLDER: "${{ secrets.GDRIVE_RECEIPTS_FOLDER }}"
+          GDRIVE_CLIENT_EMAIL: "${{ secrets.GDRIVE_CLIENT_EMAIL }}"
+          GDRIVE_PKEY: "${{ secrets.GDRIVE_PKEY }}"
+          HEADLESS: true
+        run: npm start
