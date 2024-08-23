@@ -10,7 +10,8 @@ export class SFOSPage extends BasePage {
   private tfPassword = () => this.page.locator("#Password");
   private btnSignIn = () => this.page.locator("#btLgnSbmt");
 
-  private btnGenerateSOA = () => this.page.locator("//button[contains(.,'Generate SOA')]")
+  private btnGenerateSOA = () => this.page.locator("//button[contains(.,'Generate SOA')]");
+  private lnkPrintPDF = () => this.btnGenerateSOA().locator("//following-sibling::*//a[contains(., 'PDF')]");
   private ddlShowAll = () => this.page.locator("//select[@name='tblSOSInvoiceList_length']");
 
   private tblSOSInvoiceList = () => this.page.locator("//table[@id='tblSOSInvoiceList']");
@@ -27,8 +28,9 @@ export class SFOSPage extends BasePage {
 
   private async generatePDFFor(file: string) {
     const trigger = async () => {
-      await this.btnGenerateSOA().click();
-      await this.btnGenerateSOA().locator("//following-sibling::*//a[contains(., 'PDF')]").click();
+      const condition = async () => await this.lnkPrintPDF().isVisible();
+      await this.clickUntil(this.btnGenerateSOA(), condition);
+      await this.lnkPrintPDF().click();
     }
     await this.downloadFile(trigger, file)
   }

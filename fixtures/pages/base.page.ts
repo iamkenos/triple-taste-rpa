@@ -13,14 +13,20 @@ export class BasePage extends PageObject<Parameters> {
   title = "";
 
   // temporary hacks start ----------------------
-  protected async poll(condition: (() => Promise<boolean>)) {
+  protected async poll(condition: (() => Promise<boolean>), action?: (() => Promise<any>)) {
     try {
       await expect.poll(async() => {
+        action !== undefined && await action();
         return await condition();
       }, { intervals: [250], timeout: 25000 + 250 }).toBe(true);
     } catch (e) {
       throw new Error(`Polling exception: ${e}`);
     }
+  }
+
+  protected async clickUntil(locator: any, condition: (() => Promise<boolean>)) {
+    const fn = async() => await locator.click();
+    await this.poll(condition, fn);
   }
 
   protected async navigateUrl(url: string) {
