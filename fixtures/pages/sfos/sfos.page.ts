@@ -3,7 +3,7 @@ import { DateTime } from "luxon";
 import { BasePage } from "~/fixtures/pages/base.page";
 
 export class SFOSPage extends BasePage {
-  url = "https://sfosv2.shakeys.solutions/Identity/Account/Login";
+  url = process.env.SFOS_URL;
   title = "Log In";
 
   private tfEmail = () => this.page.locator("#Email");

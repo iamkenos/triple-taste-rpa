@@ -22,6 +22,7 @@ jobs:
         run: npm install
       - name: Start RPA
         env:
+          SFOS_URL: "${{ secrets.SFOS_URL }}"
           SFOS_USERNAME: "${{ secrets.SFOS_USERNAME }}"
           SFOS_PASSWORD: "${{ secrets.SFOS_PASSWORD }}"
           GDRIVE_RECEIPTS_FOLDER: "${{ secrets.GDRIVE_RECEIPTS_FOLDER }}"
