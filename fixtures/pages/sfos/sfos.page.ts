@@ -101,6 +101,7 @@ export class SFOSPage extends BasePage {
       downloads.push(filename)
     }
 
+    this.logger.info("Downloaded %s files.", downloads.length);
     this.parameters.driveFilesToUpload = downloads;
   }
 }

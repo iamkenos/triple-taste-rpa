@@ -1,7 +1,7 @@
 Feature: SFOS Invoice Extraction
 
   Background:
-    Given I have a list of latest sfos invoices
+    Given I have the list of uploaded sfos invoices
 
   Scenario: Download & Upload
     When I login to sfos

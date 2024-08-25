@@ -29,6 +29,10 @@ jobs:
           GDRIVE_PKEY: "${{ secrets.GDRIVE_PKEY }}"
           HEADLESS: true
         run: npm start
+      - name: Post RPA cleanup
+        run: |
+          echo Removing downlaods
+          rm -rf downloads/
       - name: Upload Artifact
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4

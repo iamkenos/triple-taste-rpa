@@ -11,7 +11,7 @@ Before({}, async function (this: This) {
   this.gdrive = new GDriveService();
 });
 
-Given("I have a list of latest sfos invoices", async function (this: This) {
+Given("I have the list of uploaded sfos invoices", async function (this: This) {
   this.parameters.driveSfosInvoices = await this.gdrive.getSFOSInvoices();
 });
 

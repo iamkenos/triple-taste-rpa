@@ -50,30 +50,46 @@ export class GDriveService extends BaseService {
   }
 
   private async getCurrentDayQFolderId() {
-    const { GDRIVE_RECEIPTS_FOLDER } = process.env;
-    const { names, id: ids } = await this.getFolderTree(GDRIVE_RECEIPTS_FOLDER);
-    const index = names.findIndex((i) => i == this.getCurrentDayQFolderName());
+    try {
+      const { GDRIVE_RECEIPTS_FOLDER } = process.env;
+      const { names, id: ids } = await this.getFolderTree(GDRIVE_RECEIPTS_FOLDER);
+      const folderName = this.getCurrentDayQFolderName();
+      const index = names.findIndex((i) => i == this.getCurrentDayQFolderName());
 
-    if (index >= 0) {
-      const [, id] = ids[index];
-      return id;
+      if (index >= 0) {
+        const [, id] = ids[index];
+        return id;
+      } else {
+        const response = await this.createFolder({ name: folderName, folderId: GDRIVE_RECEIPTS_FOLDER })
+        const { id } = response.data
+        return id;
+      }
+    } catch (e) {
+      this.logger.error(e.message)
     }
-
-    return "";
   }
 
-  private async uploadFile(args: { name: string, mimeType: string, folderId: string, body: any }) {
+  private async uploadFile(args: { name: string, mimeType: string, folderId: string, body?: any }) {
     const { name, mimeType, folderId, body } = args;
 
-    await this.drive.connection.files.create({
+    return await this.drive.connection.files.create({
       requestBody: { name, parents: [folderId] },
       media: { mimeType, body },
     });
   }
 
+  private async createFolder(args: { name: string, folderId: string }) {
+    const { name, folderId } = args;
+    const mimeType = "application/vnd.google-apps.folder";
+
+    return await this.drive.connection.files.create({
+      requestBody: { name, parents: [folderId], mimeType },
+    });
+  }
+
   async getSFOSInvoices() {
-    const id = await this.getCurrentDayQFolderId();
-    const { fileList } = id ? await this.getFileList(id) : { fileList: [] };
+    const folderId = await this.getCurrentDayQFolderId();
+    const { fileList } = folderId ? await this.getFileList(folderId) : { fileList: [] };
 
     if (fileList.length > 0) {
       const { files } = fileList[0];
@@ -91,12 +107,18 @@ export class GDriveService extends BaseService {
     const mimeType = "application/pdf";
     const folderId = await this.getCurrentDayQFolderId();
 
-    for (let i = 0; i < driveFilesToUpload.length; i++) {
-      const download = driveFilesToUpload[i];
-      const name = driveFilesToUpload[i];
-      const filepath = path.join(downloadsDir, download)
-      const body = fs.createReadStream(filepath)
-      await this.uploadFile({ name, mimeType, folderId, body })
+    if (folderId) {
+      const numberOfFiles = driveFilesToUpload.length
+      for (let i = 0; i < numberOfFiles; i++) {
+        const download = driveFilesToUpload[i];
+        const name = driveFilesToUpload[i];
+        const filepath = path.join(downloadsDir, download);
+        const body = fs.createReadStream(filepath);
+        await this.uploadFile({ name, mimeType, folderId, body });
+      }
+      this.logger.info("Uploaded %s files.", numberOfFiles);
+    } else {
+      this.logger.warn("Folder ID is empty.");
     }
   }
 }
