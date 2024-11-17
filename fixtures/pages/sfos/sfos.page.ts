@@ -41,29 +41,8 @@ export class SFOSPage extends BasePage {
     return contents;
   }
 
-  private async getRowsForThisQuarter() {
-    const availableSOADates = await this.getInvoiceTableColumnContents("SOA Date");
-    const rowsForThisQuarter = availableSOADates
-      .map((i, idx) => ({ idx, r: this.isSOADateForThisQuarter(i) }))
-      .filter(i => i.r)
-      .map(i => i.idx)
-    return { rowsForThisQuarter, availableSOADates };
-  }
-
-  private getUploadedIdsForThisQuarter() {
-    const { driveSfosInvoices } = this.parameters;
-    const uploadedIdsForThisQuarter = driveSfosInvoices
-      .map(i => i.match(/^[\d]{8}_PC_OR_(.+)[.].+$/))
-      .filter(Boolean).map(([, id]) => id);
-    return uploadedIdsForThisQuarter;
-  }
-
   private getDateTimeFromSOADate(soaDate: string) {
     return DateTime.fromFormat(soaDate, "LLLL dd, yyyy");
-  }
-
-  private isSOADateForThisQuarter(soaDate: string) {
-    return this.getDateTimeFromSOADate(soaDate).quarter === DateTime.now().quarter;
   }
 
   async login() {
@@ -81,27 +60,26 @@ export class SFOSPage extends BasePage {
   }
 
   async downloadNewInvoices() {
-    const { rowsForThisQuarter, availableSOADates } = await this.getRowsForThisQuarter();
-    const availableIds = await this.getInvoiceTableColumnContents("Invoice Id");
-
-    const scopedIds = rowsForThisQuarter.map(i => availableIds[i]);
-    const uploadedIds = this.getUploadedIdsForThisQuarter();
-    const wantedIds = scopedIds.filter(item => uploadedIds.indexOf(item) < 0);
+    const { driveUploadedSfosInvoices: driveSfosInvoices } = this.parameters;
+    const availableInvoiceIds = await this.getInvoiceTableColumnContents("Invoice Id");
+    const availableInvoiceIdsSOADates = await this.getInvoiceTableColumnContents("SOA Date");
+    const newInvoiceIds = availableInvoiceIds.filter(id => !driveSfosInvoices.find(i => i.includes(id)));
 
     const downloads = [];
-    for (let i = 0; i < wantedIds.length; i++) {
-      const wantedId = wantedIds[i];
-      const row = scopedIds.findIndex(i => i === wantedId);
-      const dtstr = this.getDateTimeFromSOADate(availableSOADates[i]).toFormat("yyyyLLdd");
-      const filename = `${dtstr}_PC_OR_${wantedId}.pdf`;
+    for (let i = 0; i < newInvoiceIds.length; i++) {
+      const newInvoiceId = newInvoiceIds[i];
+      const row = availableInvoiceIds.findIndex(i => i === newInvoiceId);
+      const soaDate = this.getDateTimeFromSOADate(availableInvoiceIdsSOADates[row]);
+      const prefix = soaDate.toFormat("yyyyLLdd");
+      const filename = `${prefix}_PC_OR_${newInvoiceId}.pdf`;
 
       await this.cbxSOSInvoice(row).check();
       await this.generatePDFFor(filename);
       await this.cbxSOSInvoice(row).uncheck();
-      downloads.push(filename)
+      downloads.push({ filename, soaDate });
     }
 
-    this.logger.info("Downloaded %s files.", downloads.length);
-    this.parameters.driveFilesToUpload = downloads;
+    this.logger.info("Downloaded %s new files.", downloads.length);
+    this.parameters.sfosNewInvoices = downloads;
   }
 }

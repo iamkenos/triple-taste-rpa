@@ -19,7 +19,7 @@ When("I download new sfos invoices", async function (this: This) {
   await this.sfos.showAllInvoices();
   await this.sfos.downloadNewInvoices();
 
-  const hasNewInvoices = this.parameters.driveFilesToUpload.length > 0;
+  const hasNewInvoices = this.parameters.sfosNewInvoices.length > 0;
   if (!hasNewInvoices) {
     return Status.SKIPPED.toLowerCase();
   }

@@ -18,8 +18,7 @@
         "${workspaceFolder}/node_modules/@iamkenos/kyoko/build/**/*.js"
       ],
       "env": {
-        "HEADLESS": "false",
-        "PATHS": "${file}"
+        "HEADLESS": "false"
       }
     }
   ],

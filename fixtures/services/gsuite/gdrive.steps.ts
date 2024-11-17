@@ -12,7 +12,7 @@ Before({}, async function (this: This) {
 });
 
 Given("I have the list of uploaded sfos invoices", async function (this: This) {
-  this.parameters.driveSfosInvoices = await this.gdrive.getSFOSInvoices();
+  this.parameters.driveUploadedSfosInvoices = await this.gdrive.getSFOSInvoices();
 });
 
 Then("I upload the downloaded sfos invoices to the drive", async function (this: This) {

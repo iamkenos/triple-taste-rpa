@@ -13,6 +13,7 @@ export class GDriveService extends BaseService {
 
   private drive = this.connect();
   private fields = "files(name,id)";
+  private RECIEPTS_Q_FOLDER_NAME_FORMAT = "yyyy-Qq";
 
   private connect() {
     const { GDRIVE_CLIENT_EMAIL, GDRIVE_PKEY } = process.env;
@@ -44,31 +45,6 @@ export class GDriveService extends BaseService {
     }>((resolve, reject) => GetFileList(resource, (e: Error, r: any) => (e ? reject(e) : resolve(r))));
   }
 
-  private getCurrentDayQFolderName() {
-    const now = DateTime.now();
-    return now.toFormat("yyyy-Qq");
-  }
-
-  private async getCurrentDayQFolderId() {
-    try {
-      const { GDRIVE_RECEIPTS_FOLDER } = process.env;
-      const { names, id: ids } = await this.getFolderTree(GDRIVE_RECEIPTS_FOLDER);
-      const folderName = this.getCurrentDayQFolderName();
-      const index = names.findIndex((i) => i == this.getCurrentDayQFolderName());
-
-      if (index >= 0) {
-        const [, id] = ids[index];
-        return id;
-      } else {
-        const response = await this.createFolder({ name: folderName, folderId: GDRIVE_RECEIPTS_FOLDER })
-        const { id } = response.data
-        return id;
-      }
-    } catch (e) {
-      this.logger.error(e.message)
-    }
-  }
-
   private async uploadFile(args: { name: string, mimeType: string, folderId: string, body?: any }) {
     const { name, mimeType, folderId, body } = args;
 
@@ -87,38 +63,56 @@ export class GDriveService extends BaseService {
     });
   }
 
+  private async createQFolder(name: string) {
+    const { GDRIVE_RECEIPTS_FOLDER } = process.env;
+    const { names, id: ids } = await this.getFolderTree(GDRIVE_RECEIPTS_FOLDER);
+    const index = names.findIndex((i) => i == name);
+    const isCurrentDayQFolderExisting = index >= 0
+    
+    if (isCurrentDayQFolderExisting) {
+      const [, id] = ids[index];
+      return id;
+    } else {
+      const response = await this.createFolder({ name, folderId: GDRIVE_RECEIPTS_FOLDER });
+      const { id } = response.data
+      return id;
+    } 
+  }
+
   async getSFOSInvoices() {
-    const folderId = await this.getCurrentDayQFolderId();
-    const { fileList } = folderId ? await this.getFileList(folderId) : { fileList: [] };
+    const { GDRIVE_RECEIPTS_FOLDER } = process.env;
+    const { id: ids } = await this.getFolderTree(GDRIVE_RECEIPTS_FOLDER);
+    const [_, ...rest] = ids;
 
-    if (fileList.length > 0) {
-      const { files } = fileList[0];
-      const invoices = files.filter((i: any) => i.name.match(/^[\d]{8}_PC_OR_CIPC_SI.+$/)).map((i: any) => i.name);
-      return invoices;
-    }
+    const invoices = (await Promise.all(rest.map(async ([_, id]) => {
+      const { fileList } = await this.getFileList(id)
+      if (fileList.length > 0) {
+        const { files } = fileList[0];
+        const invoices = files.filter((i: any) => i.name.match(/^[\d]{8}_PC_OR_CIPC_SI.+$/)).map((i: any) => i.name);
+        return invoices;
+      }
+    }))).flat()
 
-    return fileList as string[];
+    return invoices;
   }
 
   async uploadDownloadedSFOSInvoices() {
     const { downloadsDir } = this.config;
-    const { driveFilesToUpload } = this.parameters;
+    const { sfosNewInvoices } = this.parameters;
 
     const mimeType = "application/pdf";
-    const folderId = await this.getCurrentDayQFolderId();
+    const numberOfFiles = sfosNewInvoices.length
+    for (let i = 0; i < numberOfFiles; i++) {
+      const item = sfosNewInvoices[i];
+      const { filename: name, soaDate } = item;
+      const filepath = path.join(downloadsDir, name);
+      const folderName = soaDate.toFormat(this.RECIEPTS_Q_FOLDER_NAME_FORMAT);
+      const folderId = await this.createQFolder(folderName)
 
-    if (folderId) {
-      const numberOfFiles = driveFilesToUpload.length
-      for (let i = 0; i < numberOfFiles; i++) {
-        const download = driveFilesToUpload[i];
-        const name = driveFilesToUpload[i];
-        const filepath = path.join(downloadsDir, download);
-        const body = fs.createReadStream(filepath);
-        await this.uploadFile({ name, mimeType, folderId, body });
-      }
-      this.logger.info("Uploaded %s files.", numberOfFiles);
-    } else {
-      this.logger.warn("Folder ID is empty.");
+      const body = fs.createReadStream(filepath);
+      await this.uploadFile({ name, mimeType, folderId, body });
     }
+
+    this.logger.info("Uploaded %s new files.", numberOfFiles);
   }
 }
