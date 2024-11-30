@@ -1,4 +1,4 @@
-Feature: SFOS Invoice Extraction
+Feature: SFOS Invoice Extracts
 
   Scenario: Download & Upload
   Process:
