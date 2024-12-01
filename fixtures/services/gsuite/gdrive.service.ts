@@ -1,11 +1,13 @@
 import fs from "fs";
 import path from "path";
 
-import { DateTime } from "luxon";
 import { google } from "googleapis";
 import { GetFileList, GetFolderTree } from "google-drive-getfilelist";
 
+import { getDate } from "~/fixtures/utils/date";
 import { BasePage as BaseService } from "~/fixtures/pages/base.page";
+
+import type { DateTime } from "luxon";
 
 export class GDriveService extends BaseService {
   url = "https://www.googleapis.com/auth/drive";
@@ -79,6 +81,12 @@ export class GDriveService extends BaseService {
     } 
   }
 
+  async getQFolder(date: DateTime) {
+    const name = date.toFormat(this.RECIEPTS_Q_FOLDER_NAME_FORMAT);
+    const id = await this.createQFolder(name);
+    return { name, id }
+  }
+
   async getSFOSInvoices() {
     const { GDRIVE_RECEIPTS_FOLDER } = process.env;
     const { id: ids } = await this.getFolderTree(GDRIVE_RECEIPTS_FOLDER);
@@ -94,6 +102,20 @@ export class GDriveService extends BaseService {
     }))).flat()
 
     return invoices;
+  }
+
+  async getRobbeanBillingInvoicesForCurrentMonth() {
+    const { date } = getDate();
+    const qfolder = await this.getQFolder(date)
+    
+    const { fileList } = await this.getFileList(qfolder.id)
+    if (fileList.length > 0) {
+      const { files } = fileList[0];
+      const invoices = files.filter((i: any) => i.name.match(/^[\d]{8}_RB_BI_.+$/)).map((i: any) => i.name);
+      return invoices.filter((i: string) => i.startsWith(`${date.year}` + `${date.month}`.padStart(2, "0")));
+    } else {
+      return []
+    }
   }
 
   async uploadDownloadedSFOSInvoices() {

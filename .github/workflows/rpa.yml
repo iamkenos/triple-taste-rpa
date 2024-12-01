@@ -28,6 +28,11 @@ jobs:
           GDRIVE_RECEIPTS_FOLDER: "${{ secrets.GDRIVE_RECEIPTS_FOLDER }}"
           GDRIVE_CLIENT_EMAIL: "${{ secrets.GDRIVE_CLIENT_EMAIL }}"
           GDRIVE_PKEY: "${{ secrets.GDRIVE_PKEY }}"
+          GMAIL_USER: "${{ secrets.GMAIL_USER }}"
+          GMAIL_PASS: "${{ secrets.GMAIL_PASS }}"
+          ACCTG_EMAIL_REMINDER_RECIPIENTS: "${{ secrets.ACCTG_EMAIL_REMINDER_RECIPIENTS }}"
+          ACCTG_EMAIL_REMINDER_RECIPIENTS_CC: "${{ secrets.ACCTG_EMAIL_REMINDER_RECIPIENTS_CC }}"
+          ACCTG_EMAIL_REMINDER_SIG_CONTACT_NO: "${{ secrets.ACCTG_EMAIL_REMINDER_SIG_CONTACT_NO }}"
           HEADLESS: true
         run: npm start
       - name: Post RPA cleanup
