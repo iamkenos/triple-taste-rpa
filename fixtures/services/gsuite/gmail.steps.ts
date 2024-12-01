@@ -30,7 +30,7 @@ Before({}, async function (this: This) {
   this.gmail = new GMailService();
 });
 
-When(/^I send the (monthly) EWT - Expanded Witholding Tax reminder email$/, async function (this: This, freq: string) {
+When(/^I send the (monthly) expanded witholding tax reminder email$/, async function (this: This, freq: string) {
   const filingDeadlineDay = 10;
   const emailDay = filingDeadlineDay - 5;
   const filingMonths = [
@@ -68,7 +68,7 @@ When(/^I send the (monthly) EWT - Expanded Witholding Tax reminder email$/, asyn
   await this.gmail.sendEmail({ to: ACCTG_EMAIL_REMINDER_RECIPIENTS, cc: ACCTG_EMAIL_REMINDER_RECIPIENTS_CC, subject, html });
 });
 
-When(/^I send the (monthly) Staffing Agency 2307 Request email$/, async function (this: This, freq: string) {
+When(/^I send the (monthly) staffing agency 2307 request email$/, async function (this: This, freq: string) {
   const { date } = getDate();
   const billingInvoiceUploadDays = [12, 24];
   const isFirstCutoff = date.day === billingInvoiceUploadDays[0];
