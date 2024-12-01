@@ -1,0 +1,67 @@
+<html>
+
+<head>
+
+  <style>
+    div {
+      color: rgb(34, 34, 34);
+      font-size: 15px;
+    }
+
+    .strong {
+      font-weight: bold;
+    }
+  </style>
+</head>
+
+<body>
+  <div>
+    <div class="strong">Dear recipient,</div>
+
+    <div><br />We hope this message finds you well.</div>
+
+    <div>
+      <br />
+      <span>
+        Please find our expense documents from last month ([[SCOPE_DATE]]) for bookkeeping purposes, accessible from the links below.
+      </span>
+      <br />
+      <span>
+        Drive Location: receipts >> [[FOLDER_NAME]]
+        <ul>
+          <li><a href="https://drive.google.com/drive/u/0/search?q=title:[[YEAR_MONTH]]%20OR%20parent:[[FOLDER_ID]]">ORs</a></li>
+          <li><a href="https://drive.google.com/drive/u/0/search?q=title:[[YEAR_MONTH]]%20AR%20parent:[[FOLDER_ID]]">ARs</a></li>
+        </ul>
+      </span>
+      <br />
+      <span>
+        Please let us know if you have any questions, need more details, or if there's any action needed from our end.
+      </span>
+    </div>
+
+    <div>
+      <br />
+      <span>
+        Please let us know if you have any questions, need more details, or if there's any action needed from our end.
+      </span>
+      <br />
+      <br />
+      <span>
+        Thank you.
+      </span>
+    </div>
+
+    <div class="signature">
+      <br />
+      <div>Cheers,</div>
+      <div>Triple Taste Team</div>
+      <div>___________________________________</div>
+      <div>
+        <div class="strong">Triple Taste Munchies Food Corner</div>
+        <div>📞 [[SENDER_CONTACT]]</div>
+        <div>✉️ <a href="mailto:[[SENDER_EMAIL]]" target="_blank">[[SENDER_EMAIL]]</a></div>
+      </div>
+    </div>
+</body>
+
+</html>

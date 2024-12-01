@@ -49,7 +49,7 @@ When(/^I send the (monthly) EWT - Expanded Witholding Tax reminder email$/, asyn
   }
 
   const { GMAIL_USER, ACCTG_EMAIL_REMINDER_RECIPIENTS, ACCTG_EMAIL_REMINDER_RECIPIENTS_CC, ACCTG_EMAIL_REMINDER_SIG_CONTACT_NO } = process.env;
-  const templatePath = path.join(world.config.baseDir, ACCTG_EMAIL_TEMPLATE_PATH, freq, "01619E-ewt.html");
+  const templatePath = path.join(world.config.baseDir, ACCTG_EMAIL_TEMPLATE_PATH, freq, "ewt-mtl-0619E.html");
   const template = fs.readFileSync(templatePath, "utf8");
   
   const submissionDate = getDate({ date, format: FORMATS.MONTH_YEAR });
@@ -70,7 +70,7 @@ When(/^I send the (monthly) EWT - Expanded Witholding Tax reminder email$/, asyn
 
 When(/^I send the (monthly) Staffing Agency 2307 Request email$/, async function (this: This, freq: string) {
   const { date } = getDate();
-  const billingInvoiceUploadDays = [12, 25];
+  const billingInvoiceUploadDays = [12, 24];
   const isFirstCutoff = date.day === billingInvoiceUploadDays[0];
   const isSecondCutoff = date.day === billingInvoiceUploadDays[1];
 
@@ -88,7 +88,7 @@ When(/^I send the (monthly) Staffing Agency 2307 Request email$/, async function
   }
 
   const { GMAIL_USER, ACCTG_EMAIL_REMINDER_RECIPIENTS, ACCTG_EMAIL_REMINDER_RECIPIENTS_CC, ACCTG_EMAIL_REMINDER_SIG_CONTACT_NO } = process.env;
-  const templatePath = path.join(world.config.baseDir, ACCTG_EMAIL_TEMPLATE_PATH, freq, "2307-staffing-agency.html");
+  const templatePath = path.join(world.config.baseDir, ACCTG_EMAIL_TEMPLATE_PATH, freq, "sfa-mtl-2307.html");
   const template = fs.readFileSync(templatePath, "utf8");
   
   const scopeDate = getDate({ date, format: FORMATS.MONTH_YEAR });
@@ -105,4 +105,34 @@ When(/^I send the (monthly) Staffing Agency 2307 Request email$/, async function
     .replaceAll(ACCTG_EMAIL_SIG_CONTACT_TOKEN, ACCTG_EMAIL_REMINDER_SIG_CONTACT_NO);
 
     await this.gmail.sendEmail({ to: ACCTG_EMAIL_REMINDER_RECIPIENTS, cc: ACCTG_EMAIL_REMINDER_RECIPIENTS_CC, subject, html });
+});
+
+
+When(/^I send the (monthly) bookkeeping reminder email$/, async function (this: This, freq: string) {
+  const emailDay = 3;
+
+  const { date } = getDate();
+  const shouldSendEmail = date.day === emailDay;
+
+  if (!shouldSendEmail) {
+    return Status.SKIPPED.toLowerCase();
+  }
+
+  const { GMAIL_USER, ACCTG_EMAIL_REMINDER_RECIPIENTS, ACCTG_EMAIL_REMINDER_RECIPIENTS_CC, ACCTG_EMAIL_REMINDER_SIG_CONTACT_NO } = process.env;
+  const templatePath = path.join(world.config.baseDir, ACCTG_EMAIL_TEMPLATE_PATH, freq, "bkk-mtl-expenses.html");
+  const template = fs.readFileSync(templatePath, "utf8");
+  
+  const scopeDate = getDate({ date, offset: { months: -1 }, format: FORMATS.MONTH_YEAR });
+  const scopeDatePrefix = getDate({ date, offset: { months: -1 }, format: FORMATS.YEAR_MONTH }).formatted;
+  const subject = `${ACCTG_EMAIL_SUBJ_PREFIX} Bookkeeping Expenses: ${scopeDate.formatted}`;
+  const qfolder = await this.gdrive.getQFolder(scopeDate.date)
+  const html = template
+    .replaceAll(ACCTG_EMAIL_SCOPE_DATE_TOKEN, scopeDate.formatted)
+    .replaceAll(ACCTG_EMAIL_YEAR_MONTH_TOKEN, scopeDatePrefix)
+    .replaceAll(ACCTG_EMAIL_FOLDER_ID_TOKEN, qfolder.id)
+    .replaceAll(ACCTG_EMAIL_FOLDER_NAME_TOKEN, qfolder.name)
+    .replaceAll(ACCTG_EMAIL_SIG_SENDER_TOKEN, GMAIL_USER)
+    .replaceAll(ACCTG_EMAIL_SIG_CONTACT_TOKEN, ACCTG_EMAIL_REMINDER_SIG_CONTACT_NO);
+
+  await this.gmail.sendEmail({ to: ACCTG_EMAIL_REMINDER_RECIPIENTS, cc: ACCTG_EMAIL_REMINDER_RECIPIENTS_CC, subject, html });
 });
