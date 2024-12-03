@@ -13,6 +13,7 @@ const ACCTG_EMAIL_TEMPLATE_PATH = "resources/email-templates/accounting";
 const ACCTG_EMAIL_DATE_DELIMITER = "_";
 const ACCTG_EMAIL_SUBJ_PREFIX = "[TripleTaste]";
 const ACCTG_EMAIL_SCOPE_DATE_TOKEN = "[[SCOPE_DATE]]";
+const ACCTG_EMAIL_MONTH_YEAR_TOKEN = "[[MONTH_YEAR]]";
 const ACCTG_EMAIL_YEAR_MONTH_TOKEN = "[[YEAR_MONTH]]";
 const ACCTG_EMAIL_YEAR_MONTH_DAY_TOKEN = "[[YEAR_MONTH_DAY]]";
 const ACCTG_EMAIL_FOLDER_ID_TOKEN = "[[FOLDER_ID]]";
@@ -36,6 +37,8 @@ Before({}, async function (this: This) {
 });
 
 When(/^I send the (monthly) expanded witholding tax reminder email$/, async function (this: This, freq: string) {
+  const { date } = getDate();
+
   const filingDeadlineDay = 10;
   const emailDay = filingDeadlineDay - 5;
   const filingMonths = [
@@ -45,7 +48,6 @@ When(/^I send the (monthly) expanded witholding tax reminder email$/, async func
     MONTHS.NOV, MONTHS.DEC,
   ];
 
-  const { date } = getDate();
   const shouldFileThisMonth = filingMonths.includes(date.monthShort);
   const shouldSendEmail = date.day === emailDay && shouldFileThisMonth;
 
@@ -76,6 +78,7 @@ When(/^I send the (monthly) expanded witholding tax reminder email$/, async func
 
 When(/^I send the (monthly) staffing agency 2307 request email$/, async function (this: This, freq: string) {
   const { date } = getDate();
+
   const billingInvoiceUploadDays = [12, 24];
   const isFirstCutoff = date.day === billingInvoiceUploadDays[0];
   const isSecondCutoff = date.day === billingInvoiceUploadDays[1];
@@ -84,7 +87,7 @@ When(/^I send the (monthly) staffing agency 2307 request email$/, async function
     return Status.SKIPPED.toLowerCase();
   }
 
-  const billingInvoicesThisMonth = await this.gdrive.getStaffingBillingInvoicesForCurrentMonth();
+  const billingInvoicesThisMonth = await this.gdrive.getStaffingBillingInvoicesForMonthOf(date);
   const hasInvoiceForCutoff = isFirstCutoff ? billingInvoicesThisMonth.length > 0 : billingInvoicesThisMonth.length > 1;
   const nth = formatOrdinal(isFirstCutoff ? 1 : 2)
   await this.page.expect()
@@ -113,9 +116,10 @@ When(/^I send the (monthly) staffing agency 2307 request email$/, async function
 });
 
 When(/^I send the (monthly) bookkeeping reminder email$/, async function (this: This, freq: string) {
+  const { date } = getDate();
+
   const emailDay = 3;
 
-  const { date } = getDate();
   const shouldSendEmail = date.day === emailDay;
 
   if (!shouldSendEmail) {
@@ -146,6 +150,8 @@ When(/^I send the (monthly) bookkeeping reminder email$/, async function (this: 
 });
 
 When(/^I send the (quarterly) expanded witholding tax reminder email$/, async function (this: This, freq: string) {
+  const { date } = getDate();
+
   const filingDeadlineDay = 25;
   const emailDay = filingDeadlineDay - 15;
   const filingMonths = [
@@ -155,7 +161,6 @@ When(/^I send the (quarterly) expanded witholding tax reminder email$/, async fu
     MONTHS.OCT,
   ];
 
-  const { date } = getDate();
   const shouldFileThisMonth = filingMonths.includes(date.monthShort);
   const shouldSendEmail = date.day === emailDay && shouldFileThisMonth;
 
@@ -168,14 +173,21 @@ When(/^I send the (quarterly) expanded witholding tax reminder email$/, async fu
   const template = fs.readFileSync(templatePath, "utf8");
   
   const submissionDate = getDate({ date, format: FORMATS.MONTH_YEAR });
-  const scopeDate = getDate({ date, offset: { months: -1 }, format: FORMATS.MONTH_YEAR });
-  const scopeDatePrefix = getDate({ date, offset: { months: -1 }, format: FORMATS.YEAR_MONTH }).formatted;
+  const scopeDate = getDate({ date: date.plus({ quarter: -1 }).endOf("quarter"), format: FORMATS.MONTH_YEAR });
+  const firstMonthOfQ = scopeDate.date.plus({ months: -2 });
+  const secondMonthOfQ = scopeDate.date.plus({ months: -1 });
+  const thirdMonthOfQ = scopeDate.date;
   const qfolder = await this.gdrive.getQFolder(scopeDate.date)
 
-  const subject = `${ACCTG_EMAIL_SUBJ_PREFIX} 01619E Monthly Expanded Witholding Tax: ${submissionDate.formatted} Filing`;
+  const subject = `${ACCTG_EMAIL_SUBJ_PREFIX} 1601EQ Quarterly Expanded Witholding Tax: ${submissionDate.formatted} Filing`;
   const html = template
     .replaceAll(ACCTG_EMAIL_SCOPE_DATE_TOKEN, scopeDate.formatted)
-    .replaceAll(ACCTG_EMAIL_YEAR_MONTH_TOKEN, scopeDatePrefix)
+    .replaceAll(`${ACCTG_EMAIL_MONTH_YEAR_TOKEN}[1]`, firstMonthOfQ.toFormat(FORMATS.MONTH_YEAR))
+    .replaceAll(`${ACCTG_EMAIL_MONTH_YEAR_TOKEN}[2]`, secondMonthOfQ.toFormat(FORMATS.MONTH_YEAR))
+    .replaceAll(`${ACCTG_EMAIL_MONTH_YEAR_TOKEN}[3]`, thirdMonthOfQ.toFormat(FORMATS.MONTH_YEAR))
+    .replaceAll(`${ACCTG_EMAIL_YEAR_MONTH_TOKEN}[1]`, firstMonthOfQ.toFormat(FORMATS.YEAR_MONTH))
+    .replaceAll(`${ACCTG_EMAIL_YEAR_MONTH_TOKEN}[2]`, secondMonthOfQ.toFormat(FORMATS.YEAR_MONTH))
+    .replaceAll(`${ACCTG_EMAIL_YEAR_MONTH_TOKEN}[3]`, thirdMonthOfQ.toFormat(FORMATS.YEAR_MONTH))
     .replaceAll(ACCTG_EMAIL_FOLDER_ID_TOKEN, qfolder.id)
     .replaceAll(ACCTG_EMAIL_FOLDER_NAME_TOKEN, qfolder.name)
     .replaceAll(ACCTG_EMAIL_SIG_SENDER_TOKEN, GMAIL_USER)
