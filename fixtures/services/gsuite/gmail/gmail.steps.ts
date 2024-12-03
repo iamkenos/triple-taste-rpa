@@ -205,7 +205,7 @@ When(/^I send the (quarterly) expanded witholding tax reminder email$/, async fu
 });
 
 When(/^I send the (quarterly) income tax reminder email$/, async function (this: This, freq: string) {
-  const { date } = getDate({ offset: { month: -1 }});
+  const { date } = getDate();
 
   const filingDeadlineDay = 15;
   const emailDay = filingDeadlineDay - 10;
