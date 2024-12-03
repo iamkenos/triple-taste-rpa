@@ -101,7 +101,7 @@ export class GDriveService extends GSuiteService {
     return invoices;
   }
 
-  async getRobbeanBillingInvoicesForCurrentMonth() {
+  async getStaffingBillingInvoicesForCurrentMonth() {
     const { date } = getDate();
     const qfolder = await this.getQFolder(date)
     
