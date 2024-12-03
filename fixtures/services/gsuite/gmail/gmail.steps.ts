@@ -12,6 +12,7 @@ import type { This as BaseThis } from "~/fixtures/pages/base.steps";
 const ACCTG_EMAIL_TEMPLATE_PATH = "resources/email-templates/accounting";
 const ACCTG_EMAIL_DATE_DELIMITER = "_";
 const ACCTG_EMAIL_SUBJ_PREFIX = "[TripleTaste]";
+const ACCTG_EMAIL_SCOPE_ADDRESSEE_TOKEN = "[[ADDRESSEE]]";
 const ACCTG_EMAIL_SCOPE_DATE_TOKEN = "[[SCOPE_DATE]]";
 const ACCTG_EMAIL_MONTH_YEAR_TOKEN = "[[MONTH_YEAR]]";
 const ACCTG_EMAIL_YEAR_MONTH_TOKEN = "[[YEAR_MONTH]]";
@@ -23,6 +24,14 @@ const ACCTG_EMAIL_BKK_VIEW_NAME = "[[EXPENSES_FILE_VIEW_NAME]]";
 const ACCTG_EMAIL_ORDINAL_TOKEN = "[[NTH]]";
 const ACCTG_EMAIL_SIG_SENDER_TOKEN = "[[SENDER_EMAIL]]";
 const ACCTG_EMAIL_SIG_CONTACT_TOKEN = "[[SENDER_CONTACT]]";
+
+const { 
+  GMAIL_USER,
+  ACCTG_EMAIL_REMINDER_ADDRESSEE,
+  ACCTG_EMAIL_REMINDER_RECIPIENTS,
+  ACCTG_EMAIL_REMINDER_RECIPIENTS_CC,
+  ACCTG_EMAIL_REMINDER_SIG_CONTACT_NO,
+} = process.env;
 
 export interface This extends BaseThis {
   gdrive: GDriveService;
@@ -55,7 +64,6 @@ When(/^I send the (monthly) expanded witholding tax reminder email$/, async func
     return Status.SKIPPED.toLowerCase();
   }
 
-  const { GMAIL_USER, ACCTG_EMAIL_REMINDER_RECIPIENTS, ACCTG_EMAIL_REMINDER_RECIPIENTS_CC, ACCTG_EMAIL_REMINDER_SIG_CONTACT_NO } = process.env;
   const templatePath = path.join(world.config.baseDir, ACCTG_EMAIL_TEMPLATE_PATH, freq, "ewt-mtl-0619E.html");
   const template = fs.readFileSync(templatePath, "utf8");
   
@@ -66,6 +74,7 @@ When(/^I send the (monthly) expanded witholding tax reminder email$/, async func
 
   const subject = `${ACCTG_EMAIL_SUBJ_PREFIX} 01619E Monthly Expanded Witholding Tax: ${submissionDate.formatted} Filing`;
   const html = template
+    .replaceAll(ACCTG_EMAIL_SCOPE_ADDRESSEE_TOKEN, ACCTG_EMAIL_REMINDER_ADDRESSEE)
     .replaceAll(ACCTG_EMAIL_SCOPE_DATE_TOKEN, scopeDate.formatted)
     .replaceAll(ACCTG_EMAIL_YEAR_MONTH_TOKEN, scopeDatePrefix)
     .replaceAll(ACCTG_EMAIL_FOLDER_ID_TOKEN, qfolder.id)
@@ -95,7 +104,6 @@ When(/^I send the (monthly) staffing agency 2307 request email$/, async function
     .equals(hasInvoiceForCutoff, true).poll();
   
   const wantedInvoice = isFirstCutoff ? billingInvoicesThisMonth[0] : billingInvoicesThisMonth[1];
-  const { GMAIL_USER, ACCTG_EMAIL_REMINDER_RECIPIENTS, ACCTG_EMAIL_REMINDER_RECIPIENTS_CC, ACCTG_EMAIL_REMINDER_SIG_CONTACT_NO } = process.env;
   const templatePath = path.join(world.config.baseDir, ACCTG_EMAIL_TEMPLATE_PATH, freq, "sfa-mtl-2307.html");
   const template = fs.readFileSync(templatePath, "utf8");
   
@@ -104,6 +112,7 @@ When(/^I send the (monthly) staffing agency 2307 request email$/, async function
 
   const subject = `${ACCTG_EMAIL_SUBJ_PREFIX} 2307 Form Request for Staffing Agency: ${scopeDate.formatted} ${nth} Billing`;
   const html = template
+    .replaceAll(ACCTG_EMAIL_SCOPE_ADDRESSEE_TOKEN, ACCTG_EMAIL_REMINDER_ADDRESSEE)
     .replaceAll(ACCTG_EMAIL_ORDINAL_TOKEN, nth)
     .replaceAll(ACCTG_EMAIL_SCOPE_DATE_TOKEN, scopeDate.formatted)
     .replaceAll(ACCTG_EMAIL_YEAR_MONTH_DAY_TOKEN, wantedInvoice.split(ACCTG_EMAIL_DATE_DELIMITER)[0])
@@ -119,14 +128,12 @@ When(/^I send the (monthly) bookkeeping reminder email$/, async function (this: 
   const { date } = getDate();
 
   const emailDay = 3;
-
   const shouldSendEmail = date.day === emailDay;
 
   if (!shouldSendEmail) {
     return Status.SKIPPED.toLowerCase();
   }
 
-  const { GMAIL_USER, ACCTG_EMAIL_REMINDER_RECIPIENTS, ACCTG_EMAIL_REMINDER_RECIPIENTS_CC, ACCTG_EMAIL_REMINDER_SIG_CONTACT_NO } = process.env;
   const templatePath = path.join(world.config.baseDir, ACCTG_EMAIL_TEMPLATE_PATH, freq, "bkk-mtl-expenses.html");
   const template = fs.readFileSync(templatePath, "utf8");
   
@@ -137,6 +144,7 @@ When(/^I send the (monthly) bookkeeping reminder email$/, async function (this: 
   const expensesFile = await this.gsheets.createRevenueAndExpensesFilterByMonth(scopeDate.date);
   const subject = `${ACCTG_EMAIL_SUBJ_PREFIX} Bookkeeping Expenses: ${scopeDate.formatted}`;
   const html = template
+    .replaceAll(ACCTG_EMAIL_SCOPE_ADDRESSEE_TOKEN, ACCTG_EMAIL_REMINDER_ADDRESSEE)
     .replaceAll(ACCTG_EMAIL_SCOPE_DATE_TOKEN, scopeDate.formatted)
     .replaceAll(ACCTG_EMAIL_YEAR_MONTH_TOKEN, scopeDatePrefix)
     .replaceAll(ACCTG_EMAIL_FOLDER_ID_TOKEN, qfolder.id)
@@ -153,7 +161,7 @@ When(/^I send the (quarterly) expanded witholding tax reminder email$/, async fu
   const { date } = getDate();
 
   const filingDeadlineDay = 25;
-  const emailDay = filingDeadlineDay - 15;
+  const emailDay = filingDeadlineDay - 10;
   const filingMonths = [
     MONTHS.JAN,
     MONTHS.APR,
@@ -181,6 +189,53 @@ When(/^I send the (quarterly) expanded witholding tax reminder email$/, async fu
 
   const subject = `${ACCTG_EMAIL_SUBJ_PREFIX} 1601EQ Quarterly Expanded Witholding Tax: ${submissionDate.formatted} Filing`;
   const html = template
+    .replaceAll(ACCTG_EMAIL_SCOPE_DATE_TOKEN, scopeDate.formatted)
+    .replaceAll(`${ACCTG_EMAIL_MONTH_YEAR_TOKEN}[1]`, firstMonthOfQ.toFormat(FORMATS.MONTH_YEAR))
+    .replaceAll(`${ACCTG_EMAIL_MONTH_YEAR_TOKEN}[2]`, secondMonthOfQ.toFormat(FORMATS.MONTH_YEAR))
+    .replaceAll(`${ACCTG_EMAIL_MONTH_YEAR_TOKEN}[3]`, thirdMonthOfQ.toFormat(FORMATS.MONTH_YEAR))
+    .replaceAll(`${ACCTG_EMAIL_YEAR_MONTH_TOKEN}[1]`, firstMonthOfQ.toFormat(FORMATS.YEAR_MONTH))
+    .replaceAll(`${ACCTG_EMAIL_YEAR_MONTH_TOKEN}[2]`, secondMonthOfQ.toFormat(FORMATS.YEAR_MONTH))
+    .replaceAll(`${ACCTG_EMAIL_YEAR_MONTH_TOKEN}[3]`, thirdMonthOfQ.toFormat(FORMATS.YEAR_MONTH))
+    .replaceAll(ACCTG_EMAIL_FOLDER_ID_TOKEN, qfolder.id)
+    .replaceAll(ACCTG_EMAIL_FOLDER_NAME_TOKEN, qfolder.name)
+    .replaceAll(ACCTG_EMAIL_SIG_SENDER_TOKEN, GMAIL_USER)
+    .replaceAll(ACCTG_EMAIL_SIG_CONTACT_TOKEN, ACCTG_EMAIL_REMINDER_SIG_CONTACT_NO);
+
+  await this.gmail.sendEmail({ to: ACCTG_EMAIL_REMINDER_RECIPIENTS, cc: ACCTG_EMAIL_REMINDER_RECIPIENTS_CC, subject, html });
+});
+
+When(/^I send the (quarterly) income tax reminder email$/, async function (this: This, freq: string) {
+  const { date } = getDate({ offset: { month: -1 }});
+
+  const filingDeadlineDay = 15;
+  const emailDay = filingDeadlineDay - 10;
+  const filingMonths = [
+    MONTHS.FEB,
+    MONTHS.MAY,
+    MONTHS.AUG,
+    MONTHS.NOV,
+  ];
+
+  const shouldFileThisMonth = filingMonths.includes(date.monthShort);
+  const shouldSendEmail = date.day === emailDay && shouldFileThisMonth;
+
+  if (!shouldSendEmail) {
+    return Status.SKIPPED.toLowerCase();
+  }
+
+  const templatePath = path.join(world.config.baseDir, ACCTG_EMAIL_TEMPLATE_PATH, freq, "itr-qtl-1701Q.html");
+  const template = fs.readFileSync(templatePath, "utf8");
+  
+  const submissionDate = getDate({ date, format: FORMATS.MONTH_YEAR });
+  const scopeDate = getDate({ date: date.plus({ quarter: -1 }).endOf("quarter"), format: FORMATS.MONTH_YEAR });
+  const firstMonthOfQ = scopeDate.date.plus({ months: -2 });
+  const secondMonthOfQ = scopeDate.date.plus({ months: -1 });
+  const thirdMonthOfQ = scopeDate.date;
+  const qfolder = await this.gdrive.getQFolder(scopeDate.date)
+
+  const subject = `${ACCTG_EMAIL_SUBJ_PREFIX} 1701Q Quarterly Income Tax: ${submissionDate.formatted} Filing`;
+  const html = template
+    .replaceAll(ACCTG_EMAIL_SCOPE_ADDRESSEE_TOKEN, ACCTG_EMAIL_REMINDER_ADDRESSEE)
     .replaceAll(ACCTG_EMAIL_SCOPE_DATE_TOKEN, scopeDate.formatted)
     .replaceAll(`${ACCTG_EMAIL_MONTH_YEAR_TOKEN}[1]`, firstMonthOfQ.toFormat(FORMATS.MONTH_YEAR))
     .replaceAll(`${ACCTG_EMAIL_MONTH_YEAR_TOKEN}[2]`, secondMonthOfQ.toFormat(FORMATS.MONTH_YEAR))
