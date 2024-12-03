@@ -28,6 +28,7 @@ jobs:
           GDRIVE_RECEIPTS_FOLDER: "${{ secrets.GDRIVE_RECEIPTS_FOLDER }}"
           GDRIVE_CLIENT_EMAIL: "${{ secrets.GDRIVE_CLIENT_EMAIL }}"
           GDRIVE_PKEY: "${{ secrets.GDRIVE_PKEY }}"
+          GSHEETS_REVENUE_AND_EXPENSES_ID: "${{ secrets.GSHEETS_REVENUE_AND_EXPENSES_ID }}"
           GMAIL_USER: "${{ secrets.GMAIL_USER }}"
           GMAIL_PASS: "${{ secrets.GMAIL_PASS }}"
           ACCTG_EMAIL_REMINDER_RECIPIENTS: "${{ secrets.ACCTG_EMAIL_REMINDER_RECIPIENTS }}"

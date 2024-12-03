@@ -1,7 +1,8 @@
 import nodemailer from "nodemailer";
-import { BasePage as BaseService } from "~/fixtures/pages/base.page";
 
-export class GMailService extends BaseService {
+import { GSuiteService } from "~/fixtures/services/gsuite/gsuite.service";
+
+export class GMailService extends GSuiteService {
   url = "";
   title = "";
 
@@ -25,6 +26,6 @@ export class GMailService extends BaseService {
     const { connection, from } = this.mail;
     const { to, cc, subject, html } = args;
 
-    await connection.sendMail({ from, to, cc, subject, html });
+    await connection.sendMail({ from, to, cc, subject: subject, html });
   }
 }

@@ -3,13 +3,12 @@ import path from "path";
 
 import { google } from "googleapis";
 import { GetFileList, GetFolderTree } from "google-drive-getfilelist";
-
+import { GSuiteService } from "~/fixtures/services/gsuite/gsuite.service";
 import { getDate } from "~/fixtures/utils/date";
-import { BasePage as BaseService } from "~/fixtures/pages/base.page";
 
 import type { DateTime } from "luxon";
 
-export class GDriveService extends BaseService {
+export class GDriveService extends GSuiteService {
   url = "https://www.googleapis.com/auth/drive";
   title = "";
 
@@ -18,9 +17,7 @@ export class GDriveService extends BaseService {
   private RECIEPTS_Q_FOLDER_NAME_FORMAT = "yyyy-Qq";
 
   private connect() {
-    const { GDRIVE_CLIENT_EMAIL, GDRIVE_PKEY } = process.env;
-    const { JWT } = google.auth;
-    const auth = new JWT(GDRIVE_CLIENT_EMAIL, null, GDRIVE_PKEY.replace(/\|/g,"\n"), [this.url]);
+    const auth = this.auth()
     const connection = google.drive({ version: "v3", auth });
     return { auth, connection };
   }
