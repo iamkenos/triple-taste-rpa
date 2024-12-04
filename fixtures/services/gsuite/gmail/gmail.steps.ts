@@ -48,8 +48,6 @@ Before({}, async function (this: This) {
 When(/^I send the (monthly) expanded witholding tax reminder email$/, async function (this: This, freq: string) {
   const { date } = getDate();
 
-  const filingDeadlineDay = 10;
-  const emailDay = filingDeadlineDay - 5;
   const filingMonths = [
     MONTHS.FEB, MONTHS.MAR,
     MONTHS.MAY, MONTHS.JUN,
@@ -58,8 +56,13 @@ When(/^I send the (monthly) expanded witholding tax reminder email$/, async func
   ];
 
   const shouldFileThisMonth = filingMonths.includes(date.monthShort);
-  const shouldSendEmail = date.day === emailDay && shouldFileThisMonth;
+  if (!shouldFileThisMonth) {
+    return Status.SKIPPED.toLowerCase();
+  }
 
+  const filingDeadlineDay = 10;
+  const emailDay = filingDeadlineDay - 5;
+  const shouldSendEmail = date.day === emailDay;
   if (!shouldSendEmail) {
     return Status.SKIPPED.toLowerCase();
   }
@@ -160,8 +163,6 @@ When(/^I send the (monthly) bookkeeping reminder email$/, async function (this: 
 When(/^I send the (quarterly) expanded witholding tax reminder email$/, async function (this: This, freq: string) {
   const { date } = getDate();
 
-  const filingDeadlineDay = 25;
-  const emailDay = filingDeadlineDay - 10;
   const filingMonths = [
     MONTHS.JAN,
     MONTHS.APR,
@@ -170,8 +171,13 @@ When(/^I send the (quarterly) expanded witholding tax reminder email$/, async fu
   ];
 
   const shouldFileThisMonth = filingMonths.includes(date.monthShort);
-  const shouldSendEmail = date.day === emailDay && shouldFileThisMonth;
+  if (!shouldFileThisMonth) {
+    return Status.SKIPPED.toLowerCase();
+  }
 
+  const filingDeadlineDay = 25;
+  const emailDay = filingDeadlineDay - 10;
+  const shouldSendEmail = date.day === emailDay;
   if (!shouldSendEmail) {
     return Status.SKIPPED.toLowerCase();
   }
@@ -207,8 +213,6 @@ When(/^I send the (quarterly) expanded witholding tax reminder email$/, async fu
 When(/^I send the (quarterly) income tax reminder email$/, async function (this: This, freq: string) {
   const { date } = getDate();
 
-  const filingDeadlineDay = 15;
-  const emailDay = filingDeadlineDay - 10;
   const filingMonths = [
     MONTHS.FEB,
     MONTHS.MAY,
@@ -217,8 +221,13 @@ When(/^I send the (quarterly) income tax reminder email$/, async function (this:
   ];
 
   const shouldFileThisMonth = filingMonths.includes(date.monthShort);
-  const shouldSendEmail = date.day === emailDay && shouldFileThisMonth;
+  if (!shouldFileThisMonth) {
+    return Status.SKIPPED.toLowerCase();
+  }
 
+  const filingDeadlineDay = 15;
+  const emailDay = filingDeadlineDay - 10;
+  const shouldSendEmail = date.day === emailDay;
   if (!shouldSendEmail) {
     return Status.SKIPPED.toLowerCase();
   }
@@ -254,7 +263,6 @@ When(/^I send the (quarterly) income tax reminder email$/, async function (this:
 When(/^I send the (quarterly) percentage tax reminder email$/, async function (this: This, freq: string) {
   const { date } = getDate();
 
-  const emailDay = 20;
   const filingMonths = [
     MONTHS.JAN,
     MONTHS.APR,
@@ -263,7 +271,13 @@ When(/^I send the (quarterly) percentage tax reminder email$/, async function (t
   ];
 
   const shouldFileThisMonth = filingMonths.includes(date.monthShort);
-  const shouldSendEmail = date.day === emailDay && shouldFileThisMonth;
+  if (!shouldFileThisMonth) {
+    return Status.SKIPPED.toLowerCase();
+  }
+
+  const filingDeadlineDay = date.endOf("month").day;
+  const emailDay = filingDeadlineDay - 10;
+  const shouldSendEmail = date.day === emailDay;
 
   if (!shouldSendEmail) {
     return Status.SKIPPED.toLowerCase();
@@ -279,6 +293,94 @@ When(/^I send the (quarterly) percentage tax reminder email$/, async function (t
   const html = template
     .replaceAll(ACCTG_EMAIL_SCOPE_ADDRESSEE_TOKEN, ACCTG_EMAIL_REMINDER_ADDRESSEE)
     .replaceAll(ACCTG_EMAIL_SCOPE_DATE_TOKEN, scopeDate.formatted)
+    .replaceAll(ACCTG_EMAIL_SIG_SENDER_TOKEN, GMAIL_USER)
+    .replaceAll(ACCTG_EMAIL_SIG_CONTACT_TOKEN, ACCTG_EMAIL_REMINDER_SIG_CONTACT_NO);
+
+  await this.gmail.sendEmail({ to: ACCTG_EMAIL_REMINDER_RECIPIENTS, cc: ACCTG_EMAIL_REMINDER_RECIPIENTS_CC, subject, html });
+});
+
+When(/^I send the (yearly) expanded witholding tax reminder email$/, async function (this: This, freq: string) {
+  const { date } = getDate();
+
+  const filingMonths = [MONTHS.MAR];
+  const shouldFileThisMonth = filingMonths.includes(date.monthShort);
+  if (!shouldFileThisMonth) {
+    return Status.SKIPPED.toLowerCase();
+  }
+  
+  const filingDeadlineDay = date.endOf("month").day;
+  const emailDay = filingDeadlineDay - 20;
+  const shouldSendEmail = date.day === emailDay;
+  if (!shouldSendEmail) {
+    return Status.SKIPPED.toLowerCase();
+  }
+
+  const templatePath = path.join(world.config.baseDir, ACCTG_EMAIL_TEMPLATE_PATH, freq, "ewt-anl-1604E.html");
+  const template = fs.readFileSync(templatePath, "utf8");
+  
+  const submissionDate = getDate({ date, format: FORMATS.MONTH_YEAR });
+  const scopeDate = getDate({ date: date.plus({ year: -1 }).startOf("year"), format: FORMATS.YYYY });
+  const q1folder = await this.gdrive.getQFolder(scopeDate.date)
+  const q2folder = await this.gdrive.getQFolder(scopeDate.date.plus({ quarter: 1 }))
+  const q3folder = await this.gdrive.getQFolder(scopeDate.date.plus({ quarter: 2 }))
+  const q4folder = await this.gdrive.getQFolder(scopeDate.date.plus({ quarter: 3 }))
+
+  const subject = `${ACCTG_EMAIL_SUBJ_PREFIX} 1604E Annual Expanded Witholding Tax: ${submissionDate.formatted} Filing`;
+  const html = template
+    .replaceAll(ACCTG_EMAIL_SCOPE_ADDRESSEE_TOKEN, ACCTG_EMAIL_REMINDER_ADDRESSEE)
+    .replaceAll(ACCTG_EMAIL_SCOPE_DATE_TOKEN, scopeDate.formatted)
+    .replaceAll(`${ACCTG_EMAIL_FOLDER_ID_TOKEN}[1]`, q1folder.id)
+    .replaceAll(`${ACCTG_EMAIL_FOLDER_NAME_TOKEN}[1]`, q1folder.name)
+    .replaceAll(`${ACCTG_EMAIL_FOLDER_ID_TOKEN}[2]`, q2folder.id)
+    .replaceAll(`${ACCTG_EMAIL_FOLDER_NAME_TOKEN}[2]`, q2folder.name)
+    .replaceAll(`${ACCTG_EMAIL_FOLDER_ID_TOKEN}[3]`, q3folder.id)
+    .replaceAll(`${ACCTG_EMAIL_FOLDER_NAME_TOKEN}[3]`, q3folder.name)
+    .replaceAll(`${ACCTG_EMAIL_FOLDER_ID_TOKEN}[4]`, q4folder.id)
+    .replaceAll(`${ACCTG_EMAIL_FOLDER_NAME_TOKEN}[4]`, q4folder.name)
+    .replaceAll(ACCTG_EMAIL_SIG_SENDER_TOKEN, GMAIL_USER)
+    .replaceAll(ACCTG_EMAIL_SIG_CONTACT_TOKEN, ACCTG_EMAIL_REMINDER_SIG_CONTACT_NO);
+
+  await this.gmail.sendEmail({ to: ACCTG_EMAIL_REMINDER_RECIPIENTS, cc: ACCTG_EMAIL_REMINDER_RECIPIENTS_CC, subject, html });
+});
+
+When(/^I send the (yearly) income tax reminder email$/, async function (this: This, freq: string) {
+  const { date } = getDate();
+
+  const filingMonths = [MONTHS.APR];
+  const shouldFileThisMonth = filingMonths.includes(date.monthShort);
+  if (!shouldFileThisMonth) {
+    return Status.SKIPPED.toLowerCase();
+  }
+  
+  const filingDeadlineDay = 15;
+  const emailDay = filingDeadlineDay - 20;
+  const shouldSendEmail = date.day === emailDay;
+  if (!shouldSendEmail) {
+    return Status.SKIPPED.toLowerCase();
+  }
+
+  const templatePath = path.join(world.config.baseDir, ACCTG_EMAIL_TEMPLATE_PATH, freq, "itr-anl-1701.html");
+  const template = fs.readFileSync(templatePath, "utf8");
+  
+  const submissionDate = getDate({ date, format: FORMATS.MONTH_YEAR });
+  const scopeDate = getDate({ date: date.plus({ year: -1 }).startOf("year"), format: FORMATS.YYYY });
+  const q1folder = await this.gdrive.getQFolder(scopeDate.date)
+  const q2folder = await this.gdrive.getQFolder(scopeDate.date.plus({ quarter: 1 }))
+  const q3folder = await this.gdrive.getQFolder(scopeDate.date.plus({ quarter: 2 }))
+  const q4folder = await this.gdrive.getQFolder(scopeDate.date.plus({ quarter: 3 }))
+
+  const subject = `${ACCTG_EMAIL_SUBJ_PREFIX} 1701 Annual Income Tax: ${submissionDate.formatted} Filing`;
+  const html = template
+    .replaceAll(ACCTG_EMAIL_SCOPE_ADDRESSEE_TOKEN, ACCTG_EMAIL_REMINDER_ADDRESSEE)
+    .replaceAll(ACCTG_EMAIL_SCOPE_DATE_TOKEN, scopeDate.formatted)
+    .replaceAll(`${ACCTG_EMAIL_FOLDER_ID_TOKEN}[1]`, q1folder.id)
+    .replaceAll(`${ACCTG_EMAIL_FOLDER_NAME_TOKEN}[1]`, q1folder.name)
+    .replaceAll(`${ACCTG_EMAIL_FOLDER_ID_TOKEN}[2]`, q2folder.id)
+    .replaceAll(`${ACCTG_EMAIL_FOLDER_NAME_TOKEN}[2]`, q2folder.name)
+    .replaceAll(`${ACCTG_EMAIL_FOLDER_ID_TOKEN}[3]`, q3folder.id)
+    .replaceAll(`${ACCTG_EMAIL_FOLDER_NAME_TOKEN}[3]`, q3folder.name)
+    .replaceAll(`${ACCTG_EMAIL_FOLDER_ID_TOKEN}[4]`, q4folder.id)
+    .replaceAll(`${ACCTG_EMAIL_FOLDER_NAME_TOKEN}[4]`, q4folder.name)
     .replaceAll(ACCTG_EMAIL_SIG_SENDER_TOKEN, GMAIL_USER)
     .replaceAll(ACCTG_EMAIL_SIG_CONTACT_TOKEN, ACCTG_EMAIL_REMINDER_SIG_CONTACT_NO);
 
