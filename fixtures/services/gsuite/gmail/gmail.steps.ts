@@ -141,7 +141,7 @@ When(/^I send the (monthly) bookkeeping reminder email$/, async function (this: 
   const scopeDatePrefix = getDate({ date, offset: { months: -1 }, format: FORMATS.YEAR_MONTH }).formatted;
   const qfolder = await this.gdrive.getQFolder(scopeDate.date)
 
-  const expensesFile = await this.gsheets.createRevenueAndExpensesFilterByMonth(scopeDate.date);
+  const expensesFile = await this.gsheets.createRevenueAndExpensesFilterByMonthForExpenses(scopeDate.date);
   const subject = `${ACCTG_EMAIL_SUBJ_PREFIX} Bookkeeping Expenses: ${scopeDate.formatted}`;
   const html = template
     .replaceAll(ACCTG_EMAIL_SCOPE_ADDRESSEE_TOKEN, ACCTG_EMAIL_REMINDER_ADDRESSEE)

@@ -4,7 +4,6 @@ import path from "path";
 import { google } from "googleapis";
 import { GetFileList, GetFolderTree } from "google-drive-getfilelist";
 import { GSuiteService } from "~/fixtures/services/gsuite/gsuite.service";
-import { getDate } from "~/fixtures/utils/date";
 
 import type { DateTime } from "luxon";
 

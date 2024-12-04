@@ -1,5 +1,6 @@
 import { google } from "googleapis";
 import { GSuiteService } from "~/fixtures/services/gsuite/gsuite.service";
+import { GAppsScript } from "~/fixtures/services/gappsscript/gappsscript.service";
 
 import type { DateTime } from "luxon";
 
@@ -7,7 +8,11 @@ export class GSheetsService extends GSuiteService {
   url = "https://www.googleapis.com/auth/spreadsheets";
   title = "";
 
+  RVE_REVENUE_SHEET = "Revenue Records";
+  RVE_EXPENSES_SHEET = "Expense Records";
+
   private sheets = this.connect();
+  private scriptssvc = new GAppsScript();
 
   private connect() {
     const auth = this.auth();
@@ -41,7 +46,13 @@ export class GSheetsService extends GSuiteService {
     return filterView ? filterView.filterViewId : undefined;
   }
 
-  async createRevenueAndExpensesFilterByMonth(from: DateTime) {
+  async updateRevenueAndExpensesSheetDataForExpenses(values: any[]) {
+    const { GAPPSSCRIPT_REVENUE_AND_EXPENSES_ID } = process.env;
+    const parameters = [this.RVE_EXPENSES_SHEET, [values]];
+    await this.scriptssvc.runFn({ scriptId: GAPPSSCRIPT_REVENUE_AND_EXPENSES_ID, fnName: "setValues", parameters });
+  }
+
+  async createRevenueAndExpensesFilterByMonthForExpenses(from: DateTime) {
     const { GSHEETS_REVENUE_AND_EXPENSES_ID } = process.env;
     const { connection } = this.sheets;
 
@@ -51,7 +62,7 @@ export class GSheetsService extends GSuiteService {
     const end = serializeToGSheetsDate(from.endOf("month"));
     
     const filterTitle = `Expenses ${from.monthShort} ${from.year}`;
-    const sheet = await this.getSheetIdByName(GSHEETS_REVENUE_AND_EXPENSES_ID, "Expense Records");
+    const sheet = await this.getSheetIdByName(GSHEETS_REVENUE_AND_EXPENSES_ID, this.RVE_EXPENSES_SHEET);
     const existingFilter = await this.getFilterView(GSHEETS_REVENUE_AND_EXPENSES_ID, sheet, filterTitle);
     
     if (existingFilter) {
