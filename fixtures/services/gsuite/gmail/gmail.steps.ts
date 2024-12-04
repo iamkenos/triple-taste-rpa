@@ -250,3 +250,37 @@ When(/^I send the (quarterly) income tax reminder email$/, async function (this:
 
   await this.gmail.sendEmail({ to: ACCTG_EMAIL_REMINDER_RECIPIENTS, cc: ACCTG_EMAIL_REMINDER_RECIPIENTS_CC, subject, html });
 });
+
+When(/^I send the (quarterly) percentage tax reminder email$/, async function (this: This, freq: string) {
+  const { date } = getDate();
+
+  const emailDay = 20;
+  const filingMonths = [
+    MONTHS.JAN,
+    MONTHS.APR,
+    MONTHS.JUL,
+    MONTHS.OCT,
+  ];
+
+  const shouldFileThisMonth = filingMonths.includes(date.monthShort);
+  const shouldSendEmail = date.day === emailDay && shouldFileThisMonth;
+
+  if (!shouldSendEmail) {
+    return Status.SKIPPED.toLowerCase();
+  }
+
+  const templatePath = path.join(world.config.baseDir, ACCTG_EMAIL_TEMPLATE_PATH, freq, "ptr-qtl-2551Q.html");
+  const template = fs.readFileSync(templatePath, "utf8");
+  
+  const submissionDate = getDate({ date, format: FORMATS.MONTH_YEAR });
+  const scopeDate = getDate({ date: date.plus({ quarter: -1 }).endOf("quarter"), format: FORMATS.MONTH_YEAR });
+
+  const subject = `${ACCTG_EMAIL_SUBJ_PREFIX} 2551Q Quarterly Percentage Tax: ${submissionDate.formatted} Filing`;
+  const html = template
+    .replaceAll(ACCTG_EMAIL_SCOPE_ADDRESSEE_TOKEN, ACCTG_EMAIL_REMINDER_ADDRESSEE)
+    .replaceAll(ACCTG_EMAIL_SCOPE_DATE_TOKEN, scopeDate.formatted)
+    .replaceAll(ACCTG_EMAIL_SIG_SENDER_TOKEN, GMAIL_USER)
+    .replaceAll(ACCTG_EMAIL_SIG_CONTACT_TOKEN, ACCTG_EMAIL_REMINDER_SIG_CONTACT_NO);
+
+  await this.gmail.sendEmail({ to: ACCTG_EMAIL_REMINDER_RECIPIENTS, cc: ACCTG_EMAIL_REMINDER_RECIPIENTS_CC, subject, html });
+});
