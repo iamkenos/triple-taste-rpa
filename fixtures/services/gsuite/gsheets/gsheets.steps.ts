@@ -13,8 +13,6 @@ Before({}, async function (this: This) {
 });
 
 When("I enter the monthly accountant fees to the revenue and expenses sheet", async function (this: This) {
-  return Status.PENDING.toLowerCase();
-
   const { date, formatted } = getDate({ format: FORMATS.DDMMMYY });
 
   const updateDay = 27;
@@ -24,12 +22,10 @@ When("I enter the monthly accountant fees to the revenue and expenses sheet", as
     return Status.SKIPPED.toLowerCase();
   }
 
-  await this.gsheets.updateRevenueAndExpensesSheetDataForExpenses([formatted, "Accountant", 2530, "TEST Accountant Fees + Charges"])
+  await this.gsheets.updateRevenueAndExpensesSheetDataForExpenses([formatted, "Accountant", 2530, "Accountant Fees + Charges"])
 });
 
 When("I enter the monthly rent fees to the revenue and expenses sheet", async function (this: This) {
-  return Status.PENDING.toLowerCase();
-
   const { date, formatted } = getDate({ format: FORMATS.DDMMMYY });
 
   const updateDay = getDate().date.startOf("month").day;

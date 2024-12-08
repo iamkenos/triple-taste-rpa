@@ -37,6 +37,47 @@ export class GSheetsService extends GSuiteService {
     }
   }
 
+  private async insertRows(spreadsheetId: string, sheetName: string, startIndex: number, endIndex:  number) {
+    const { connection, auth } = this.sheets;
+    const sheetId = await this.getSheetIdByName(spreadsheetId, sheetName);
+    
+    await connection.spreadsheets.batchUpdate({
+      auth,
+      spreadsheetId,
+      requestBody: {
+        requests: [
+          {
+            insertDimension: {
+              range: {
+                sheetId,
+                dimension: 'ROWS',
+                startIndex, 
+                endIndex,
+              },
+            },
+          },
+          {
+            copyPaste: {
+              source: {
+                sheetId,
+                startRowIndex: endIndex,
+                endRowIndex: endIndex + 1,
+                startColumnIndex: 0,
+              },
+              destination: {
+                sheetId,
+                startRowIndex: startIndex, 
+                endRowIndex: endIndex,
+                startColumnIndex: 0,
+              },
+              pasteType: 'PASTE_FORMULA',
+            },
+          },
+        ],
+      },
+    });
+  }
+
   private async getFilterView(spreadsheetId: string, sheetId: number, filterViewName: string) {
     const { connection } = this.sheets;
     const response = await connection.spreadsheets.get({ spreadsheetId });
@@ -47,9 +88,22 @@ export class GSheetsService extends GSuiteService {
   }
 
   async updateRevenueAndExpensesSheetDataForExpenses(values: any[]) {
-    const { GAPPSSCRIPT_REVENUE_AND_EXPENSES_ID } = process.env;
-    const parameters = [this.RVE_EXPENSES_SHEET, [values]];
-    await this.scriptssvc.runFn({ scriptId: GAPPSSCRIPT_REVENUE_AND_EXPENSES_ID, fnName: "setValues", parameters });
+    const { GSHEETS_REVENUE_AND_EXPENSES_ID } = process.env;
+    const { connection, auth } = this.sheets;
+
+    const spreadsheetId = GSHEETS_REVENUE_AND_EXPENSES_ID;
+    const sheetName = this.RVE_EXPENSES_SHEET;
+    
+    await this.insertRows(spreadsheetId, sheetName, 1, 2)
+    await connection.spreadsheets.values.update({
+      auth,
+      spreadsheetId,
+      range: `${this.RVE_EXPENSES_SHEET}!A2:D2`,
+      valueInputOption: 'USER_ENTERED',
+      requestBody: {
+        values: [values],
+      },
+    });
   }
 
   async createRevenueAndExpensesFilterByMonthForExpenses(from: DateTime) {

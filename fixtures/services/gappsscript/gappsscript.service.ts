@@ -25,6 +25,7 @@ export class GAppsScript extends GSuiteService {
       },
     };
     // TODO: FIX ME
+    // see `.run` documentation for details.
     await connection.scripts.run(request);
   }
 }

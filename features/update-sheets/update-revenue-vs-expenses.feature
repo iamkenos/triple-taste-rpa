@@ -4,4 +4,4 @@ Feature: Update Revenue vs Expenses Sheets
     When I enter the monthly accountant fees to the revenue and expenses sheet
 
   Scenario: Monthly Rent Fees
-    When I enter the monthly accountant fees to the revenue and expenses sheet
+    When I enter the monthly rent fees to the revenue and expenses sheet
