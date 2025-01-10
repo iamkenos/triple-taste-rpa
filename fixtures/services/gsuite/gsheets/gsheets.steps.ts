@@ -37,3 +37,16 @@ When("I enter the monthly rent fees to the revenue and expenses sheet", async fu
 
   await this.gsheets.updateRevenueAndExpensesSheetDataForExpenses([formatted, "Rental", 40550, `${date.toFormat(FORMATS.MONTH)} Rental`])
 });
+
+When("I enter the monthly storage fees to the revenue and expenses sheet", async function (this: This) {
+  const { date, formatted } = getDate({ format: FORMATS.DDMMMYY });
+
+  const updateDay = 15;
+  const shouldUpdate = date.day === updateDay;
+
+  if (!shouldUpdate) {
+    return Status.SKIPPED.toLowerCase();
+  }
+
+  await this.gsheets.updateRevenueAndExpensesSheetDataForExpenses([formatted, "Rental", 5030, `${date.toFormat(FORMATS.MONTH)} Storage Rent + Service Fee`])
+});
