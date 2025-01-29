@@ -91,22 +91,20 @@ When(/^I send the (monthly) expanded witholding tax reminder email$/, async func
 When(/^I send the (monthly) staffing agency 2307 request email$/, async function (this: This, freq: string) {
   const { date } = getDate();
 
-  const billingInvoiceUploadDays = [12, 24];
-  const isFirstCutoff = date.day === billingInvoiceUploadDays[0];
-  const isSecondCutoff = date.day === billingInvoiceUploadDays[1];
+  const emailDay = 27;
+  const shouldSendEmail = date.day === emailDay;
 
-  if (!isFirstCutoff && !isSecondCutoff) {
+  if (!shouldSendEmail) {
     return Status.SKIPPED.toLowerCase();
   }
 
   const billingInvoicesThisMonth = await this.gdrive.getStaffingBillingInvoicesForMonthOf(date);
-  const hasInvoiceForCutoff = isFirstCutoff ? billingInvoicesThisMonth.length > 0 : billingInvoicesThisMonth.length > 1;
-  const nth = formatOrdinal(isFirstCutoff ? 1 : 2)
+  const areAllInvoicesUploaded = billingInvoicesThisMonth.length == 2;
+  const nth = billingInvoicesThisMonth.map((_, index) => formatOrdinal(index + 1)).join(" & ");
   await this.page.expect()
-    .setName(`Staffing billing invoice for ${nth} cutoff should exist.`)
-    .equals(hasInvoiceForCutoff, true).poll();
+    .setName(`Staffing billing invoice should be uploaded in the drive.`)
+    .equals(areAllInvoicesUploaded, true).poll();
   
-  const wantedInvoice = isFirstCutoff ? billingInvoicesThisMonth[0] : billingInvoicesThisMonth[1];
   const templatePath = path.join(world.config.baseDir, ACCTG_EMAIL_TEMPLATE_PATH, freq, "sfa-mtl-2307.html");
   const template = fs.readFileSync(templatePath, "utf8");
   
@@ -118,7 +116,7 @@ When(/^I send the (monthly) staffing agency 2307 request email$/, async function
     .replaceAll(ACCTG_EMAIL_SCOPE_ADDRESSEE_TOKEN, ACCTG_EMAIL_REMINDER_ADDRESSEE)
     .replaceAll(ACCTG_EMAIL_ORDINAL_TOKEN, nth)
     .replaceAll(ACCTG_EMAIL_SCOPE_DATE_TOKEN, scopeDate.formatted)
-    .replaceAll(ACCTG_EMAIL_YEAR_MONTH_DAY_TOKEN, wantedInvoice.split(ACCTG_EMAIL_DATE_DELIMITER)[0])
+    .replaceAll(ACCTG_EMAIL_YEAR_MONTH_TOKEN, billingInvoicesThisMonth[0].split(ACCTG_EMAIL_DATE_DELIMITER)[0].slice(0, 6))
     .replaceAll(ACCTG_EMAIL_FOLDER_ID_TOKEN, qfolder.id)
     .replaceAll(ACCTG_EMAIL_FOLDER_NAME_TOKEN, qfolder.name)
     .replaceAll(ACCTG_EMAIL_SIG_SENDER_TOKEN, GMAIL_USER)
