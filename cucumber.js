@@ -1,3 +1,5 @@
 const { configure } = require('@iamkenos/kyoko/config');
 
-exports.default = configure();
+exports.default = configure({
+  shouldUseVideoAttachment: true
+});
