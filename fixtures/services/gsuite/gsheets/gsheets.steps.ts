@@ -66,19 +66,6 @@ When("I enter the weekly mobile data charges to the revenue and expenses sheet",
   await this.gsheets.updateRevenueAndExpensesSheetDataForExpenses([formatted, "Service Fee", 2, `For Ops Sim Load ${formatted}`])
 });
 
-When("I enter the weekly mobile data charges to the revenue and expenses sheet", async function (this: This) {
-  const { date, formatted } = getDate({ format: FORMATS.DDMMMYY });
-
-  const shouldUpdate = date.weekday === 7;
-
-  if (!shouldUpdate) {
-    return Status.SKIPPED.toLowerCase();
-  }
-
-  await this.gsheets.updateRevenueAndExpensesSheetDataForExpenses([formatted, "Mobile Data", 99, `${date.toFormat(FORMATS.MONTH)} Ops Sim Load`])
-  await this.gsheets.updateRevenueAndExpensesSheetDataForExpenses([formatted, "Service Fee", 2, `For Ops Sim Load ${formatted}`])
-});
-
 When("I enter the weekly gcash transfer fees to the revenue and expenses sheet", async function (this: This) {
   const { date, formatted } = getDate({ format: FORMATS.DDMMMYY });
 
