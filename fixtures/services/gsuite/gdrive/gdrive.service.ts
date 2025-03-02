@@ -4,6 +4,7 @@ import path from "path";
 import { google } from "googleapis";
 import { GetFileList, GetFolderTree } from "google-drive-getfilelist";
 import { GSuiteService } from "~/fixtures/services/gsuite/gsuite.service";
+import { FORMATS } from "~/fixtures/utils/date";
 
 import type { DateTime } from "luxon";
 
@@ -13,7 +14,7 @@ export class GDriveService extends GSuiteService {
 
   private drive = this.connect();
   private fields = "files(name,id)";
-  private RECIEPTS_Q_FOLDER_NAME_FORMAT = "yyyy-Qq";
+  private RECIEPTS_Q_FOLDER_NAME_FORMAT = FORMATS.YEAR_QUARTER.replace(" ", "-");
 
   private connect() {
     const auth = this.auth()
@@ -66,7 +67,7 @@ export class GDriveService extends GSuiteService {
     const { names, id: ids } = await this.getFolderTree(GDRIVE_RECEIPTS_FOLDER);
     const index = names.findIndex((i) => i == name);
     const isCurrentDayQFolderExisting = index >= 0
-    
+
     if (isCurrentDayQFolderExisting) {
       const [, id] = ids[index];
       return id;
@@ -74,7 +75,7 @@ export class GDriveService extends GSuiteService {
       const response = await this.createFolder({ name, folderId: GDRIVE_RECEIPTS_FOLDER });
       const { id } = response.data
       return id;
-    } 
+    }
   }
 
   async getQFolder(date: DateTime) {
@@ -102,7 +103,7 @@ export class GDriveService extends GSuiteService {
 
   async getStaffingBillingInvoicesForMonthOf(date: DateTime) {
     const qfolder = await this.getQFolder(date)
-    
+
     const { fileList } = await this.getFileList(qfolder.id)
     if (fileList.length > 0) {
       const { files } = fileList[0];

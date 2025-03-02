@@ -25,6 +25,8 @@ export const FORMATS = {
   YEAR_MONTH: "yyyyMM",
   YEAR_MONTH_DAY: "yyyyMMdd",
   QUARTER_YEAR: "Qq yyyy",
+  YEAR_QUARTER: "yyyy Qq",
+  DDMMM: "dd-MMM",
   YYYY: "yyyy",
   MONTH: "MMMM",
   DDMMMYY: "dd-MMM-yy",
