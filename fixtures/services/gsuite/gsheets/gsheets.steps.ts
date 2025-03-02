@@ -22,7 +22,8 @@ When("I enter the monthly accountant fees to the revenue and expenses sheet", as
     return Status.SKIPPED.toLowerCase();
   }
 
-  await this.gsheets.updateRevenueAndExpensesSheetDataForExpenses([formatted, "Accountant", 2530, "Accountant Fees + Charges"])
+  await this.gsheets.updateRevenueAndExpensesSheetDataForExpenses([formatted, "Accountant", 2500, "Accountant Fees"])
+  await this.gsheets.updateRevenueAndExpensesSheetDataForExpenses([formatted, "Service Fee", 30, `For Accountant Fees ${formatted}`])
 });
 
 When("I enter the monthly rent fees to the revenue and expenses sheet", async function (this: This) {
@@ -48,5 +49,44 @@ When("I enter the monthly storage fees to the revenue and expenses sheet", async
     return Status.SKIPPED.toLowerCase();
   }
 
-  await this.gsheets.updateRevenueAndExpensesSheetDataForExpenses([formatted, "Rental", 5030, `${date.toFormat(FORMATS.MONTH)} Storage Rent + Service Fee`])
+  await this.gsheets.updateRevenueAndExpensesSheetDataForExpenses([formatted, "Rental", 5000, `${date.toFormat(FORMATS.MONTH)} Storage Rent`])
+  await this.gsheets.updateRevenueAndExpensesSheetDataForExpenses([formatted, "Service Fee", 30, `For Storage Rent ${formatted}`])
+});
+
+When("I enter the weekly mobile data charges to the revenue and expenses sheet", async function (this: This) {
+  const { date, formatted } = getDate({ format: FORMATS.DDMMMYY });
+
+  const shouldUpdate = date.weekday === 7;
+
+  if (!shouldUpdate) {
+    return Status.SKIPPED.toLowerCase();
+  }
+
+  await this.gsheets.updateRevenueAndExpensesSheetDataForExpenses([formatted, "Mobile Data", 99, `${date.toFormat(FORMATS.MONTH)} Ops Sim Load`])
+  await this.gsheets.updateRevenueAndExpensesSheetDataForExpenses([formatted, "Service Fee", 2, `For Ops Sim Load ${formatted}`])
+});
+
+When("I enter the weekly mobile data charges to the revenue and expenses sheet", async function (this: This) {
+  const { date, formatted } = getDate({ format: FORMATS.DDMMMYY });
+
+  const shouldUpdate = date.weekday === 7;
+
+  if (!shouldUpdate) {
+    return Status.SKIPPED.toLowerCase();
+  }
+
+  await this.gsheets.updateRevenueAndExpensesSheetDataForExpenses([formatted, "Mobile Data", 99, `${date.toFormat(FORMATS.MONTH)} Ops Sim Load`])
+  await this.gsheets.updateRevenueAndExpensesSheetDataForExpenses([formatted, "Service Fee", 2, `For Ops Sim Load ${formatted}`])
+});
+
+When("I enter the weekly gcash transfer fees to the revenue and expenses sheet", async function (this: This) {
+  const { date, formatted } = getDate({ format: FORMATS.DDMMMYY });
+
+  const shouldUpdate = date.weekday === 7;
+
+  if (!shouldUpdate) {
+    return Status.SKIPPED.toLowerCase();
+  }
+
+  await this.gsheets.updateRevenueAndExpensesSheetDataForExpenses([formatted, "Service Fee", 30, `For GCash Transfer ${formatted}`])
 });

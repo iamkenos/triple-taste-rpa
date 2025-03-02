@@ -8,3 +8,9 @@ Feature: Update Revenue vs Expenses Sheets
 
   Scenario: Monthly Storage Fees
     When I enter the monthly storage fees to the revenue and expenses sheet
+
+  Scenario: Weekly Mobile Data Charges
+    When I enter the weekly mobile data charges to the revenue and expenses sheet
+
+  Scenario: Weekly GCash Transfer Charges
+    When I enter the weekly gcash transfer fees to the revenue and expenses sheet
