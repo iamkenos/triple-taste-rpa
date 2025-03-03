@@ -2,6 +2,7 @@ name: RPA
 
 on:
   schedule:
+    # Rougly 10PM UTC, or 6AM to 10AM GMT8 factoring in delays and DST
     - cron: "0 22 * * *"
 
   workflow_dispatch:
