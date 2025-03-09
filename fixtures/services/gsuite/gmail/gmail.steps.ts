@@ -396,12 +396,13 @@ When(/^I send the (yearly) income tax reminder email$/, async function (this: Th
 When(/^I send the (daily) revenue amount email$/, async function (this: This, freq: string) {
   const { date } = getDate();
 
-  const shouldSendEmail = [2, 3, 4, 5, 6].includes(date.weekday);
+  const shouldSendEmail = [1, 2, 3, 4, 5].includes(date.weekday);
   if (!shouldSendEmail) {
     return Status.SKIPPED.toLowerCase();
   }
 
-  const scopeDate = getDate({ date: date.plus({ day: -1 }), format: FORMATS.MONTH_DAY_YEAR });
+  const offset = date.weekday == 1 ? -3 : -1;
+  const scopeDate = getDate({ date: date.plus({ day: offset }), format: FORMATS.MONTH_DAY_YEAR });
   const dailySales = await this.gsheets.getCohAndGCashDailySalesAmount(scopeDate.date);
 
   const templatePath = path.join(world.config.baseDir, CREW_EMAIL_TEMPLATE_PATH, freq, "revenue-dly-invoicing.html");
