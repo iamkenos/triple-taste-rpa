@@ -263,6 +263,11 @@ export class GSheetsService extends GSuiteService {
     const cupsRange = `${sheetName}!${this.serializeToGSheetsCellAddress({ col: cupsCol, row: cupsRow })}`;
     const { value: cupsValue } = await this.getRangeValue<string>({ spreadsheetId, range: cupsRange });
 
+    const dcCol = cell.colIndex + colStart;
+    const dcRow = cell.rowIndex + rowStart + 6;
+    const dcRange = `${sheetName}!${this.serializeToGSheetsCellAddress({ col: dcCol, row: dcRow })}`;
+    const { value: dcValue } = await this.getRangeValue<string>({ spreadsheetId, range: dcRange });
+
     const totalsRow = cell.rowIndex + rowStart + 7;
 
     const cohCol = cell.colIndex + colStart;
@@ -273,15 +278,24 @@ export class GSheetsService extends GSuiteService {
     const gCashRange = `${sheetName}!${this.serializeToGSheetsCellAddress({ col: gCashCol, row: totalsRow })}`;
     const { value: gCashValue } = await this.getRangeValue<string>({ spreadsheetId, range: gCashRange });
 
-    const hasNull = [cupsValue, cohValue, gCashValue].some(value => value === null);
+    const hasNull = [cupsValue, dcValue, cohValue, gCashValue].some(value => value === null);
     if (hasNull) throw new Error(`Failed to get COH / GCASH data for "${searchFor}" on the daily sales tracker.`);
 
-    const bmPct = 0.3
-    const cups = cupsValue.split(" / ").map(i => +i).reduce((a,c) => a + c);
+    const sumBreakdown = (breakdown: string) => breakdown.split(" / ").map(i => +i).reduce((a,c) => a + c);
+    const fmtAmount = (amount: number) => new Intl.NumberFormat('en-US').format(amount);
+    const bmPct = 0.3;
+    const cups = sumBreakdown(cupsValue);
+    const discounts = sumBreakdown(dcValue);
     const bmCups = Math.floor(cups - (cups * (bmPct + 0.05)));
     const total = parseAmounts(cohValue) + parseAmounts(gCashValue);
-    const bmTotal = new Intl.NumberFormat('en-US').format(total - (total * bmPct));
+    const bmTotal = total - (total * bmPct);
+    const grandTotal = bmTotal - discounts;
 
-    return { total, bmTotal, cups, bmCups, date: day.toFormat(FORMATS.MONTH_DAY_YEAR) };
+    return { total,
+      cups, bmCups,
+      bmTotal: fmtAmount(bmTotal),
+      discounts: fmtAmount(discounts),
+      grandTotal: fmtAmount(grandTotal),
+      date: day.toFormat(FORMATS.MONTH_DAY_YEAR) };
   }
 }

@@ -11,6 +11,20 @@
     .strong {
       font-weight: bold;
     }
+    td {
+      height: 15px;
+    }
+    .tg  {border-collapse:collapse;border-spacing:0;}
+    .tg td{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+      overflow:hidden;padding:10px 5px;word-break:normal;}
+    .tg th{border-color:black;border-style:solid;border-width:1px;font-family:Arial, sans-serif;font-size:14px;
+      font-weight:normal;overflow:hidden;padding:10px 5px;word-break:normal;}
+    .tg .tg-5r25{border-color:inherit;text-align:right;text-decoration:underline;vertical-align:top}
+    .tg .tg-mn8v{background-color:#9b9b9b;border-color:inherit;font-weight:bold;text-align:center;vertical-align:top}
+    .tg .tg-c3ow{border-color:inherit;text-align:center;vertical-align:top}
+    .tg .tg-0pky{border-color:inherit;text-align:left;vertical-align:top}
+    .tg .tg-dvpl{border-color:inherit;text-align:right;vertical-align:top}
+    .tg .tg-0lax{border-color:inherit;text-align:left;vertical-align:top}
   </style>
 </head>
 
@@ -18,15 +32,70 @@
   <div>
     <div class="strong">Dear Team,</div>
 
+    <div><br /></div>
+
     <div>
       <span>
         <br />
         <b>Date:</b> [[SCOPE_DATE]]
         <br />
-        <b>Quantity:</b> [[QTY]] cups
+        <b>Sold To:</b> Various Customers
         <br />
-        <b>Amount:</b> ₱[[AMOUNT]]
         <br />
+      </span>
+      <table class="tg" style="table-layout: fixed; width: 629px">
+        <colgroup>
+          <col style="width: 72px">
+          <col style="width: 53px">
+          <col style="width: 260px">
+          <col style="width: 105px">
+          <col style="width: 139px">
+        </colgroup>
+        <thead>
+          <tr>
+            <th class="tg-mn8v">Qty</th>
+            <th class="tg-mn8v">Unit</th>
+            <th class="tg-mn8v">Articles</th>
+            <th class="tg-mn8v">Unit Price</th>
+            <th class="tg-mn8v">Amount</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="tg-c3ow">[[QTY]]</td>
+            <td class="tg-c3ow">Cups</td>
+            <td class="tg-0pky">Various Sizes of Fries</td>
+            <td class="tg-0pky"></td>
+            <td class="tg-dvpl">₱[[AMOUNT]]</td>
+          </tr>
+          <tr>
+            <td class="tg-0pky">&nbsp;</td>
+            <td class="tg-0pky">&nbsp;</td>
+            <td class="tg-0pky">&nbsp;</td>
+            <td class="tg-0pky">&nbsp;</td>
+            <td class="tg-0pky">&nbsp;</td>
+          </tr>
+          <tr>
+            <td class="tg-0lax">&nbsp;</td>
+            <td class="tg-0lax">&nbsp;</td>
+            <td class="tg-0lax">&nbsp;</td>
+            <td class="tg-0lax">&nbsp;</td>
+            <td class="tg-0lax">&nbsp;</td>
+          </tr>
+          <tr>
+            <td class="tg-0pky"></td>
+            <td class="tg-0pky"></td>
+            <td class="tg-5r25" colspan="2">Less SC/PWD Discount:</td>
+            <td class="tg-dvpl">₱[[DC_AMOUNT]]</td>
+          </tr>
+          <tr>
+            <td class="tg-0pky"></td>
+            <td class="tg-0pky"></td>
+            <td class="tg-5r25" colspan="2">Total Amount Due:</td>
+            <td class="tg-dvpl">₱[[TOTAL_AMOUNT]]</td>
+          </tr>
+        </tbody>
+      </table>
     </div>
 
     <div class="signature">

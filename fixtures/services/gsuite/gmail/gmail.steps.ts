@@ -30,6 +30,8 @@ const CREW_EMAIL_SUBJ_PREFIX = ACCTG_EMAIL_SUBJ_PREFIX;
 const CREW_EMAIL_SCOPE_DATE_TOKEN = ACCTG_EMAIL_SCOPE_DATE_TOKEN;
 const CREW_EMAIL_QTY_TOKEN = "[[QTY]]";
 const CREW_EMAIL_AMOUNT_TOKEN = "[[AMOUNT]]";
+const CREW_EMAIL_DC_AMOUNT_TOKEN = "[[DC_AMOUNT]]";
+const CREW_EMAIL_TOTAL_AMOUNT_TOKEN = "[[TOTAL_AMOUNT]]";
 
 const {
   GMAIL_USER,
@@ -413,6 +415,8 @@ When(/^I send the (daily) revenue amount email$/, async function (this: This, fr
     .replaceAll(CREW_EMAIL_SCOPE_DATE_TOKEN, dailySales.date)
     .replaceAll(CREW_EMAIL_QTY_TOKEN, `${dailySales.bmCups}`)
     .replaceAll(CREW_EMAIL_AMOUNT_TOKEN, `${dailySales.bmTotal}`)
+    .replaceAll(CREW_EMAIL_DC_AMOUNT_TOKEN, `${dailySales.discounts}`)
+    .replaceAll(CREW_EMAIL_TOTAL_AMOUNT_TOKEN, `${dailySales.grandTotal}`)
     .replaceAll(ACCTG_EMAIL_SIG_SENDER_TOKEN, GMAIL_USER)
     .replaceAll(ACCTG_EMAIL_SIG_CONTACT_TOKEN, ACCTG_EMAIL_REMINDER_SIG_CONTACT_NO);
 
