@@ -1,21 +1,19 @@
 <html>
+  <head>
+    <style>
+      div,
+      span {
+        font-family: "Lato", sans-serif;
+        color: #373d35;
+        font-size: 15px;
+      }
+      .strong {
+        font-weight: bold;
+      }
+    </style>
+  </head>
 
-<head>
-
-  <style>
-    div {
-      color: rgb(34, 34, 34);
-      font-size: 15px;
-    }
-
-    .strong {
-      font-weight: bold;
-    }
-  </style>
-</head>
-
-<body>
-  <div>
+  <body>
     <div class="strong">Dear [[ADDRESSEE]],</div>
 
     <div><br />We hope this message finds you well.</div>
@@ -23,34 +21,38 @@
     <div>
       <br />
       <span>
-        Please find the [[NTH]] billing statements from our staffing agency for this month ([[SCOPE_DATE]]), accessible from the link below.
+        Please find the [[NTH]] billing statements from our staffing agency for
+        this month ([[SCOPE_DATE]]), accessible from the link below.
       </span>
       <br />
       <span>
         Drive Location: receipts >> [[FOLDER_NAME]]
         <ul>
-          <li><a href="https://drive.google.com/drive/u/0/search?q=title:[[YEAR_MONTH]]%20RB%20BI%20salary%20parent:[[FOLDER_ID]]">Salary Billing Invoices</a></li>
+          <li>
+            <a
+              href="https://drive.google.com/drive/u/0/search?q=title:[[YEAR_MONTH]]%20RB%20BI%20salary%20parent:[[FOLDER_ID]]"
+              >Salary Billing Invoices</a
+            >
+          </li>
         </ul>
       </span>
       <br />
       <span>
-        Kindly make sure to review these carefully for accurate tax computations.
+        Kindly make sure to review these carefully for accurate tax
+        computations.
       </span>
     </div>
 
     <div>
       <br />
       <span>
-        If you have any questions or need more details, feel free to let us know.
+        If you have any questions or need more details, feel free to let us
+        know.
       </span>
       <br />
-      <span>
-        Hoping to hear back from you soon.
-      </span>
+      <span> Hoping to hear back from you soon. </span>
       <br /><br />
-      <span>
-        Thank you.
-      </span>
+      <span> Thank you. </span>
     </div>
 
     <div class="signature">
@@ -61,9 +63,11 @@
       <div>
         <div class="strong">Triple Taste Munchies Food Corner</div>
         <div>📞 [[SENDER_CONTACT]]</div>
-        <div>✉️ <a href="mailto:[[SENDER_EMAIL]]" target="_blank">[[SENDER_EMAIL]]</a></div>
+        <div>
+          ✉️
+          <a href="mailto:[[SENDER_EMAIL]]" target="_blank">[[SENDER_EMAIL]]</a>
+        </div>
       </div>
     </div>
-</body>
-
+  </body>
 </html>

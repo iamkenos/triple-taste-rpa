@@ -36,14 +36,21 @@ export function getDate(args?: {
   date?: DateTime;
   format?: string;
   offset?: DurationLike;
+  from?: string[];
 }) {
-  const from: DateTime = args?.date || DateTime.now();
-  const datetime = from.plus(args?.offset || {}).setZone("Asia/Manila");
+  const zone = "Asia/Manila";
+  const from = args?.from?.length == 2 ? DateTime.fromFormat(args.from[0], args.from[1], { zone }) : undefined;
+  const dt: DateTime = from || args?.date || DateTime.now();
+  const datetime = dt.plus(args?.offset || {}).setZone(zone);
 
   return {
     date: datetime,
     formatted: datetime.toFormat(args?.format || "dd MMM yyyy hh:mm"),
   };
+}
+
+export function isSameCalendarDay(a: DateTime, b: DateTime) {
+  return a.hasSame(b, "day") && a.hasSame(b, "month") && a.hasSame(b, "year");
 }
 
 export function formatOrdinal(n: number) {

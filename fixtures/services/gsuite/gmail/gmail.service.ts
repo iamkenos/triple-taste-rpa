@@ -22,10 +22,10 @@ export class GMailService extends GSuiteService {
     return { connection, from: GMAIL_USER };
   }
 
-  async sendEmail(args: { to: string; cc: string, subject: string; html: string }) {
+  async sendEmail(args: { to: string; cc: string, subject: string; html: string, attachments?: any }) {
     const { connection, from } = this.mail;
-    const { to, cc, subject, html } = args;
+    const { to, cc, subject, html, attachments } = args;
 
-    await connection.sendMail({ from, to, cc, subject: subject, html });
+    await connection.sendMail({ from, to, cc, subject: subject, html, attachments });
   }
 }

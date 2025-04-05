@@ -78,6 +78,22 @@ export class GDriveService extends GSuiteService {
     }
   }
 
+  private async createStaffPayAdviceFolder(folderId: string) {
+    const name = "pay advice"
+    const { names, id: ids } = await this.getFolderTree(folderId);
+    const index = names.findIndex((i) => i == name);
+    const isCurrentDayQFolderExisting = index >= 0
+
+    if (isCurrentDayQFolderExisting) {
+      const [, id] = ids[index];
+      return id;
+    } else {
+      const response = await this.createFolder({ name, folderId });
+      const { id } = response.data
+      return id;
+    }
+  }
+
   async getQFolder(date: DateTime) {
     const name = date.toFormat(this.RECIEPTS_Q_FOLDER_NAME_FORMAT);
     const id = await this.createQFolder(name);
@@ -126,6 +142,21 @@ export class GDriveService extends GSuiteService {
       const filepath = path.join(downloadsDir, name);
       const folderName = soaDate.toFormat(this.RECIEPTS_Q_FOLDER_NAME_FORMAT);
       const folderId = await this.createQFolder(folderName)
+
+      const body = fs.createReadStream(filepath);
+      await this.uploadFile({ name, mimeType, folderId, body });
+    }
+
+    this.logger.info("Uploaded %s new files.", numberOfFiles);
+  }
+
+  async uploadPdfsToStaffDrive(driveId: string, pdfs: { filename: string, filepath: string }[]) {
+    const mimeType = "application/pdf";
+    const numberOfFiles = pdfs.length
+    for (let i = 0; i < numberOfFiles; i++) {
+      const item = pdfs[i];
+      const { filename: name, filepath } = item;
+      const folderId = await this.createStaffPayAdviceFolder(driveId)
 
       const body = fs.createReadStream(filepath);
       await this.uploadFile({ name, mimeType, folderId, body });

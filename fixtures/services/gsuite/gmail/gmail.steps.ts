@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
 
+import { string } from "@iamkenos/kyoko/common";
 import { Before, When, Status, world } from "@cucumber/cucumber";
 import { FORMATS, MONTHS, getDate, formatOrdinal } from "~/fixtures/utils/date";
 import { GDriveService } from "~/fixtures/services/gsuite/gdrive/gdrive.service";
@@ -421,4 +422,143 @@ When(/^I send the (daily) revenue amount email$/, async function (this: This, fr
     .replaceAll(ACCTG_EMAIL_SIG_CONTACT_TOKEN, ACCTG_EMAIL_REMINDER_SIG_CONTACT_NO);
 
   await this.gmail.sendEmail({ to: CREW_EMAIL_RECIPIENTS, cc: ACCTG_EMAIL_REMINDER_RECIPIENTS_CC, subject, html });
+});
+
+When(/^I send the (fortnightly) pay advise emails$/, async function (this: This, freq: string) {
+  const { date } = getDate();
+  const payslipsInfo = await this.gsheets.getPayslipsInfo(date);
+  const shouldSendEmail = payslipsInfo.length > 0;
+  if (!shouldSendEmail) {
+    return Status.SKIPPED.toLowerCase();
+  }
+
+  const staffPayable: { staffName: string, grossPay: string, account: string }[] = [];
+  const HEADER_TOKEN = "[[HEADER]]";
+  const FOOTER_TOKEN = "[[FOOTER]]";
+  const JOB_INFO_STAFF_ID_TOKEN = "[[STAFF_ID]]";
+  const JOB_INFO_POSITION_TOKEN = "[[POSITION]]";
+  const JOB_INFO_DAILY_RATE_TOKEN = "[[DAILY_RATE]]";
+  const RCP_STAFF_NAME_TOKEN = "[[STAFF_NAME]]";
+  const RCP_EMAIL_TOKEN = "[[EMAIL]]";
+  const RCP_ADDRESS_TOKEN = "[[ADDRESS]]";
+  const RCP_ACCOUNT_TOKEN = "[[ACCOUNT]]";
+  const PAY_CYC_FREQ_TOKEN = "[[FREQ]]";
+  const PAY_CYC_ID_TOKEN = "[[ID]]";
+  const PAY_CYC_PERIOD_TOKEN = "[[PERIOD]]";
+  const PAY_CYC_RETRO_ADJ_TOKEN = "[[RETRO_ADJ]]";
+  const WK_HRS_BASE_HOURS_TOKEN = "[[BASE_HOURS]]";
+  const WK_HRS_OVERTIME_HOURS_TOKEN = "[[OVERTIME_HOURS]]";
+  const WK_HRS_NIGHT_HOURS_TOKEN = "[[NIGHT_HOURS]]";
+  const WK_HRS_TOTAL_HOURS_TOKEN = "[[TOTAL_HOURS]]";
+  const EAR_YTD_TOKEN = "[[YTD]]";
+  const EAR_BASE_PAY_TOKEN = "[[BASE_PAY]]";
+  const EAR_OVERTIME_PAY_TOKEN = "[[OVERTIME_PAY]]";
+  const EAR_NIGHT_PAY_TOKEN = "[[NIGHT_PAY]]";
+  const EAR_TNT_MONT_PAY_TOKEN = "[[TNT_MONT_PAY]]";
+  const EAR_HOLIDAY_PAY_TOKEN = "[[HOLIDAY_PAY]]";
+  const EAR_OTHER_ADJ_TOKEN = "[[OTHER_ADJ]]";
+  const EAR_GROSS_PAY_TOKEN = "[[GROSS_PAY]]";
+  const TBL_DATA = `<td colspan="5">[[TBL_DATA]]</td>`;
+
+  const crewEmailDir = path.join(world.config.baseDir, CREW_EMAIL_TEMPLATE_PATH, freq);
+  const header = fs.readFileSync(path.join(crewEmailDir, "header.html"), "utf8");
+  const footer = fs.readFileSync(path.join(crewEmailDir, "footer.html"), "utf8");
+
+  for (let i = 0; i < payslipsInfo.length; i++) {
+    const payslipInfo = payslipsInfo[i];
+    const {
+      jobInfoSection, recipientSection, payCycleSection,
+      workHoursSection, earningsSection, staffTimeSheet, fullTimeSheet
+    } = payslipInfo;
+    const staffId = jobInfoSection.staffId;
+    const staffName = recipientSection.staffName;
+    const account = recipientSection.account;
+    const payCycleId = payCycleSection.number;
+    const grossPay = earningsSection.grossPay;
+    const to = recipientSection.emailAddress;
+
+    staffPayable.push({ staffName, grossPay, account })
+    const payBreakdownPdfTemplatePath = path.join(crewEmailDir, "pay-breakdown-pdf.html");
+    const pdfBreakdownPdfTemplate = fs.readFileSync(payBreakdownPdfTemplatePath, "utf8");
+    const pdfBreakdownPdf = pdfBreakdownPdfTemplate
+      .replaceAll(HEADER_TOKEN, header)
+      .replaceAll(FOOTER_TOKEN, footer)
+      .replaceAll(JOB_INFO_STAFF_ID_TOKEN, staffId)
+      .replaceAll(PAY_CYC_ID_TOKEN, payCycleSection.number)
+      .replaceAll(WK_HRS_TOTAL_HOURS_TOKEN, workHoursSection.totalHours)
+      .replaceAll(EAR_GROSS_PAY_TOKEN, grossPay)
+      .replaceAll(TBL_DATA, fullTimeSheet);
+
+    const payAdviceSubject = `${CREW_EMAIL_SUBJ_PREFIX} Pay Advice ${payCycleId} for ${staffId}`;
+    const payAdviceEmailTemplatePath = path.join(crewEmailDir, "pay-advice.html");
+    const payAdviceEmailTemplate = fs.readFileSync(payAdviceEmailTemplatePath, "utf8");
+    const payAdviceEmail = payAdviceEmailTemplate
+      .replaceAll(RCP_STAFF_NAME_TOKEN, staffName)
+      .replaceAll(ACCTG_EMAIL_SIG_SENDER_TOKEN, GMAIL_USER)
+      .replaceAll(ACCTG_EMAIL_SIG_CONTACT_TOKEN, ACCTG_EMAIL_REMINDER_SIG_CONTACT_NO);
+    const payAdvicePdfTemplatePath = path.join(crewEmailDir, "pay-advice-pdf.html");
+    const pdfAdvicePdfTemplate = fs.readFileSync(payAdvicePdfTemplatePath, "utf8");
+    const pdfAdvisePdf = pdfAdvicePdfTemplate
+      .replaceAll(HEADER_TOKEN, header)
+      .replaceAll(FOOTER_TOKEN, footer)
+      .replaceAll(JOB_INFO_STAFF_ID_TOKEN, staffId)
+      .replaceAll(JOB_INFO_POSITION_TOKEN, jobInfoSection.position)
+      .replaceAll(JOB_INFO_DAILY_RATE_TOKEN, jobInfoSection.dailyRate)
+      .replaceAll(RCP_STAFF_NAME_TOKEN, staffName)
+      .replaceAll(RCP_EMAIL_TOKEN, to)
+      .replaceAll(RCP_ADDRESS_TOKEN, recipientSection.address)
+      .replaceAll(RCP_ACCOUNT_TOKEN, account)
+      .replaceAll(PAY_CYC_FREQ_TOKEN, payCycleSection.frequency)
+      .replaceAll(PAY_CYC_ID_TOKEN, payCycleSection.number)
+      .replaceAll(PAY_CYC_PERIOD_TOKEN, payCycleSection.period)
+      .replaceAll(PAY_CYC_RETRO_ADJ_TOKEN, payCycleSection.retroAdjustments)
+      .replaceAll(WK_HRS_BASE_HOURS_TOKEN, workHoursSection.baseHours)
+      .replaceAll(WK_HRS_OVERTIME_HOURS_TOKEN, workHoursSection.overtimeHours)
+      .replaceAll(WK_HRS_NIGHT_HOURS_TOKEN, workHoursSection.nightHours)
+      .replaceAll(WK_HRS_TOTAL_HOURS_TOKEN, workHoursSection.totalHours)
+      .replaceAll(EAR_YTD_TOKEN, earningsSection.ytd)
+      .replaceAll(EAR_BASE_PAY_TOKEN, earningsSection.basePay)
+      .replaceAll(EAR_OVERTIME_PAY_TOKEN, earningsSection.overtimePay)
+      .replaceAll(EAR_NIGHT_PAY_TOKEN, earningsSection.nightPay)
+      .replaceAll(EAR_TNT_MONT_PAY_TOKEN, earningsSection.tntMonthPay)
+      .replaceAll(EAR_HOLIDAY_PAY_TOKEN, earningsSection.holidayPay)
+      .replaceAll(EAR_OTHER_ADJ_TOKEN, earningsSection.otherAdjustments)
+      .replaceAll(EAR_GROSS_PAY_TOKEN, grossPay)
+      .replaceAll(TBL_DATA, staffTimeSheet);
+
+    const payBreakdownFilename = `${string.changecase.kebabCase(`${payCycleId}-${staffId}-breakdown`)}.pdf`;
+    const payBreakdownPdfPath = path.join(crewEmailDir, payBreakdownFilename);
+    await this.gmail.createPDF(pdfBreakdownPdf, payBreakdownPdfPath, true);
+
+    const payAdviceFilename = `${string.changecase.kebabCase(`${payCycleId}-${staffId}`)}.pdf`;
+    const payAdvicePdfPath = path.join(crewEmailDir, payAdviceFilename);
+    await this.gmail.createPDF(pdfAdvisePdf, payAdvicePdfPath);
+
+    const pdfs = [
+      { filename: payBreakdownFilename, filepath: payBreakdownPdfPath },
+      { filename: payAdviceFilename, filepath: payAdvicePdfPath  },
+    ];
+    const payAdviceAttachments = [{ filename: payAdviceFilename, path: payAdvicePdfPath, contentType: "application/pdf" }]
+    try {
+      await this.gdrive.uploadPdfsToStaffDrive(recipientSection.driveId, pdfs);
+      await this.gmail.sendEmail({ to, cc: undefined, subject: payAdviceSubject, html: payAdviceEmail, attachments: payAdviceAttachments });
+    } finally {
+      pdfs.forEach(i => fs.rmSync(i.filepath));
+    }
+  }
+
+  const payCycleId = payslipsInfo[0].payCycleSection.number;
+  const payReminderSubject = `${CREW_EMAIL_SUBJ_PREFIX} Pay Reminder for ${payCycleId}`;
+  const payReminderEmailTemplatePath = path.join(crewEmailDir, "pay-reminder.html");
+  const payReminderEmailTemplate = fs.readFileSync(payReminderEmailTemplatePath, "utf8");
+  const payReminderData = staffPayable
+    .map(i => `<table><colgroup><col class="col-header" /><col /></colgroup>${Object.keys(i)
+    .map(k => `<tr><th>${string.changecase.capitalCase(k)}:</th><td>${i[k]}</td></tr>`).join("")}</table>`)
+    .join("");
+
+  const payAdviceEmail = payReminderEmailTemplate
+    .replaceAll(TBL_DATA, payReminderData)
+    .replaceAll(ACCTG_EMAIL_SIG_SENDER_TOKEN, GMAIL_USER)
+    .replaceAll(ACCTG_EMAIL_SIG_CONTACT_TOKEN, ACCTG_EMAIL_REMINDER_SIG_CONTACT_NO);
+  await this.gmail.sendEmail({ to: ACCTG_EMAIL_REMINDER_RECIPIENTS_CC, cc: undefined, subject: payReminderSubject, html: payAdviceEmail });
 });

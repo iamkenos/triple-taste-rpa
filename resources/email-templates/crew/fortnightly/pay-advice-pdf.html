@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pay Advice [[ID]]: [[STAFF_ID]]</title>
+    <style>
+      body {
+        font-family: "Lato", sans-serif;
+        color: #373d35;
+        text-align: left;
+        vertical-align: center;
+      }
+      .content {
+        margin-left: 50px;
+        margin-right: 50px;
+        margin-top: 16px;
+        margin-bottom: 16px;
+      }
+      .stamp {
+        text-align: center;
+      }
+      .heading {
+        color: #7a7f7a;
+        text-align: center;
+      }
+      .header {
+        margin-bottom: 16px;
+      }
+      .header,
+      .footer {
+        width: 100%;
+        max-width: 100%;
+        margin-top: 12px;
+        height: auto;
+        display: block;
+        opacity: 0.7;
+      }
+      .page-break {
+        page-break-after: always;
+      }
+      .spacer {
+        height: 360px;
+      }
+      .spacer-half {
+        height: 150px;
+      }
+      .section-container {
+        display: flex;
+        justify-content: space-between;
+        gap: 24px;
+        margin-bottom: 24px;
+        width: 100%;
+      }
+      .half-width {
+        width: 50%;
+      }
+      table {
+        border-collapse: collapse;
+        border: 1px solid #ccd1ca;
+        font-size: 14px;
+        width: 100%;
+        table-layout: auto;
+        width: 100%;
+        text-wrap: no-wrap;
+      }
+      th {
+        text-align: left;
+        font-weight: bold;
+      }
+      .th-bordered {
+        border: 1px solid #ccd1ca;
+      }
+      .center,
+      .th-center {
+        text-align: center;
+      }
+      .th-left {
+        text-align: left;
+      }
+      .col-header {
+        width: 20%;
+      }
+      .col-header-25 {
+        width: 25%;
+      }
+      th,
+      td,
+      th,
+      td {
+        padding: 4px 4px;
+      }
+      .timesheet tr,
+      .timesheet td,
+      .job-info tr {
+        border: 1px solid #ccd1ca;
+      }
+      .timesheet.timesheet-header {
+        background-color: #373d35;
+        color: #ccd1ca;
+      }
+      .timesheet.timesheet-weekend {
+        background-color: #b5bcb2;
+      }
+      .timesheet * {
+        text-align: center;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- header -->
+    <div class="stamp">[[HEADER]]</div>
+
+    <div class="content">
+      <div class="section-container">
+        <!-- recipient -->
+        <table class="half-width">
+          <tr>
+            <td>[[STAFF_NAME]]</td>
+          </tr>
+          <tr>
+            <td>[[EMAIL]]</td>
+          </tr>
+          <tr>
+            <td>[[ADDRESS]]</td>
+          </tr>
+          <tr>
+            <td>[[ACCOUNT]]</td>
+          </tr>
+        </table>
+        <!-- job info -->
+        <table class="job-info half-width">
+          <colgroup>
+            <col class="col-header-25" />
+            <col />
+          </colgroup>
+          <thead>
+            <tr>
+              <th colspan="2" class="th-center">JOB INFORMATION</th>
+            </tr>
+            <tr></tr>
+          </thead>
+          <tr>
+            <th>Staff ID:</th>
+            <td>[[STAFF_ID]]</td>
+          </tr>
+          <tr>
+            <th>Position:</th>
+            <td>[[POSITION]]</td>
+          </tr>
+          <tr>
+            <th>Daily Rate:</th>
+            <td>[[DAILY_RATE]]</td>
+          </tr>
+        </table>
+      </div>
+
+      <div class="section-container">
+        <!-- pay cycle -->
+        <table>
+          <colgroup>
+            <col class="col-header" />
+            <col />
+          </colgroup>
+          <thead>
+            <tr>
+              <th colspan="2" class="th-left th-bordered">PAY CYCLE</th>
+            </tr>
+            <tr></tr>
+          </thead>
+          <tr>
+            <th>ID:</th>
+            <td>[[ID]]</td>
+          </tr>
+          <tr>
+            <th>Frequency:</th>
+            <td>[[FREQ]]</td>
+          </tr>
+          <tr>
+            <th>Period:</th>
+            <td>[[PERIOD]]</td>
+          </tr>
+          <tr>
+            <th>Retro Adjustments:</th>
+            <td>[[RETRO_ADJ]]</td>
+          </tr>
+        </table>
+      </div>
+      <div class="section-container">
+        <!-- work hours -->
+        <table class="">
+          <colgroup>
+            <col class="col-header" />
+            <col />
+          </colgroup>
+          <thead>
+            <tr>
+              <th colspan="2" class="th-left th-bordered">WORKING HOURS</th>
+            </tr>
+            <tr></tr>
+          </thead>
+          <tr>
+            <th>Base Hours:</th>
+            <td>[[BASE_HOURS]]</td>
+          </tr>
+          <tr>
+            <th>Overtime Hours:</th>
+            <td>[[OVERTIME_HOURS]]</td>
+          </tr>
+          <tr>
+            <th>Night Hours:</th>
+            <td>[[NIGHT_HOURS]]</td>
+          </tr>
+          <tr>
+            <th>Total Hours:</th>
+            <td>[[TOTAL_HOURS]]</td>
+          </tr>
+        </table>
+      </div>
+
+      <div class="section-container">
+        <!-- earnings -->
+        <table class="">
+          <colgroup>
+            <col class="col-header" />
+            <col />
+          </colgroup>
+          <thead>
+            <tr>
+              <th colspan="2" class="th-left th-bordered">EARNINGS</th>
+            </tr>
+            <tr></tr>
+          </thead>
+          <tr>
+            <th>Year to Date:</th>
+            <td>[[YTD]]</td>
+          </tr>
+          <tr>
+            <th>Base Pay:</th>
+            <td>[[BASE_PAY]]</td>
+          </tr>
+          <tr>
+            <th>Overtime Pay:</th>
+            <td>[[OVERTIME_PAY]]</td>
+          </tr>
+          <tr>
+            <th>Night Pay:</th>
+            <td>[[NIGHT_PAY]]</td>
+          </tr>
+          <tr>
+            <th>13th Month Pay:</th>
+            <td>[[TNT_MONT_PAY]]</td>
+          </tr>
+          <tr>
+            <th>Holiday Pay:</th>
+            <td>[[HOLIDAY_PAY]]</td>
+          </tr>
+          <tr>
+            <th>Other Adjustments:</th>
+            <td>[[OTHER_ADJ]]</td>
+          </tr>
+          <tr>
+            <th>Gross Pay:</th>
+            <td>[[GROSS_PAY]]</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+    <div class="spacer-half"></div>
+    <!-- footer -->
+    <div class="stamp">[[FOOTER]]</div>
+    <div class="page-break"></div>
+    <!-- header -->
+    <div class="stamp">[[HEADER]]</div>
+    <div class="content">
+      <h2 class="heading">Time Sheet</h2>
+      <div class="section-container">
+        <!-- timesheet -->
+        <table class="timesheet">
+          <colgroup>
+            <col class="col-header" />
+            <col class="col-header" />
+            <col class="col-header" />
+            <col class="col-header" />
+            <col class="col-header" />
+          </colgroup>
+          <td colspan="5">[[TBL_DATA]]</td>
+        </table>
+      </div>
+      <div class="spacer"></div>
+    </div>
+    <div class="stamp">[[FOOTER]]</div>
+  </body>
+</html>

@@ -31,6 +31,7 @@ jobs:
           GDRIVE_PKEY: "${{ secrets.GDRIVE_PKEY }}"
           GSHEETS_REVENUE_AND_EXPENSES_ID: "${{ secrets.GSHEETS_REVENUE_AND_EXPENSES_ID }}"
           GSHEETS_DAILY_SALES_ID: "${{ secrets.GSHEETS_DAILY_SALES_ID }}"
+          GSHEETS_PAYROLL_ID: "${{ secrets.GSHEETS_PAYROLL_ID }}"
           GMAIL_USER: "${{ secrets.GMAIL_USER }}"
           GMAIL_PASS: "${{ secrets.GMAIL_PASS }}"
           ACCTG_EMAIL_REMINDER_ADDRESSEE: "${{ secrets.ACCTG_EMAIL_REMINDER_ADDRESSEE }}"
