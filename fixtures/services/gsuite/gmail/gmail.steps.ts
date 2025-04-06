@@ -425,14 +425,14 @@ When(/^I send the (daily) revenue amount email$/, async function (this: This, fr
 });
 
 When(/^I send the (fortnightly) pay advise emails$/, async function (this: This, freq: string) {
-  const { date } = getDate();
+  const { date, formatted } = getDate({ format: FORMATS.DDMMMYY });
   const payslipsInfo = await this.gsheets.getPayslipsInfo(date);
   const shouldSendEmail = payslipsInfo.length > 0;
   if (!shouldSendEmail) {
     return Status.SKIPPED.toLowerCase();
   }
 
-  const staffPayable: { staffName: string, grossPay: string, account: string }[] = [];
+  const staffPayable: { staffName: string, staffId: string, grossPay: string, account: string, payCycleId: string }[] = [];
   const HEADER_TOKEN = "[[HEADER]]";
   const FOOTER_TOKEN = "[[FOOTER]]";
   const JOB_INFO_STAFF_ID_TOKEN = "[[STAFF_ID]]";
@@ -477,7 +477,7 @@ When(/^I send the (fortnightly) pay advise emails$/, async function (this: This,
     const grossPay = earningsSection.grossPay;
     const to = recipientSection.emailAddress;
 
-    staffPayable.push({ staffName, grossPay, account })
+    staffPayable.push({ staffName, grossPay, account, payCycleId, staffId })
     const payBreakdownPdfTemplatePath = path.join(crewEmailDir, "pay-breakdown-pdf.html");
     const pdfBreakdownPdfTemplate = fs.readFileSync(payBreakdownPdfTemplatePath, "utf8");
     const pdfBreakdownPdf = pdfBreakdownPdfTemplate
@@ -560,5 +560,10 @@ When(/^I send the (fortnightly) pay advise emails$/, async function (this: This,
     .replaceAll(TBL_DATA, payReminderData)
     .replaceAll(ACCTG_EMAIL_SIG_SENDER_TOKEN, GMAIL_USER)
     .replaceAll(ACCTG_EMAIL_SIG_CONTACT_TOKEN, ACCTG_EMAIL_REMINDER_SIG_CONTACT_NO);
+
   await this.gmail.sendEmail({ to: ACCTG_EMAIL_REMINDER_RECIPIENTS_CC, cc: undefined, subject: payReminderSubject, html: payAdviceEmail });
+  for (let i = 0; i < staffPayable.length; i++) {
+    const { grossPay, payCycleId, staffId } = staffPayable[i];
+    await this.gsheets.updateRevenueAndExpensesSheetDataForExpenses([formatted, "Salary Internal", +grossPay, `${payCycleId} - ${staffId}`]);
+  }
 });
