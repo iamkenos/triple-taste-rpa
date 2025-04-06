@@ -408,6 +408,11 @@ When(/^I send the (daily) revenue amount email$/, async function (this: This, fr
   const scopeDate = getDate({ date: date.plus({ day: offset }), format: FORMATS.MONTH_DAY_YEAR });
   const dailySales = await this.gsheets.getCohAndGCashDailySalesAmount(scopeDate.date);
 
+  const hasSales = dailySales.total > 0;
+  if (!hasSales) {
+    return Status.SKIPPED.toLowerCase();
+  }
+
   const templatePath = path.join(world.config.baseDir, CREW_EMAIL_TEMPLATE_PATH, freq, "revenue-dly-invoicing.html");
   const template = fs.readFileSync(templatePath, "utf8");
 
