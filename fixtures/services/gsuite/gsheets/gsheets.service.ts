@@ -288,7 +288,7 @@ export class GSheetsService extends GSuiteService {
     const spreadsheetId = GSHEETS_REVENUE_AND_EXPENSES_ID;
     const sheetName = this.RVE_EXPENSES_SHEET;
 
-    const filterTitle = `Expenses ${from.monthShort} ${from.year}`;
+    const filterTitle = `${from.year} ${from.monthShort} Expenses`;
     const sheetId = await this.getSheetIdByName({ spreadsheetId, sheetName });
     const existingFilter = await this.getFilterView({ spreadsheetId, sheetId, filterViewName: filterTitle });
 
@@ -320,6 +320,14 @@ export class GSheetsService extends GSuiteService {
                       ],
                     },
                   },
+                  // 1: {
+                  //   condition: {
+                  //     type: "TEXT_NOT_EQ",
+                  //     values: [
+                  //       { userEnteredValue: "Salary Internal" },
+                  //     ],
+                  //   },
+                  // },
                 },
               },
             },
