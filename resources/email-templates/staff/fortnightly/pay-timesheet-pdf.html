@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Time Sheet [[PA_CYC_ID]]: [[PA_JBI_ID]]</title>
+    [[STYLE]]
+  </head>
+  <body class="pdf">
+    <div style="height: 50px"></div>
+    <div class="content">
+      <h2 class="heading">Time Sheet [[PA_CYC_ID]]</h2>
+      <div class="section-container">
+        <!-- timesheet -->
+        <table class="row-bordered row-bordered-center xxs xxs-center">
+          <colgroup>
+            <col />
+            <col class="col-header-8" />
+            <col class="col-header-8" />
+            <col class="col-header-8" />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+            <col />
+          </colgroup>
+          <td colspan="5">[[TBL_DATA]]</td>
+        </table>
+      </div>
+      <p><b>Staff ID:</b> [[PA_JBI_ID]]</p>
+      <p><b>Staff Name:</b> [[PA_RCP_NAME]]</p>
+      <p><b>Total Hours:</b> [[PA_HRS_TOTAL]]</p>
+      <p><b>Gross Pay:</b> [[PA_AMT_GRS]]</p>
+    </div>
+  </body>
+</html>

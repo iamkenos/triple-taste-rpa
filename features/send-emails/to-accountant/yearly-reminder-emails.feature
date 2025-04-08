@@ -1,7 +1,9 @@
 Feature: Yearly Reminder Emails
 
   Scenario: Yearly Expanded Witholding Tax
-    When I send the yearly expanded witholding tax reminder email
+    Given it's 20 days before the end of Mar
+    Then the service account sends the yearly expanded witholding tax reminder email
 
   Scenario: Yearly Income Tax
-    When I send the yearly income tax reminder email
+    Given it's 20 days before the 15th of Apr
+    Then the service account sends the yearly income tax reminder email

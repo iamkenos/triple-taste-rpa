@@ -1,16 +1,6 @@
 <html>
   <head>
-    <style>
-      div,
-      span {
-        font-family: "Lato", sans-serif;
-        color: #373d35;
-        font-size: 15px;
-      }
-      .strong {
-        font-weight: bold;
-      }
-    </style>
+    [[STYLE]]
   </head>
 
   <body>
@@ -30,62 +20,62 @@
         <br />
         Drive Location: receipts
         <br />
-        [[FOLDER_NAME]][1]
+        [[DRIVE_FOLDER_NAME]][1]
         <ul>
           <li>
             <a
-              href="https://drive.google.com/drive/u/0/search?q=title:[[SCOPE_DATE]]%20RB%20OR%20salary%20-BI%20parent:[[FOLDER_ID]][1]"
+              href="https://drive.google.com/drive/u/0/search?q=title:[[SCOPE_DATE]]%20RB%20%2BOR%20-BI%20parent:[[DRIVE_FOLDER_ID]][1]"
               >Salary ORs</a
             >
           </li>
           <li>
             <a
-              href="https://drive.google.com/drive/u/0/search?q=title:[[SCOPE_DATE]]%20VA%20OR%20-storage%20-BI%20parent:[[FOLDER_ID]][1]"
+              href="https://drive.google.com/drive/u/0/search?q=title:[[SCOPE_DATE]]%20VA%20%2BOR%20%2Brent%20-storage%20parent:[[DRIVE_FOLDER_ID]][1]"
               >Rent ORs</a
             >
           </li>
         </ul>
-        [[FOLDER_NAME]][2]
+        [[DRIVE_FOLDER_NAME]][2]
         <ul>
           <li>
             <a
-              href="https://drive.google.com/drive/u/0/search?q=title:[[SCOPE_DATE]]%20RB%20OR%20salary%20-BI%20parent:[[FOLDER_ID]][2]"
+              href="https://drive.google.com/drive/u/0/search?q=title:[[SCOPE_DATE]]%20RB%20%2BOR%20-BI%20parent:[[DRIVE_FOLDER_ID]][2]"
               >Salary ORs</a
             >
           </li>
           <li>
             <a
-              href="https://drive.google.com/drive/u/0/search?q=title:[[SCOPE_DATE]]%20VA%20OR%20-storage%20-BI%20parent:[[FOLDER_ID]][2]"
+              href="https://drive.google.com/drive/u/0/search?q=title:[[SCOPE_DATE]]%20VA%20%2BOR%20%2Brent%20-storage%20parent:[[DRIVE_FOLDER_ID]][2]"
               >Rent ORs</a
             >
           </li>
         </ul>
-        [[FOLDER_NAME]][3]
+        [[DRIVE_FOLDER_NAME]][3]
         <ul>
           <li>
             <a
-              href="https://drive.google.com/drive/u/0/search?q=title:[[SCOPE_DATE]]%20RB%20OR%20salary%20-BI%20parent:[[FOLDER_ID]][3]"
+              href="https://drive.google.com/drive/u/0/search?q=title:[[SCOPE_DATE]]%20RB%20%2BOR%20-BI%20parent:[[DRIVE_FOLDER_ID]][3]"
               >Salary ORs</a
             >
           </li>
           <li>
             <a
-              href="https://drive.google.com/drive/u/0/search?q=title:[[SCOPE_DATE]]%20VA%20OR%20-storage%20-BI%20parent:[[FOLDER_ID]][3]"
+              href="https://drive.google.com/drive/u/0/search?q=title:[[SCOPE_DATE]]%20VA%20%2BOR%20%2Brent%20-storage%20parent:[[DRIVE_FOLDER_ID]][3]"
               >Rent ORs</a
             >
           </li>
         </ul>
-        [[FOLDER_NAME]][4]
+        [[DRIVE_FOLDER_NAME]][4]
         <ul>
           <li>
             <a
-              href="https://drive.google.com/drive/u/0/search?q=title:[[SCOPE_DATE]]%20RB%20OR%20salary%20-BI%20parent:[[FOLDER_ID]][4]"
+              href="https://drive.google.com/drive/u/0/search?q=title:[[SCOPE_DATE]]%20RB%20%2BOR%20-BI%20parent:[[DRIVE_FOLDER_ID]][4]"
               >Salary ORs</a
             >
           </li>
           <li>
             <a
-              href="https://drive.google.com/drive/u/0/search?q=title:[[SCOPE_DATE]]%20VA%20OR%20-storage%20-BI%20parent:[[FOLDER_ID]][4]"
+              href="https://drive.google.com/drive/u/0/search?q=title:[[SCOPE_DATE]]%20VA%20%2BOR%20%2Brent%20-storage%20parent:[[DRIVE_FOLDER_ID]][4]"
               >Rent ORs</a
             >
           </li>
@@ -112,20 +102,6 @@
       <br /><br />
       <span> Thank you. </span>
     </div>
-
-    <div class="signature">
-      <br />
-      <div>Cheers,</div>
-      <div>Triple Taste Team</div>
-      <div>___________________________________</div>
-      <div>
-        <div class="strong">Triple Taste Munchies Food Corner</div>
-        <div>📞 [[SENDER_CONTACT]]</div>
-        <div>
-          ✉️
-          <a href="mailto:[[SENDER_EMAIL]]" target="_blank">[[SENDER_EMAIL]]</a>
-        </div>
-      </div>
-    </div>
+    [[SIG]]
   </body>
 </html>

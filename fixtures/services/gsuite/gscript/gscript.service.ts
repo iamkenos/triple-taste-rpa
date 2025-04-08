@@ -1,7 +1,7 @@
 import { google } from "googleapis";
 import { GSuiteService } from "~/fixtures/services/gsuite/gsuite.service";
 
-export class GAppsScript extends GSuiteService {
+export class GScript extends GSuiteService {
   url = "https://www.googleapis.com/auth/script.projects";
   title = "";
 
@@ -22,10 +22,9 @@ export class GAppsScript extends GSuiteService {
         function: fnName,
         parameters: parameters,
         devMode: true
-      },
+      }
     };
-    // TODO: FIX ME
-    // see `.run` documentation for details.
+    // !! doesnt work for service accounts !!
     await connection.scripts.run(request);
   }
 }

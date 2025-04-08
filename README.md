@@ -19,7 +19,3 @@
 ## Get Started
 
 - Copy `.env.example` to `.env` and populate
-
-## TODO
-
-- Housekeep

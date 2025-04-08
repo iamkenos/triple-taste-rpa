@@ -1,15 +1,22 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Pay Breakdown [[ID]]: [[STAFF_ID]]</title>
     <style>
+      div,
+      table,
+      span,
       body {
         font-family: "Lato", sans-serif;
         color: #373d35;
+        font-size: 14px;
         text-align: left;
         vertical-align: center;
+      }
+      .pdf * {
+        font-size: 12px;
+      }
+      .pdf h2 {
+        font-size: revert;
+      }
+      .strong {
+        font-weight: bold;
       }
       .content {
         margin-left: 50px;
@@ -40,16 +47,16 @@
         page-break-after: always;
       }
       .spacer {
-        height: 360px;
+        height: 300px;
       }
       .spacer-half {
-        height: 150px;
+        height: 100px;
       }
       .section-container {
         display: flex;
         justify-content: space-between;
         gap: 24px;
-        margin-bottom: 16px;
+        margin-bottom: 24px;
         width: 100%;
       }
       .half-width {
@@ -59,8 +66,6 @@
         border-collapse: collapse;
         border: 1px solid #ccd1ca;
         font-size: 14px;
-        width: 100%;
-        table-layout: auto;
         width: 100%;
         text-wrap: no-wrap;
       }
@@ -79,6 +84,15 @@
         text-align: left;
       }
       .col-header {
+        width: 20%;
+      }
+      .col-header-15 {
+        width: 15%;
+      }
+      .col-header-25 {
+        width: 25%;
+      }
+      .col-header-8 {
         width: 8%;
       }
       .col-header-5 {
@@ -90,62 +104,37 @@
       td {
         padding: 4px 4px;
       }
-      .timesheet tr,
-      .timesheet td,
-      .job-info tr {
+      .row-bordered tr,
+      .row-bordered td {
         border: 1px solid #ccd1ca;
       }
-      .timesheet.timesheet-header {
+      .row-bordered.row-bordered-header {
         background-color: #373d35;
         color: #ccd1ca;
+        font-weight: bold;
       }
-      .timesheet.timesheet-weekend {
+      .row-bordered.row-bordered-alt {
         background-color: #b5bcb2;
       }
-      .timesheet * {
-        font-size: xx-small;
+      .row-bordered * {
+        text-align: left;
+      }
+      .row-bordered-center * {
         text-align: center;
       }
-      p {
+      .full-bordered * {
+        border: 1px solid #ccd1ca;
+      }
+      .thick th,
+      td,
+      th,
+      td {
+        padding: 8px 8px;
+      }
+      .xxs * {
         font-size: xx-small;
-        margin-block-end: 0px;
+      }
+      .xxs.xxs-center {
+        text-align: center;
       }
     </style>
-  </head>
-  <body>
-    <!-- header -->
-    <div class="stamp">[[HEADER]]</div>
-    <div class="content">
-      <h2 class="heading">Pay Breakdown [[ID]]</h2>
-      <div class="section-container">
-        <!-- timesheet -->
-        <table class="timesheet">
-          <colgroup>
-            <col />
-            <col class="col-header" />
-            <col class="col-header-5" />
-            <col class="col-header-5" />
-            <col />
-            <col />
-            <col />
-            <col />
-            <col />
-            <col />
-            <col />
-            <col />
-            <col />
-            <col />
-            <col />
-            <col />
-            <col />
-            <col />
-          </colgroup>
-          <td colspan="5">[[TBL_DATA]]</td>
-        </table>
-      </div>
-      <p><b>Total Hours: </b>[[TOTAL_HOURS]]</p>
-      <p><b>Gross Pay: </b>[[GROSS_PAY]]</p>
-    </div>
-    <div class="stamp">[[FOOTER]]</div>
-  </body>
-</html>

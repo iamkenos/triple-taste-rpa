@@ -1,4 +1,7 @@
 Feature: Daily Revenue Emails
 
-  Scenario: Daily Revenue Amount
-    When I send the daily revenue amount email
+  Scenario: Daily Invoicing
+    Given it's a weekday
+    When the service account fetches the sales figures for the previous working day
+      And the service account computes the data to invoice
+    Then the service account sends the daily invoicing email

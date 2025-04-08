@@ -1,13 +1,9 @@
 Feature: SFOS Invoice Extracts
 
-  Scenario: Download & Upload
-  Process:
-  - get all uploaded files on all drive folders
-  - get all uploaded file on sfos
-  - download the new invoices
-  - upload new files on their respective Q folders, create folder if not existing
-
-    Given I have the list of uploaded sfos invoices
-    When I login to sfos
-     And I download new sfos invoices
-    Then I upload the downloaded sfos invoices to the drive
+  Scenario: Download & Upload Invoices
+    Given the service account logs in to SFOS
+    When the service account displays all SFOS entries
+     And the service account fetches the list of SFOS invoices from the drive
+     And the service account finds new SFOS invoices that hasn't been uploaded to the drive
+     And the service account downloads the new SFOS invoices
+    Then the service account uploads the new SFOS invoices to the drive

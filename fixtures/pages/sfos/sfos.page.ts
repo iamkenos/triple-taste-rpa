@@ -1,9 +1,9 @@
-import { DateTime } from "luxon";
-
 import { BasePage } from "~/fixtures/pages/base.page";
+import { createDate, Format } from "~/fixtures/utils/date.utils";
+import { Ext } from "~/fixtures/utils/file.utils";
 
 export class SFOSPage extends BasePage {
-  url = process.env.SFOS_URL;
+  url = this.parameters.env.SFOS_URL;
   title = "Log In";
 
   private tfEmail = () => this.page.locator("#Email");
@@ -12,74 +12,85 @@ export class SFOSPage extends BasePage {
 
   private btnGenerateSOA = () => this.page.locator("//button[contains(.,'Generate SOA')]");
   private lnkPrintPDF = () => this.btnGenerateSOA().locator("//following-sibling::*//a[contains(., 'PDF')]");
-  private ddlShowAll = () => this.page.locator("//select[@name='tblSOSInvoiceList_length']");
+  private ddlShowEntries = () => this.page.locator("//select[@name='tblSOSInvoiceList_length']");
 
   private tblSOSInvoiceList = () => this.page.locator("//table[@id='tblSOSInvoiceList']");
   private thSOSInvoiceList = () => this.tblSOSInvoiceList().locator("//thead//th");
   private trSOSInvoiceList = () => this.tblSOSInvoiceList().locator("//tbody//tr");
   private tdSOSInvoiceList = (index: number) => this.trSOSInvoiceList().locator(`//td[${index + 1}]`);
-  private cbxSOSInvoice = (index: number) => this.tdSOSInvoiceList(0).nth(index).locator("//input");
+  private cbxSOSInvoiceForRow = (index: number) => this.tdSOSInvoiceList(0).nth(index).locator("//input");
 
-  private async getInvoiceTableColumnIndex(label: string) {
+  private async downloadAndRenameSelectedPdf(filename: string) {
+    const trigger = async() => {
+      const conditions = this.lnkPrintPDF().waitUntil().displayed();
+      await this.btnGenerateSOA().clickUntil(conditions);
+      await this.lnkPrintPDF().click();
+    };
+    await this.page.downloadFile(trigger, filename);
+  }
+
+  private async getInvoiceTableColumnIndexFrom(label: string) {
     const headers = await this.thSOSInvoiceList().allTextContents();
-    const index = headers.findIndex(i => i === label);
+
+    const index = headers.findIndex(v => v === label);
     return index;
   }
 
-  private async generatePDFFor(file: string) {
-    const trigger = async () => {
-      const conditions = this.lnkPrintPDF().given().displayed();
-      await this.btnGenerateSOA().clickUntil(conditions)
-      await this.lnkPrintPDF().click();
-    }
-    await this.page.downloadFile(trigger, file)
+  private async getInvoiceTableColumnContentsFrom(label: string) {
+    const index = await this.getInvoiceTableColumnIndexFrom(label);
+
+    const result = await this.tdSOSInvoiceList(index).allTextContents();
+    return result;
   }
 
-  private async getInvoiceTableColumnContents(label: string) {
-    const index = await this.getInvoiceTableColumnIndex(label)
-    const contents = await this.tdSOSInvoiceList(index).allTextContents();
-    return contents;
-  }
+  private async getDisplayedInvoices() {
+    const ids = await this.getInvoiceTableColumnContentsFrom("Invoice Id");
+    const dates = await this.getInvoiceTableColumnContentsFrom("SOA Date");
 
-  private getDateTimeFromSOADate(soaDate: string) {
-    return DateTime.fromFormat(soaDate, "LLLL dd, yyyy");
+    const result = ids.map((v, i) => ({ index: i, id: v, date: dates[i] }));
+    this.logger.debug("%s invoices displayed.", result.length);
+    return result;
   }
 
   async login() {
-    const { SFOS_USERNAME, SFOS_PASSWORD } = process.env;
+    const { SFOS_USER: email, SFOS_PKEY: password } = this.parameters.env;
     await this.navigate();
-    await this.tfEmail().fill(SFOS_USERNAME);
-    await this.tfPassword().fill(SFOS_PASSWORD);
+    await this.btnSignIn().waitUntil().displayed().poll();
+    await this.tfEmail().fill(email);
+    await this.tfPassword().fill(password);
     await this.btnSignIn().click();
-    await this.trSOSInvoiceList().given().countMoreThan(0).poll();
+    await this.trSOSInvoiceList().waitUntil().countMoreThan(0).poll();
   }
 
-  async showAllInvoices() {
-    await this.ddlShowAll().selectOption("All");
-    await this.trSOSInvoiceList().given().countMoreThan(10).poll();
+  async showAllEntries() {
+    await this.ddlShowEntries().selectOption("All");
+    await this.trSOSInvoiceList().waitUntil().countMoreThan(10).poll();
+  }
+
+  async findNewInvoices() {
+    const { sfos } = this.parameters.gdrive.financials.receipts;
+    const invoices = await this.getDisplayedInvoices();
+    const result = invoices.filter(invoice => !sfos.find(filename => filename.includes(invoice.id)));
+    this.logger.debug("%s new invoices available.", result.length);
+    return result;
   }
 
   async downloadNewInvoices() {
-    const { driveUploadedSfosInvoices: driveSfosInvoices } = this.parameters;
-    const availableInvoiceIds = await this.getInvoiceTableColumnContents("Invoice Id");
-    const availableInvoiceIdsSOADates = await this.getInvoiceTableColumnContents("SOA Date");
-    const newInvoiceIds = availableInvoiceIds.filter(id => !driveSfosInvoices.find(i => i.includes(id)));
+    const { toDownload } = this.parameters.sfos;
 
-    const downloads = [];
-    for (let i = 0; i < newInvoiceIds.length; i++) {
-      const newInvoiceId = newInvoiceIds[i];
-      const row = availableInvoiceIds.findIndex(i => i === newInvoiceId);
-      const soaDate = this.getDateTimeFromSOADate(availableInvoiceIdsSOADates[row]);
-      const prefix = soaDate.toFormat("yyyyLLdd");
-      const filename = `${prefix}_PC_OR_${newInvoiceId}.pdf`;
+    const result = [];
+    for (let i = 0; i < toDownload.length; i++) {
+      const { index, id, date: soaDate } = toDownload[i];
+      const { date } = createDate({ from: [soaDate, Format.DATE_FULL] });
+      const filename = `${id}.${Ext.PDF}`;
 
-      await this.cbxSOSInvoice(row).check();
-      await this.generatePDFFor(filename);
-      await this.cbxSOSInvoice(row).uncheck();
-      downloads.push({ filename, soaDate });
+      await this.cbxSOSInvoiceForRow(index).check();
+      await this.downloadAndRenameSelectedPdf(filename);
+      await this.cbxSOSInvoiceForRow(index).uncheck();
+      result.push({ filename, date });
     }
 
-    this.logger.info("Downloaded %s new files.", downloads.length);
-    this.parameters.sfosNewInvoices = downloads;
+    this.logger.debug("Downloaded %s new files.", result.length);
+    return result;
   }
 }

@@ -1,26 +1,31 @@
-import { Before, When, Status } from "@cucumber/cucumber";
+import { Before, Given, Status, When } from "@cucumber/cucumber";
 import { SFOSPage } from "./sfos.page";
 
-import type { This as BaseThis } from "~/fixtures/pages/base.steps";
+import type { This as RPA } from "~/fixtures/rpa.steps";
 
-export interface This extends BaseThis {
+export interface This extends RPA {
   sfos: SFOSPage;
 }
 
-Before({}, async function (this: This) {
+Before({}, async function(this: This) {
   this.sfos = new SFOSPage();
 });
 
-When("I login to sfos", async function (this: This) {
+Given("the service account logs in to SFOS", async function(this: This) {
   await this.sfos.login();
 });
 
-When("I download new sfos invoices", async function (this: This) {
-  await this.sfos.showAllInvoices();
-  await this.sfos.downloadNewInvoices();
+When("the service account displays all SFOS entries", async function(this: This) {
+  await this.sfos.showAllEntries();
+});
 
-  const hasNewInvoices = this.parameters.sfosNewInvoices.length > 0;
-  if (!hasNewInvoices) {
-    return Status.SKIPPED.toLowerCase();
-  }
+When("the service account finds new SFOS invoices that hasn't been uploaded to the drive", async function(this: This) {
+  this.parameters.sfos.toDownload = await this.sfos.findNewInvoices();
+
+  const hasNewInvoices = this.parameters.sfos.toDownload.length > 0;
+  if (!hasNewInvoices) return Status.SKIPPED.toLowerCase();
+});
+
+When("the service account downloads the new SFOS invoices", async function(this: This) {
+  this.parameters.sfos.toUpload = await this.sfos.downloadNewInvoices();
 });

@@ -1,167 +1,84 @@
-import fs from "fs";
-import path from "path";
-
 import { google } from "googleapis";
 import { GetFileList, GetFolderTree } from "google-drive-getfilelist";
 import { GSuiteService } from "~/fixtures/services/gsuite/gsuite.service";
-import { FORMATS } from "~/fixtures/utils/date";
+import { MimeType } from "~/fixtures/utils/file.utils";
 
-import type { DateTime } from "luxon";
+import type {
+  DriveCreateFolderInfo,
+  DriveCreateResourceInfo,
+  DriveFetchFolderFilter,
+  DriveFetchResourceFilter,
+  DriveFetchResourceInfo,
+  DriveResource,
+  GetFileListResult,
+  GetFolderTreeResult
+} from "./gdrive.types";
 
 export class GDriveService extends GSuiteService {
   url = "https://www.googleapis.com/auth/drive";
   title = "";
 
   private drive = this.connect();
-  private fields = "files(name,id)";
-  private RECIEPTS_Q_FOLDER_NAME_FORMAT = FORMATS.YEAR_QUARTER.replace(" ", "-");
 
   private connect() {
-    const auth = this.auth()
+    const auth = this.auth();
     const connection = google.drive({ version: "v3", auth });
     return { auth, connection };
   }
 
-  private getResource(id: string) {
+  private buildResourceRequest({ id }: DriveResource) {
     const { auth } = this.drive;
-    return { auth, id, fields: this.fields };
+    return { auth, id, fields: `files(${["name", "id"].join()})` };
   }
 
-  private async getFolderTree(id: string) {
-    const resource = this.getResource(id);
-    return new Promise<{
-      names: string[];
-      id: string[][];
-    }>((resolve, reject) => GetFolderTree(resource, (e: Error, r: any) => (e ? reject(e) : resolve(r))));
+  protected async fetchFoldersUnder({ id, filter, includeSelf }: DriveResource & DriveFetchFolderFilter) {
+    const request = this.buildResourceRequest({ id });
+    const { names, folders } = await new Promise((resolve, reject) =>
+      GetFolderTree(request, (error: Error, result: GetFolderTreeResult) =>
+        (error ? reject(error) : resolve(result)))) as GetFolderTreeResult;
+    const result: DriveFetchResourceInfo[] = names.map((v, i) => ({ id: folders[i], name: v }))
+      .filter(filter ?? (() => true))
+      .slice(includeSelf ? 0 : 1);
+    return result;
   }
 
-  private async getFileList(id: string) {
-    const resource = this.getResource(id);
-    return new Promise<{
-      fileList: [{ files: [{ id: string, name: string }], folderTree: string[] }];
-      folderTree: { folders: string[], id: string[][], names: string[] };
-      id: string[][];
-    }>((resolve, reject) => GetFileList(resource, (e: Error, r: any) => (e ? reject(e) : resolve(r))));
+  protected async fetchFilesUnder({ id, filter }: DriveResource & DriveFetchResourceFilter) {
+    const request = this.buildResourceRequest({ id });
+    const { fileList } = await new Promise((resolve, reject) =>
+      GetFileList(request, (error: Error, result: GetFileListResult) =>
+        (error ? reject(error) : resolve(result)))) as GetFileListResult;
+    const result: DriveFetchResourceInfo[] = fileList.flatMap(({ files }) => files).filter(filter ?? (() => true));
+    return result;
   }
 
-  private async uploadFile(args: { name: string, mimeType: string, folderId: string, body?: any }) {
-    const { name, mimeType, folderId, body } = args;
-
+  protected async createFolderUnder({ parent, foldername }: DriveCreateFolderInfo) {
+    const mimeType = MimeType.GDRIVE_FOLDER;
     return await this.drive.connection.files.create({
-      requestBody: { name, parents: [folderId] },
-      media: { mimeType, body },
+      requestBody: { name: foldername, parents: [parent], mimeType }
     });
   }
 
-  private async createFolder(args: { name: string, folderId: string }) {
-    const { name, folderId } = args;
-    const mimeType = "application/vnd.google-apps.folder";
-
+  protected async createFileUnder({ parent, filename, body, mimeType }: DriveCreateResourceInfo) {
     return await this.drive.connection.files.create({
-      requestBody: { name, parents: [folderId], mimeType },
+      requestBody: { name: filename, parents: [parent] },
+      media: { mimeType, body }
     });
   }
 
-  private async createQFolder(name: string) {
-    const { GDRIVE_RECEIPTS_FOLDER } = process.env;
-    const { names, id: ids } = await this.getFolderTree(GDRIVE_RECEIPTS_FOLDER);
-    const index = names.findIndex((i) => i == name);
-    const isCurrentDayQFolderExisting = index >= 0
+  async wipeUnshared() {
+    const query = () => this.drive.connection.files.list({
+      pageSize: 1000,
+      q: "'me' in owners and 'root' in parents and not trashed"
+    });
 
-    if (isCurrentDayQFolderExisting) {
-      const [, id] = ids[index];
-      return id;
-    } else {
-      const response = await this.createFolder({ name, folderId: GDRIVE_RECEIPTS_FOLDER });
-      const { id } = response.data
-      return id;
-    }
-  }
+    const response = await query();
+    const { files } = response.data;
+    const deleted = await Promise.allSettled(files
+      .map(async({ id: fileId }) => {
+        await this.drive.connection.files.delete({ fileId });
+        return true;
+      }));
 
-  private async createStaffPayAdviceFolder(folderId: string) {
-    const name = "pay advice"
-    const { names, id: ids } = await this.getFolderTree(folderId);
-    const index = names.findIndex((i) => i == name);
-    const isCurrentDayQFolderExisting = index >= 0
-
-    if (isCurrentDayQFolderExisting) {
-      const [, id] = ids[index];
-      return id;
-    } else {
-      const response = await this.createFolder({ name, folderId });
-      const { id } = response.data
-      return id;
-    }
-  }
-
-  async getQFolder(date: DateTime) {
-    const name = date.toFormat(this.RECIEPTS_Q_FOLDER_NAME_FORMAT);
-    const id = await this.createQFolder(name);
-    return { name, id }
-  }
-
-  async getSFOSInvoices() {
-    const { GDRIVE_RECEIPTS_FOLDER } = process.env;
-    const { id: ids } = await this.getFolderTree(GDRIVE_RECEIPTS_FOLDER);
-    const [_, ...rest] = ids;
-
-    const invoices = (await Promise.all(rest.map(async ([_, id]) => {
-      const { fileList } = await this.getFileList(id)
-      if (fileList.length > 0) {
-        const { files } = fileList[0];
-        const invoices = files.filter((i: any) => i.name.match(/^[\d]{8}_PC_OR_CIPC_SI.+$/)).map((i: any) => i.name);
-        return invoices;
-      }
-    }))).flat()
-
-    return invoices;
-  }
-
-  async getStaffingBillingInvoicesForMonthOf(date: DateTime) {
-    const qfolder = await this.getQFolder(date)
-
-    const { fileList } = await this.getFileList(qfolder.id)
-    if (fileList.length > 0) {
-      const { files } = fileList[0];
-      const invoices = files.filter((i: any) => i.name.match(/^[\d]{8}_RB_BI_.+$/)).map((i: any) => i.name);
-      return invoices.filter((i: string) => i.startsWith(`${date.year}` + `${date.month}`.padStart(2, "0")));
-    } else {
-      return []
-    }
-  }
-
-  async uploadDownloadedSFOSInvoices() {
-    const { downloadsDir } = this.config;
-    const { sfosNewInvoices } = this.parameters;
-
-    const mimeType = "application/pdf";
-    const numberOfFiles = sfosNewInvoices.length
-    for (let i = 0; i < numberOfFiles; i++) {
-      const item = sfosNewInvoices[i];
-      const { filename: name, soaDate } = item;
-      const filepath = path.join(downloadsDir, name);
-      const folderName = soaDate.toFormat(this.RECIEPTS_Q_FOLDER_NAME_FORMAT);
-      const folderId = await this.createQFolder(folderName)
-
-      const body = fs.createReadStream(filepath);
-      await this.uploadFile({ name, mimeType, folderId, body });
-    }
-
-    this.logger.info("Uploaded %s new files.", numberOfFiles);
-  }
-
-  async uploadPdfsToStaffDrive(driveId: string, pdfs: { filename: string, filepath: string }[]) {
-    const mimeType = "application/pdf";
-    const numberOfFiles = pdfs.length
-    for (let i = 0; i < numberOfFiles; i++) {
-      const item = pdfs[i];
-      const { filename: name, filepath } = item;
-      const folderId = await this.createStaffPayAdviceFolder(driveId)
-
-      const body = fs.createReadStream(filepath);
-      await this.uploadFile({ name, mimeType, folderId, body });
-    }
-
-    this.logger.info("Uploaded %s new files.", numberOfFiles);
+    await this.fullfilled(deleted);
   }
 }

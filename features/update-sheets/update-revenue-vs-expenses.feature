@@ -1,16 +1,29 @@
 Feature: Update Revenue vs Expenses Sheets
 
   Scenario: Monthly Accounting Fees
-    When I enter the monthly accountant fees to the revenue and expenses sheet
+    Given it's the 27th of the month
+    Then the service account creates expense records for:
+      | Accountant  | 2500 | Monthly bank transfer        |
+      | Service Fee |   30 | Accountant bank transfer fee |
 
   Scenario: Monthly Rent Fees
-    When I enter the monthly rent fees to the revenue and expenses sheet
+    Given it's the 1st of the month
+    Then the service account creates expense records for:
+      | Rental | 40550 |
 
   Scenario: Monthly Storage Fees
-    When I enter the monthly storage fees to the revenue and expenses sheet
+    Given it's the 15th of the month
+    Then the service account creates expense records for:
+      | Rental      | 5000 | Storage rent                   |
+      | Service Fee |   30 | Storage rent bank transfer fee |
 
   Scenario: Weekly Mobile Data Charges
-    When I enter the weekly mobile data charges to the revenue and expenses sheet
+    Given it's a Sunday
+    Then the service account creates expense records for:
+      | Mobile Data | 99 | Ops sim load               |
+      | Service Fee |  2 | Gcash sim load service fee |
 
-  Scenario: Weekly GCash Transfer Charges
-    When I enter the weekly gcash transfer fees to the revenue and expenses sheet
+  Scenario: Weekly Mobile Data Charges
+    Given it's a Sunday
+    Then the service account creates expense records for:
+      | Service Fee | 30 | Gcash weekly transfer service fee |

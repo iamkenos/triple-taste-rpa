@@ -1,0 +1,60 @@
+{
+  "parser": "@typescript-eslint/parser",
+  "plugins": ["@typescript-eslint"],
+  "extends": ["eslint:recommended", "plugin:@typescript-eslint/recommended"],
+  "rules": {
+    "@typescript-eslint/ban-ts-comment": ["off", {}],
+    "@typescript-eslint/ban-types": ["off", {}],
+    "@typescript-eslint/no-empty-function": ["off", {}],
+    "@typescript-eslint/no-explicit-any": ["off", {}],
+    "@typescript-eslint/no-var-requires": ["off", {}],
+    "indent": [
+      "error",
+      2,
+      {
+        "SwitchCase": 1,
+        "VariableDeclarator": 1,
+        "outerIIFEBody": 1,
+        "MemberExpression": 1,
+        "FunctionDeclaration": { "parameters": "first" },
+        "FunctionExpression": { "parameters": "first" },
+        "CallExpression": { "arguments": "first" },
+        "ArrayExpression": "first",
+        "ObjectExpression": "first",
+        "ImportDeclaration": "first",
+        "flatTernaryExpressions": false,
+        "ignoreComments": false
+      }
+    ],
+    "comma-dangle": ["error"],
+    "comma-spacing": ["error"],
+    "keyword-spacing": ["error"],
+    "no-unsafe-finally": ["off"],
+    "no-multi-spaces": ["error"],
+    "object-curly-spacing": ["error", "always"],
+    "semi": ["error", "always"],
+    "quotes": ["error", "double"],
+    "space-before-function-paren": ["error", "never"],
+    "space-before-blocks": ["error"],
+    "sort-imports": [
+      "error",
+      { "ignoreCase": true, "ignoreDeclarationSort": true }
+    ]
+  },
+  "overrides": [
+    {
+      "files": ["*.js"],
+      "rules": {
+        "@typescript-eslint/no-unused-vars": ["off", {}],
+        "quotes": ["error", "single"],
+        "no-undef": ["off"]
+      }
+    },
+    {
+      "files": ["types.ts"],
+      "rules": {
+        "no-var": ["off"]
+      }
+    }
+  ]
+}

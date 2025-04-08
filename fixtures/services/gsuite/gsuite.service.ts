@@ -1,12 +1,17 @@
 import { google } from "googleapis";
 
-import { BasePage as BaseService } from "~/fixtures/pages/base.page";
+import { RPA } from "~/fixtures/rpa.app";
 
-export class GSuiteService extends BaseService {
+export class GSuiteService extends RPA {
 
-  protected auth(addtl: string[] = []) {
-    const { GDRIVE_CLIENT_EMAIL, GDRIVE_PKEY } = process.env;
+  /**
+   * Returns a JWT instance for the environment configured service account
+   * @param scopes the list of requested scopes on top of the defined service url
+   * @returns
+   */
+  protected auth(scopes: string[] = []) {
+    const { GSUITE_USER: email, GSUITE_PKEY: key } = this.parameters.env;
     const { JWT } = google.auth;
-    return new JWT(GDRIVE_CLIENT_EMAIL, null, GDRIVE_PKEY.replace(/\|/g,"\n"), [this.url, ...addtl]);
+    return new JWT(email, null, key.replace(/\|/g, "\n"), [this.url, ...scopes]);
   }
 }

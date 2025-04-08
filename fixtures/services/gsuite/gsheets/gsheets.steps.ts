@@ -1,79 +1,68 @@
-import { Before, When, Status } from "@cucumber/cucumber";
-import { FORMATS, getDate } from "~/fixtures/utils/date";
-import { GSheetsService } from "./gsheets.service";
+import { Before, DataTable, Given, Status, When } from "@cucumber/cucumber";
+import { createDate, differenceInDays } from "~/fixtures/utils/date.utils";
 
-import type { This as BaseThis } from "~/fixtures/pages/base.steps";
+import { RevenueAndExpensesSheetService } from "./financials/revenue-and-expenses-sheet.service";
+import { PayoutSheetService } from "./hr/payout-sheet.service";
+import { DailySalesSheetService } from "./sales/daily-sales-sheet.service";
 
-export interface This extends BaseThis {
-  gsheets: GSheetsService;
+import type { This as RPA } from "~/fixtures/rpa.steps";
+
+export interface This extends RPA {
+  revxexp: RevenueAndExpensesSheetService;
+  payout: PayoutSheetService;
+  dailysales: DailySalesSheetService;
 }
 
-Before({}, async function (this: This) {
-  this.gsheets = new GSheetsService();
+Before({}, async function(this: This) {
+  this.revxexp = new RevenueAndExpensesSheetService();
+  this.payout = new PayoutSheetService();
+  this.dailysales = new DailySalesSheetService();
 });
 
-When("I enter the monthly accountant fees to the revenue and expenses sheet", async function (this: This) {
-  const { date, formatted } = getDate({ format: FORMATS.DDMMMYY });
-
-  const updateDay = 27;
-  const shouldUpdate = date.day === updateDay;
-
-  if (!shouldUpdate) {
-    return Status.SKIPPED.toLowerCase();
-  }
-
-  await this.gsheets.updateRevenueAndExpensesSheetDataForExpenses([formatted, "Accountant", 2500, "Accountant Fees"]);
-  await this.gsheets.updateRevenueAndExpensesSheetDataForExpenses([formatted, "Service Fee", 30, `For Accountant Fees ${formatted}`]);
+Given("it's {int} day/days before end of the pay cycle", async function(this: This, offset: number) {
+  const { date } = createDate();
+  const referenceDate = await this.payout.fetchPayCycleEndDate();
+  const difference = differenceInDays(referenceDate, date);
+  const isNotSameDay = difference !== offset;
+  if (isNotSameDay) return Status.SKIPPED.toLowerCase();
 });
 
-When("I enter the monthly rent fees to the revenue and expenses sheet", async function (this: This) {
-  const { date, formatted } = getDate({ format: FORMATS.DDMMMYY });
-
-  const updateDay = getDate().date.startOf("month").day;
-  const shouldUpdate = date.day === updateDay;
-
-  if (!shouldUpdate) {
-    return Status.SKIPPED.toLowerCase();
-  }
-
-  await this.gsheets.updateRevenueAndExpensesSheetDataForExpenses([formatted, "Rental", 40550, `${date.toFormat(FORMATS.MONTH)} Rental`]);
+When("the service account fetches the payout info for all staff", async function(this: This) {
+  this.parameters.gsheets.hr.payout = await this.payout.fetchPayOutInfo();
 });
 
-When("I enter the monthly storage fees to the revenue and expenses sheet", async function (this: This) {
-  const { date, formatted } = getDate({ format: FORMATS.DDMMMYY });
+When("the service account fetches the sales figures for the previous working day", async function(this: This) {
+  const { date } = createDate();
 
-  const updateDay = 15;
-  const shouldUpdate = date.day === updateDay;
-
-  if (!shouldUpdate) {
-    return Status.SKIPPED.toLowerCase();
-  }
-
-  await this.gsheets.updateRevenueAndExpensesSheetDataForExpenses([formatted, "Rental", 5000, `${date.toFormat(FORMATS.MONTH)} Storage Rent`]);
-  await this.gsheets.updateRevenueAndExpensesSheetDataForExpenses([formatted, "Service Fee", 30, `For Storage Rent ${formatted}`]);
+  const days = date.day === 1 ? 3 : 1;
+  const { date: scopeDate } = createDate({ from: date.minus({ days }) });
+  this.parameters.gsheets.sales.daily.figures = await this.dailysales.fetchDailyFiguresFor(scopeDate);
 });
 
-When("I enter the weekly mobile data charges to the revenue and expenses sheet", async function (this: This) {
-  const { date, formatted } = getDate({ format: FORMATS.DDMMMYY });
+When("the service account computes the data to invoice", async function(this: This) {
+  this.parameters.gsheets.sales.daily.invoice = this.dailysales.computeDailyInvoiceData();
 
-  const shouldUpdate = date.weekday === 7;
-
-  if (!shouldUpdate) {
-    return Status.SKIPPED.toLowerCase();
-  }
-
-  await this.gsheets.updateRevenueAndExpensesSheetDataForExpenses([formatted, "Mobile Data", 99, `${date.toFormat(FORMATS.MONTH)} Ops Sim Load`]);
-  await this.gsheets.updateRevenueAndExpensesSheetDataForExpenses([formatted, "Service Fee", 2, `For Ops Sim Load ${formatted}`]);
+  const shouldIssueInvoice = this.parameters.gsheets.sales.daily.invoice.adjTotal > 0;
+  if (!shouldIssueInvoice) return Status.SKIPPED.toLowerCase();
 });
 
-When("I enter the weekly gcash transfer fees to the revenue and expenses sheet", async function (this: This) {
-  const { date, formatted } = getDate({ format: FORMATS.DDMMMYY });
-
-  const shouldUpdate = date.weekday === 7;
-
-  if (!shouldUpdate) {
-    return Status.SKIPPED.toLowerCase();
+When("the service account creates a/an {input_string} expense record for each pay advise", async function(this: This, category: string) {
+  const { advices } = this.parameters.gmail.staff;
+  for (let i = 0; i < advices.length; i++) {
+    const { payReminderInfo, date } = advices[i];
+    const { grossPay, staffId, payCycleId } = payReminderInfo;
+    const amount = this.revxexp.parseAmount(grossPay);
+    const note = `${payCycleId} - ${staffId}`;
+    await this.revxexp.createExpensesRecord({ date, category, amount, note });
   }
+});
 
-  await this.gsheets.updateRevenueAndExpensesSheetDataForExpenses([formatted, "Service Fee", 30, `For GCash Transfer ${formatted}`]);
+When("the service account creates expense records for:", async function(this: This, expenses: DataTable) {
+  const { date } = createDate();
+  const records = expenses.raw();
+  for (let i = 0; i < records.length; i++) {
+    const [category, expense, note = ""] = records[i];
+    const amount = this.revxexp.parseAmount(expense);
+    await this.revxexp.createExpensesRecord({ date, category, amount, note });
+  }
 });

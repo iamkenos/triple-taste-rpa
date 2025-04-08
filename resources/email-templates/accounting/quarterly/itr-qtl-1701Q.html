@@ -1,16 +1,6 @@
 <html>
   <head>
-    <style>
-      div,
-      span {
-        font-family: "Lato", sans-serif;
-        color: #373d35;
-        font-size: 15px;
-      }
-      .strong {
-        font-weight: bold;
-      }
-    </style>
+    [[STYLE]]
   </head>
 
   <body>
@@ -27,24 +17,24 @@
       </span>
       <br />
       <span>
-        Drive Location: receipts >> [[FOLDER_NAME]]
+        Drive Location: receipts >> [[DRIVE_FOLDER_NAME]]
         <ul>
           <li>
             <a
-              href="https://drive.google.com/drive/u/0/search?q=title:[[YEAR_MONTH]][1]%20-_BI_%20-_TR_%20parent:[[FOLDER_ID]]"
-              >[[MONTH_YEAR]][1]</a
+              href="https://drive.google.com/drive/u/0/search?q=title:[[DATE_SHORT_YM]][1]%20-_BI_%20-_TR_%20parent:[[DRIVE_FOLDER_ID]]"
+              >[[DATE_SHORT_MY]][1]</a
             >
           </li>
           <li>
             <a
-              href="https://drive.google.com/drive/u/0/search?q=title:[[YEAR_MONTH]][2]%20-_BI_%20-_TR_%20parent:[[FOLDER_ID]]"
-              >[[MONTH_YEAR]][2]</a
+              href="https://drive.google.com/drive/u/0/search?q=title:[[DATE_SHORT_YM]][2]%20-_BI_%20-_TR_%20parent:[[DRIVE_FOLDER_ID]]"
+              >[[DATE_SHORT_MY]][2]</a
             >
           </li>
           <li>
             <a
-              href="https://drive.google.com/drive/u/0/search?q=title:[[YEAR_MONTH]][3]%20-_BI_%20-_TR_%20parent:[[FOLDER_ID]]"
-              >[[MONTH_YEAR]][3]</a
+              href="https://drive.google.com/drive/u/0/search?q=title:[[DATE_SHORT_YM]][3]%20-_BI_%20-_TR_%20parent:[[DRIVE_FOLDER_ID]]"
+              >[[DATE_SHORT_MY]][3]</a
             >
           </li>
         </ul>
@@ -70,20 +60,6 @@
       <br /><br />
       <span> Thank you. </span>
     </div>
-
-    <div class="signature">
-      <br />
-      <div>Cheers,</div>
-      <div>Triple Taste Team</div>
-      <div>___________________________________</div>
-      <div>
-        <div class="strong">Triple Taste Munchies Food Corner</div>
-        <div>📞 [[SENDER_CONTACT]]</div>
-        <div>
-          ✉️
-          <a href="mailto:[[SENDER_EMAIL]]" target="_blank">[[SENDER_EMAIL]]</a>
-        </div>
-      </div>
-    </div>
+    [[SIG]]
   </body>
 </html>

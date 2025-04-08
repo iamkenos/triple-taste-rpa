@@ -1,5 +1,6 @@
 const { configure } = require('@iamkenos/kyoko/config');
 
 exports.default = configure({
-  shouldUseVideoAttachment: true
+  shouldUseVideoAttachment: true,
+  require: ['fixtures/*.steps.ts', 'fixtures/**/*.steps.ts']
 });

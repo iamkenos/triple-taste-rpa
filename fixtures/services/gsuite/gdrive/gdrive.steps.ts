@@ -1,20 +1,28 @@
-import { Before, Given, Then } from "@cucumber/cucumber";
-import { GDriveService } from "./gdrive.service";
+import { Before, Given, When } from "@cucumber/cucumber";
 
-import type { This as BaseThis } from "~/fixtures/pages/base.steps";
+import { FinancialsDriveService } from "./financials/financials-drive.service";
+import { HRDriveService } from "./hr/hr-drive.service";
 
-export interface This extends BaseThis {
-  gdrive: GDriveService;
+import type { This as RPA } from "~/fixtures/rpa.steps";
+
+export interface This extends RPA {
+  financials: FinancialsDriveService;
+  hr: HRDriveService;
 }
 
-Before({}, async function (this: This) {
-  this.gdrive = new GDriveService();
+Before({}, async function(this: This) {
+  this.financials = new FinancialsDriveService();
+  this.hr = new HRDriveService();
 });
 
-Given("I have the list of uploaded sfos invoices", async function (this: This) {
-  this.parameters.driveUploadedSfosInvoices = await this.gdrive.getSFOSInvoices();
+Given("the service account fetches the list of SFOS invoices from the drive", async function(this: This) {
+  this.parameters.gdrive.financials.receipts.sfos = await this.financials.fetchSFOSInvoices();
 });
 
-Then("I upload the downloaded sfos invoices to the drive", async function (this: This) {
-  await this.gdrive.uploadDownloadedSFOSInvoices();
+When("the service account uploads the new SFOS invoices to the drive", async function(this: This) {
+  await this.financials.uploadNewSFOSInvoices();
+});
+
+When("the service account uploads the new pay advices to the drive", async function(this: This) {
+  await this.hr.uploadNewPayAdvices();
 });

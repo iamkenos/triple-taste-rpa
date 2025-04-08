@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pay Advice [[PA_CYC_ID]]: [[PA_JBI_ID]]</title>
+    [[STYLE]]
+  </head>
+  <body class="pdf">
+    <!-- header -->
+    <div class="stamp">[[PDF_HEADER]]</div>
+
+    <div class="content">
+      <h2 class="heading">Payslip</h2>
+      <div class="section-container">
+        <!-- recipient -->
+        <table class="half-width">
+          <tr>
+            <td>[[PA_RCP_NAME]]</td>
+          </tr>
+          <tr>
+            <td>[[PA_RCP_EMAIL]]</td>
+          </tr>
+          <tr>
+            <td>[[PA_RCP_ADDRESS]]</td>
+          </tr>
+          <tr>
+            <td>[[PA_RCP_ACCOUNT]]</td>
+          </tr>
+        </table>
+        <!-- job info -->
+        <table class="row-bordered half-width">
+          <colgroup>
+            <col class="col-header-25" />
+            <col />
+          </colgroup>
+          <thead>
+            <tr>
+              <th
+                colspan="2"
+                class="row-bordered row-bordered-header th-center"
+              >
+                JOB INFORMATION
+              </th>
+            </tr>
+            <tr></tr>
+          </thead>
+          <tr>
+            <th>Staff ID:</th>
+            <td>[[PA_JBI_ID]]</td>
+          </tr>
+          <tr>
+            <th>Position:</th>
+            <td>[[PA_JBI_POSITION]]</td>
+          </tr>
+          <tr>
+            <th>Daily Rate:</th>
+            <td>[[PA_JBI_RATE]]</td>
+          </tr>
+        </table>
+      </div>
+
+      <div class="section-container">
+        <!-- pay cycle -->
+        <table class="">
+          <colgroup>
+            <col class="col-header" />
+            <col />
+          </colgroup>
+          <thead>
+            <tr>
+              <th
+                colspan="2"
+                class="row-bordered row-bordered-header th-left th-bordered"
+              >
+                PAY CYCLE
+              </th>
+            </tr>
+            <tr></tr>
+          </thead>
+          <tr>
+            <th>ID:</th>
+            <td>[[PA_CYC_ID]]</td>
+          </tr>
+          <tr>
+            <th>Frequency:</th>
+            <td>[[PA_CYC_FREQ]]</td>
+          </tr>
+          <tr>
+            <th>Period:</th>
+            <td>[[PA_CYC_PERIOD]]</td>
+          </tr>
+          <tr>
+            <th>Retro Adjustments:</th>
+            <td>[[PA_CYC_ADJ]]</td>
+          </tr>
+        </table>
+      </div>
+      <div class="section-container">
+        <!-- work hours -->
+        <table class="">
+          <colgroup>
+            <col class="col-header" />
+            <col />
+          </colgroup>
+          <thead>
+            <tr>
+              <th
+                colspan="2"
+                class="row-bordered row-bordered-header th-left th-bordered"
+              >
+                WORKING HOURS
+              </th>
+            </tr>
+            <tr></tr>
+          </thead>
+          <tr>
+            <th>Base Hours:</th>
+            <td>[[PA_HRS_BASE]]</td>
+          </tr>
+          <tr>
+            <th>Overtime Hours:</th>
+            <td>[[PA_HRS_OT]]</td>
+          </tr>
+          <tr>
+            <th>Night Hours:</th>
+            <td>[[PA_HRS_NIGHT]]</td>
+          </tr>
+          <tr>
+            <th>Total Hours:</th>
+            <td>[[PA_HRS_TOTAL]]</td>
+          </tr>
+        </table>
+      </div>
+
+      <div class="section-container">
+        <!-- earnings -->
+        <table class="">
+          <colgroup>
+            <col class="col-header" />
+            <col />
+          </colgroup>
+          <thead>
+            <tr>
+              <th
+                colspan="2"
+                class="row-bordered row-bordered-header th-left th-bordered"
+              >
+                EARNINGS
+              </th>
+            </tr>
+            <tr></tr>
+          </thead>
+          <tr>
+            <th>Year to Date:</th>
+            <td>[[PA_AMT_YTD]]</td>
+          </tr>
+          <tr>
+            <th>Base Pay:</th>
+            <td>[[PA_AMT_BASE]]</td>
+          </tr>
+          <tr>
+            <th>Overtime Pay:</th>
+            <td>[[PA_AMT_OT]]</td>
+          </tr>
+          <tr>
+            <th>Night Pay:</th>
+            <td>[[PA_AMT_NIGHT]]</td>
+          </tr>
+          <tr>
+            <th>13th Month Pay:</th>
+            <td>[[PA_AMT_TNT]]</td>
+          </tr>
+          <tr>
+            <th>Holiday Pay:</th>
+            <td>[[PA_AMT_HOL]]</td>
+          </tr>
+          <tr>
+            <th>Other Adjustments:</th>
+            <td>[[PA_AMT_ADJ]]</td>
+          </tr>
+          <tr>
+            <th>Gross Pay:</th>
+            <td>[[PA_AMT_GRS]]</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+    <!-- footer -->
+    <div class="stamp">[[PDF_FOOTER]]</div>
+    <div class="page-break"></div>
+    <!-- header -->
+    <div class="stamp">[[PDF_HEADER]]</div>
+    <div class="content">
+      <h2 class="heading">Time Card</h2>
+      <div class="section-container">
+        <!-- timesheet -->
+        <table class="row-bordered row-bordered-center">
+          <colgroup>
+            <col class="col-header" />
+            <col class="col-header" />
+            <col class="col-header" />
+            <col class="col-header" />
+            <col class="col-header" />
+          </colgroup>
+          <td colspan="5">[[TBL_DATA]]</td>
+        </table>
+      </div>
+      <div class=""></div>
+    </div>
+    <div class="spacer"></div>
+    <div class="stamp">[[PDF_FOOTER]]</div>
+  </body>
+</html>
