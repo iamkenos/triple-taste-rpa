@@ -111,7 +111,7 @@ Before({}, async function(this: This) {
   this.parameters.gmail = { staff: { advices: [] } };
 });
 
-Given("it's a weekday", async function(this: This) {
+Given("it's a week day", async function(this: This) {
   const { date } = createDate();
   const isNotWeekday = ![1, 2, 3, 4, 5].includes(date.weekday);
   if (isNotWeekday) return Status.SKIPPED.toLowerCase();
