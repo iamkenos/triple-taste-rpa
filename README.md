@@ -6,7 +6,7 @@
 
 <p align="center" width="100%">
   <a href="https://github.com/iamkenos/triple-taste-rpa/actions/workflows/rpa.yml" target="_blank">
-    <img src="https://img.shields.io/github/actions/workflow/status/iamkenos/triple-taste-rpa/rpa.yml?label=rpa%20tests&logo=github">
+    <img src="https://img.shields.io/github/actions/workflow/status/iamkenos/triple-taste-rpa/rpa.yml?label=rpa&logo=github">
   </a>
 </p>
 
