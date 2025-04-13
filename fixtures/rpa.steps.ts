@@ -1,6 +1,8 @@
 import "dotenv/config";
+import fs from "fs";
+
 import { DateTime, DateTimeUnit } from "luxon";
-import { Before, DataTable, Given, Status } from "@cucumber/cucumber";
+import { AfterAll, Before, DataTable, Given, Status } from "@cucumber/cucumber";
 import { World } from "@iamkenos/kyoko/core";
 import {
   createDate,
@@ -109,6 +111,11 @@ Before({}, async function(this: This) {
   this.parameters.gdrive = { financials: { receipts: { sfos: [] } } };
   this.parameters.gsheets = { sales: { daily: { } as any }, hr: { payout: [] } };
   this.parameters.gmail = { staff: { advices: [] } };
+});
+
+AfterAll(async function() {
+  const { config }: Pick<This, "config"> = this.parameters as any;
+  fs.rmSync(config.downloadsDir, { force: true, recursive: true });
 });
 
 Given("it's a week day", async function(this: This) {

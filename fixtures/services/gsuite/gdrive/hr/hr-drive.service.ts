@@ -39,11 +39,9 @@ export class HRDriveService extends GDriveService {
 
         const padAvise = fs.createReadStream(payAdvisePdf.filepath);
         await this.createFileUnder({ filename: payAdvisePdf.filename, mimeType, parent: folderId, body: padAvise });
-        fs.rmSync(payAdvisePdf.filepath);
 
         const timesheet = fs.createReadStream(timesheetPdf.filepath);
         await this.createFileUnder({ filename: timesheetPdf.filename, mimeType, parent: folderId, body: timesheet });
-        fs.rmSync(timesheetPdf.filepath);
       }));
 
     const result = await this.fullfilled(uploaded);

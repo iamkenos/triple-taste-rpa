@@ -68,7 +68,6 @@ export class FinancialsDriveService extends GDriveService {
 
         const body = fs.createReadStream(filepath);
         await this.createFileUnder({ parent, filename, body, mimeType });
-        fs.rmSync(filepath);
       }));
 
     const result = await this.fullfilled(uploaded);

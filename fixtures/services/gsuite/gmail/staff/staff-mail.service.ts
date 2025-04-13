@@ -166,7 +166,7 @@ export class StaffMailService extends GMailService {
       .replaceAll(markers.tblData, content.staffTimeSheet);
 
     const filename = `${kebabCase(`${payCycleId}-${staffId}`).toUpperCase()}.${Ext.PDF}`;
-    const filepath = path.join(staffDir, filename);
+    const filepath = path.join(this.config.downloadsDir, filename);
     await this.createPDF(body, filepath);
     return { filename, filepath, driveId } as StaffPayAdviseFile;
   }
@@ -192,7 +192,7 @@ export class StaffMailService extends GMailService {
       .replaceAll(markers.tblData, content.fullTimeSheet);
 
     const filename = `${kebabCase(`${payCycleId}-${staffId}`).toUpperCase()}-timesheet.${Ext.PDF}`;
-    const filepath = path.join(staffDir, filename);
+    const filepath = path.join(this.config.downloadsDir, filename);
     await this.createPDF(body, filepath, true);
     return { filename, filepath, driveId } as StaffPayAdviseFile;
   }
