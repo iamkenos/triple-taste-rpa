@@ -34,7 +34,7 @@ When("the service account fetches the payout info for all staff", async function
 When("the service account fetches the sales figures for the previous working day", async function(this: This) {
   const { date } = createDate();
 
-  const days = date.day === 1 ? 3 : 1;
+  const days = date.weekday === 1 ? 3 : 1;
   const { date: scopeDate } = createDate({ from: date.minus({ days }) });
   this.parameters.gsheets.sales.daily.figures = await this.dailysales.fetchDailyFiguresFor(scopeDate);
 });
