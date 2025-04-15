@@ -32,4 +32,4 @@ Feature: Update Revenue vs Expenses Sheets
   Scenario: Weekly Mobile Data Charges
     Given it's a Sunday
     Then the service account creates expense records for:
-      | Service Fee | 30 | Gcash weekly transfer service fee |
+      | Service Fee | 15 | Gcash weekly transfer service fee |
