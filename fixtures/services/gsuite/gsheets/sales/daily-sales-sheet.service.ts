@@ -61,7 +61,7 @@ export class DailySalesSheetService extends GSheetsService {
 
   computeDailyInvoiceData() {
     const { figures } = this.parameters.gsheets.sales.daily;
-    const adjRate = 0.3;
+    const adjRate = 0.45;
 
     const adjQty = Math.floor(figures.qty - (figures.qty * (adjRate + 0.05)));
     const cohAndGCashAmount = figures.cohAmount + figures.gCashAmount;
