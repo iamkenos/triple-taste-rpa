@@ -67,3 +67,11 @@ When("the service account sends the fortnightly pay advice email", async functio
 When("the service account sends the fortnightly pay reminder email", async function(this: This) {
   await this.staff.sendFortnightlyPayReminderEmail();
 });
+
+When("the service account collates the shift rotation data", async function(this: This) {
+  this.parameters.gmail.staff.rotation = await this.staff.collateShiftRotationData();
+});
+
+When("the service account sends the fortnightly shift rotation email", async function(this: This) {
+  await this.staff.sendFortnightlyShiftRotationEmail();
+});

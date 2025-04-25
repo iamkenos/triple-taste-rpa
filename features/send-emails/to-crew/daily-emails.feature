@@ -1,6 +1,6 @@
-Feature: Daily Revenue Emails
+Feature: Daily Emails
 
-  Scenario: Daily Invoicing
+  Scenario: Daily Revenue Invoicing
     Given it's a week day
     When the service account fetches the sales figures for the previous working day
       And the service account computes the data to invoice

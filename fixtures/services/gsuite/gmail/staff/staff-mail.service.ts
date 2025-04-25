@@ -5,7 +5,12 @@ import { Ext, MimeType } from "~/fixtures/utils/file.utils";
 
 import { GMailService } from "~/fixtures/services/gsuite/gmail/gmail.service";
 
-import type { StaffPayAdviseFile, StaffPayAdviseInfo, StaffPayReminderInfo } from "~/fixtures/services/gsuite/gmail/gmail.types";
+import type {
+  StaffPayAdviseFile,
+  StaffPayAdviseInfo,
+  StaffPayReminderInfo,
+  StaffShiftRotationInfo
+} from "~/fixtures/services/gsuite/gmail/gmail.types";
 import type { StaffPayOutInfo } from "~/fixtures/services/gsuite/gsheets/gsheets.types";
 
 export class StaffMailService extends GMailService {
@@ -93,7 +98,8 @@ export class StaffMailService extends GMailService {
       baseHours: workHoursInfo[0][1],
       overtimeHours: workHoursInfo[1][1],
       nightHours: workHoursInfo[2][1],
-      totalHours: workHoursInfo[3][1]
+      totalHours: workHoursInfo[3][1],
+      shift: workHoursInfo[4][1]
     };
 
     const earningsSection = {
@@ -245,6 +251,23 @@ export class StaffMailService extends GMailService {
     return result;
   }
 
+  async collateShiftRotationData() {
+    const { payout } = this.parameters.gsheets.hr;
+    const collated = await Promise.allSettled(payout
+      .map((v: StaffPayOutInfo) => this.buildPayAdvisePDFContentFrom(v))
+      .map(async(v: StaffPayAdviseInfo) => {
+        const { recipientSection, workHoursSection, payCycleSection } = v;
+        const staffName = recipientSection.staffName;
+        const emailAddress = recipientSection.emailAddress;
+        const shift = workHoursSection.shift;
+        const period = payCycleSection.period;
+        return { staffName, emailAddress, shift, period } as StaffShiftRotationInfo;
+      }));
+
+    const result = await this.fullfilled(collated);
+    return result;
+  }
+
   async sendFortnightlyPayAdviceEmail() {
     const { fortnightly } = this.frequency;
 
@@ -297,5 +320,33 @@ export class StaffMailService extends GMailService {
 
     const { STAFF_EMAIL_RECIPIENTS_CC: to } = this.parameters.env;
     await this.sendEmail({ to, subject, body });
+  }
+
+  async sendFortnightlyShiftRotationEmail() {
+    const { fortnightly } = this.frequency;
+
+    const templatePath = path.join(this.config.baseDir, this.staffTemplates, fortnightly, "shift-rotation.html");
+    const template = super.buildBaseEmailTemplate({ templatePath });
+
+    const shiftRotationInfo = this.parameters.gmail.staff.rotation;
+    const [common] = shiftRotationInfo;
+
+    const to = shiftRotationInfo.map(({ emailAddress }) => emailAddress).join();
+    const subject = `Shift Rotation for ${common.period}`;
+    const shiftRotationTable = shiftRotationInfo
+      .map(v => `
+        <tr>
+          <td>${v.staffName}</td>
+          <td>${v.shift}</td>
+        </tr>`)
+      .join("");
+
+    const markers = this.getTemplateMarkers();
+    const body = template
+      .replaceAll(markers.tblData, shiftRotationTable)
+      .replaceAll(markers.paCycPeriod, common.period);
+
+    const { STAFF_EMAIL_RECIPIENTS_CC: cc } = this.parameters.env;
+    await this.sendEmail({ to, cc, subject, body });
   }
 }

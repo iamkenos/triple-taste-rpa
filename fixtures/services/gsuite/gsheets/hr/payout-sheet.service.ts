@@ -41,4 +41,25 @@ export class PayoutSheetService extends GSheetsService {
     const result = await this.fullfilled(payOutInfo);
     return result;
   }
+
+  async updateToNextPayCycle() {
+    const sheets = await this.fetchStaffSheets();
+    const payCycle = await Promise.allSettled(sheets
+      .map(async({ sheetName }) => {
+        const range = "K2";
+        const { value: cycle } = await this.fetchRangeContents({ sheetName, range });
+        await this.updateRangeContents({ sheetName, range, values: [`${+cycle + 1}`] });
+      }));
+    await this.fullfilled(payCycle);
+  }
+
+  async revertToCurrentPayCycle() {
+    const sheets = await this.fetchStaffSheets();
+    const payCycle = await Promise.allSettled(sheets
+      .map(async({ sheetName }) => {
+        const range = "K2";
+        await this.updateRangeContents({ sheetName, range, values: ["=F1"] });
+      }));
+    await this.fullfilled(payCycle);
+  }
 }

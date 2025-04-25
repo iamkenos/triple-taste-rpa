@@ -230,15 +230,20 @@ export class GSheetsService extends GSuiteService {
 
     const fullRange = `${sheetName}!${range}`;
 
-    await connection.spreadsheets.values.update({
-      auth,
-      spreadsheetId,
-      range: fullRange,
-      valueInputOption: "USER_ENTERED",
-      requestBody: {
-        values: [values]
-      }
-    });
+    try {
+      await connection.spreadsheets.values.update({
+        auth,
+        spreadsheetId,
+        range: fullRange,
+        valueInputOption: "USER_ENTERED",
+        requestBody: {
+          values: [values]
+        }
+      });
+    } catch (error) {
+      this.logger.error(error.message);
+      throw error;
+    }
   }
 
   getWebViewUrl({ sheetId, viewId }: WorkbookResource) {

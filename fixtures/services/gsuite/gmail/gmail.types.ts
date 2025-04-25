@@ -29,6 +29,7 @@ export type StaffPayAdviseInfo = {
     overtimeHours: string;
     nightHours: string;
     totalHours: string;
+    shift: string;
   };
   earningsSection: {
     ytd: string;
@@ -58,4 +59,11 @@ export type StaffPayReminderInfo = {
   account: string;
   payCycleId: string;
   emailAddress: string;
+}
+
+export type StaffShiftRotationInfo = {
+  period: string;
+  staffName: string;
+  emailAddress: string;
+  shift: string;
 }

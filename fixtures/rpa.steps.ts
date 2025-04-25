@@ -13,7 +13,7 @@ import {
 } from "~/fixtures/utils/date.utils";
 
 
-import type { StaffPayAdviseFile, StaffPayReminderInfo } from "~/fixtures/services/gsuite/gmail/gmail.types";
+import type { StaffPayAdviseFile, StaffPayReminderInfo, StaffShiftRotationInfo } from "~/fixtures/services/gsuite/gmail/gmail.types";
 import type {
   DailySales,
   DailySalesInvoiceData,
@@ -85,7 +85,8 @@ export interface Parameters {
         payAdvisePdf: StaffPayAdviseFile;
         timesheetPdf: StaffPayAdviseFile;
         date: DateTime;
-      }[]
+      }[],
+      rotation: StaffShiftRotationInfo[]
     }
   }
   gsheets: {
@@ -110,7 +111,7 @@ Before({}, async function(this: This) {
   this.parameters.sfos = { toUpload: [], toDownload: [] };
   this.parameters.gdrive = { financials: { receipts: { sfos: [] } } };
   this.parameters.gsheets = { sales: { daily: { } as any }, hr: { payout: [] } };
-  this.parameters.gmail = { staff: { advices: [] } };
+  this.parameters.gmail = { staff: { advices: [], rotation: [] } };
 });
 
 AfterAll(async function() {

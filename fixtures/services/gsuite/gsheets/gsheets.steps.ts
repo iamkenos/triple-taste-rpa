@@ -27,8 +27,22 @@ Given("it's {int} day/days before end of the pay cycle", async function(this: Th
   if (isNotSameDay) return Status.SKIPPED.toLowerCase();
 });
 
+Given("it's the end of the pay cycle", async function(this: This) {
+  const { date } = createDate();
+  const referenceDate = await this.payout.fetchPayCycleEndDate();
+  const difference = differenceInDays(referenceDate, date);
+  const isNotSameDay = difference !== 0;
+  if (isNotSameDay) return Status.SKIPPED.toLowerCase();
+});
+
 When("the service account fetches the payout info for all staff", async function(this: This) {
   this.parameters.gsheets.hr.payout = await this.payout.fetchPayOutInfo();
+});
+
+When("the service account fetches the next pay cycle shift info for all staff", async function(this: This) {
+  await this.payout.updateToNextPayCycle();
+  this.parameters.gsheets.hr.payout = await this.payout.fetchPayOutInfo();
+  await this.payout.revertToCurrentPayCycle();
 });
 
 When("the service account fetches the sales figures for the previous working day", async function(this: This) {
