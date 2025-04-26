@@ -14,6 +14,7 @@
   "dependencies": {
     "@iamkenos/kyoko": "^0.5.1",
     "@types/nodemailer": "^6.4.17",
+    "axios": "^1.9.0",
     "google-drive-getfilelist": "^1.0.5",
     "googleapis": "^142.0.0",
     "luxon": "^3.5.0",

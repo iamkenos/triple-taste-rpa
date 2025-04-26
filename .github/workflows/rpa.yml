@@ -40,6 +40,8 @@ jobs:
           ACCTG_EMAIL_RECIPIENTS_CC: "${{ secrets.ACCTG_EMAIL_RECIPIENTS_CC }}"
           STAFF_EMAIL_RECIPIENTS: "${{ secrets.STAFF_EMAIL_RECIPIENTS }}"
           STAFF_EMAIL_RECIPIENTS_CC: "${{ secrets.STAFF_EMAIL_RECIPIENTS_CC }}"
+          TELEGRAM_BOT_KEY: "${{ secrets.TELEGRAM_BOT_KEY }}"
+          TELEGRAM_CHAT_ID: "${{ secrets.TELEGRAM_CHAT_ID }}"
           PARALLEL: "0"
           HEADLESS: true
         run: npm start

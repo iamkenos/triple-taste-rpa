@@ -63,6 +63,11 @@ export interface Parameters {
     STAFF_EMAIL_RECIPIENTS: string;
     /** the staff email service cc recipient(s) — comma separated */
     STAFF_EMAIL_RECIPIENTS_CC: string;
+
+    /** the telegram bot key c/o botfather */
+    TELEGRAM_BOT_KEY: string;
+    /** the telegram chat id c/o userinfobot */
+    TELEGRAM_CHAT_ID: string;
   };
   sfos: {
     /** an array of downloaded invoices from SFOS ready to be uploaded to the drive */
