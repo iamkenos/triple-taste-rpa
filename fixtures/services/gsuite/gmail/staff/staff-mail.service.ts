@@ -253,19 +253,25 @@ export class StaffMailService extends GMailService {
 
   async collateShiftRotationData() {
     const { payout } = this.parameters.gsheets.hr;
+    const shifts = { morning: { idx: 0, ico: "🏙️" }, mid: { idx: 1, ico: "🌇" }, night: { idx: 2, ico: "🌃" } };
+    const shiftsIcon = (v: string) => shifts[Object.keys(shifts).find(k => v.toLowerCase().startsWith(k))].ico;
+    const shiftsIndex = (v: string) => shifts[Object.keys(shifts).find((k ) => v.toLowerCase().startsWith(k))].idx;
     const collated = await Promise.allSettled(payout
       .map((v: StaffPayOutInfo) => this.buildPayAdvisePDFContentFrom(v))
       .map(async(v: StaffPayAdviseInfo) => {
         const { recipientSection, workHoursSection, payCycleSection } = v;
         const staffName = recipientSection.staffName;
         const emailAddress = recipientSection.emailAddress;
-        const shift = workHoursSection.shift;
+        const shift = workHoursSection.shift.replaceAll(":00", "");
+        const shiftIcon = shiftsIcon(shift);
+        const shiftIndex = shiftsIndex(shift);
         const period = payCycleSection.period;
-        return { staffName, emailAddress, shift, period } as StaffShiftRotationInfo;
+        return { staffName, emailAddress, shift, shiftIcon, shiftIndex, period } as StaffShiftRotationInfo;
       }));
 
     const result = await this.fullfilled(collated);
-    return result;
+    const sorted = result.sort((a, b) => a.shiftIndex - b.shiftIndex);
+    return sorted;
   }
 
   async sendFortnightlyPayAdviceEmail() {

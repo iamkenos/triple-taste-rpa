@@ -16,14 +16,33 @@ export class TelegramSerice extends RPA {
             "Content-Type": "application/json"
           },
           chat_id: this.id,
-          text: message
+          text: message,
+          parse_mode: "Markdown"
         });
       return result.data;
     }
     catch (error) {
-      this.logger.error(error.message);
+      this.logger.error(error.message, error?.response?.data?.description);
       throw error;
     }
+  }
+
+  async sendShiftRotationMessage() {
+    const shiftRotationInfo = this.parameters.gmail.staff.rotation;
+    const firstName = (staffName: string) => staffName.split(" ")[0];
+
+    const message = `
+────────────────
+📌 *Announcement: Shift Rotation*
+────────────────
+
+*Date Range:*
+- ${shiftRotationInfo[0].period}
+
+*Roster:*
+${shiftRotationInfo.map(v => `- ${v.shiftIcon} ${firstName(v.staffName)}: ${v.shift}`).join("\n")}
+────────────────`;
+    await this.sendMessage({ message });
   }
 
   async fetchMessagesToday() {

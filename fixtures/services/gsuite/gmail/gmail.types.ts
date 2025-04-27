@@ -66,4 +66,6 @@ export type StaffShiftRotationInfo = {
   staffName: string;
   emailAddress: string;
   shift: string;
+  shiftIcon: string;
+  shiftIndex: number;
 }
