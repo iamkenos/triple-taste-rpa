@@ -12,13 +12,19 @@ import {
   Unit
 } from "~/fixtures/utils/date.utils";
 
-
-import type { StaffPayAdviseFile, StaffPayReminderInfo, StaffShiftRotationInfo } from "~/fixtures/services/gsuite/gmail/gmail.types";
+import type {
+  StaffPayAdviseFile,
+  StaffPayReminderInfo,
+  StaffShiftRotationInfo
+} from "~/fixtures/services/gsuite/gmail/gmail.types";
 import type {
   DailySales,
   DailySalesInvoiceData,
   StaffPayOutInfo
 } from "~/fixtures/services/gsuite/gsheets/gsheets.types";
+import type {
+  DailyRemainingInventory
+} from "~/fixtures/services/telegram/telegram.types";
 
 export interface Parameters {
   env: {
@@ -41,6 +47,8 @@ export interface Parameters {
     GSHEETS_FI_REV_X_EXP_TRACKER_ID: string;
     /** the gsheets resource id sales and inventory > daily sales tracker file — replaced annually */
     GSHEETS_SI_SALES_TRACKER_ID: string;
+    /** the gsheets resource id sales and inventory > inventory management file — replaced annually */
+    GSHEETS_SI_INVENTORY_TRACKER_ID: string;
     /** the gsheets resource id hr > payout tracker file — replaced annually */
     GSHEETS_HR_PAYOUT_TRACKER_ID: string;
 
@@ -91,7 +99,7 @@ export interface Parameters {
         timesheetPdf: StaffPayAdviseFile;
         date: DateTime;
       }[],
-      rotation: StaffShiftRotationInfo[]
+      rotation: StaffShiftRotationInfo[];
     }
   }
   gsheets: {
@@ -102,6 +110,10 @@ export interface Parameters {
         /** the invoice data based on figures for the previous working day */
         invoice: DailySalesInvoiceData,
       };
+    };
+    inventory: {
+      items: string[];
+      remaining: DailyRemainingInventory[];
     };
     hr: {
       payout: StaffPayOutInfo[];
@@ -115,7 +127,7 @@ Before({}, async function(this: This) {
   this.parameters.env = process.env as any;
   this.parameters.sfos = { toUpload: [], toDownload: [] };
   this.parameters.gdrive = { financials: { receipts: { sfos: [] } } };
-  this.parameters.gsheets = { sales: { daily: { } as any }, hr: { payout: [] } };
+  this.parameters.gsheets = { sales: { daily: {} as any }, inventory: { items: [], remaining: [] }, hr: { payout: [] } };
   this.parameters.gmail = { staff: { advices: [], rotation: [] } };
 });
 
@@ -128,6 +140,13 @@ Given("it's a week day", async function(this: This) {
   const { date } = createDate();
   const isNotWeekday = ![1, 2, 3, 4, 5].includes(date.weekday);
   if (isNotWeekday) return Status.SKIPPED.toLowerCase();
+});
+
+Given("it's a day that falls in any of:", async function(this: This, days: DataTable) {
+  const { date } = createDate();
+  const range = days.raw().flat().map((v) => v.toUpperCase()).map((v) => Day[v]);
+  const isNotWithinRange = !range.includes(date.weekday);
+  if (isNotWithinRange) return Status.SKIPPED.toLowerCase();
 });
 
 Given("it's a {word}", async function(this: This, day: keyof typeof Day) {

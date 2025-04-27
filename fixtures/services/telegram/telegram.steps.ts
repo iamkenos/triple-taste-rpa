@@ -19,3 +19,7 @@ When("the service account sends an announcement:", async function(this: This, me
 When("the service account sends the fortnightly shift rotation announcement", async function(this: This) {
   await this.telegram.sendShiftRotationMessage();
 });
+
+When("the service account fetches remaining inventory for the day from the ops channel", async function(this: This) {
+  this.parameters.gsheets.inventory.remaining = await this.telegram.fetchInventoryDataForToday();
+});

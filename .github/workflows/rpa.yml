@@ -32,6 +32,7 @@ jobs:
           GSHEETS_FI_REV_X_EXP_TRACKER_ID: "${{ secrets.GSHEETS_FI_REV_X_EXP_TRACKER_ID }}"
           GSHEETS_SI_SALES_TRACKER_ID: "${{ secrets.GSHEETS_SI_SALES_TRACKER_ID }}"
           GSHEETS_HR_PAYOUT_TRACKER_ID: "${{ secrets.GSHEETS_HR_PAYOUT_TRACKER_ID }}"
+          GSHEETS_SI_INVENTORY_TRACKER_ID: "${{ secrets.GSHEETS_SI_INVENTORY_TRACKER_ID }}"
           GMAIL_USER: "${{ secrets.GMAIL_USER }}"
           GMAIL_PKEY: "${{ secrets.GMAIL_PKEY }}"
           SENDER_EMAIL_CONTACT_NO: "${{ secrets.SENDER_EMAIL_CONTACT_NO }}"

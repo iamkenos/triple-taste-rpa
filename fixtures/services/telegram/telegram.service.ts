@@ -1,7 +1,11 @@
+import { distance } from "fastest-levenshtein";
+
 import axios from "axios";
 
 import { RPA } from "~/fixtures/rpa.app";
 import { createDate, Unit } from "~/fixtures/utils/date.utils";
+
+import type { DailyRemainingInventory } from "~/fixtures/services/telegram/telegram.types";
 
 export class TelegramSerice extends RPA {
 
@@ -61,5 +65,65 @@ ${shiftRotationInfo.map(v => `- ${v.shiftIcon} ${firstName(v.staffName)}: ${v.sh
       this.logger.error(error.message);
       throw error;
     }
+  }
+
+  async fetchInventoryDataForToday() {
+    const messages = await this.fetchMessagesToday();
+    const inventoryMessage: string = messages.slice().reverse().find(v => v.message?.text?.includes("remaining items"))?.message?.text || "";
+    const input = inventoryMessage.split("\n");
+    const items = this.parameters.gsheets.inventory.items;
+
+    const normalize = (text: string) => text.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+    const findBestMatch = (name: string, filters: string[]) => {
+      const normalizedName = normalize(name);
+
+      // try partial matches first
+      for (const filter of filters) {
+        const normalizedFilter = normalize(filter);
+        if (normalizedName.includes(normalizedFilter) || normalizedFilter.includes(normalizedName)) {
+          return filter;
+        }
+      }
+
+      // fallback: fuzzy match
+      for (const filter of filters) {
+        const normalizedFilter = normalize(filter);
+        const score = distance(normalizedName, normalizedFilter);
+        if (score <= 3) {
+          return filter;
+        }
+      }
+    };
+    const splitProductLine = (line: string) => {
+      const lastEqual = line.lastIndexOf("=");
+      const lastDash = line.lastIndexOf("-");
+      const splitIndex = Math.max(lastEqual, lastDash);
+
+      if (splitIndex === -1) return null; // not a valid product line
+      const rawName = line.slice(0, splitIndex).trim();
+      const rawValue = line.slice(splitIndex + 1).trim();
+
+      return [rawName, rawValue];
+    };
+    const buildInventoryData = (input: string[], filters: string[]) => {
+      const output: DailyRemainingInventory[] = [];
+      for (const line of input) {
+        const split = splitProductLine(line);
+        if (!split) continue; // skip non-product lines
+
+        const [rawName, rawValue] = split;
+        const name = findBestMatch(rawName, filters);
+
+        if (name) {
+          const numericMatch = rawValue.match(/\d+/);
+          const value = numericMatch ? numericMatch[0] : "0";
+          output.push({ name, value });
+        }
+      }
+      return output;
+    };
+
+    const inventoryData = buildInventoryData(input, items);
+    return inventoryData ;
   }
 }

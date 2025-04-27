@@ -4,6 +4,7 @@ import { createDate, differenceInDays } from "~/fixtures/utils/date.utils";
 import { RevenueAndExpensesSheetService } from "./financials/revenue-and-expenses-sheet.service";
 import { PayoutSheetService } from "./hr/payout-sheet.service";
 import { DailySalesSheetService } from "./sales/daily-sales-sheet.service";
+import { InventoryManagementSheetService } from "./sales/inventory-management-sheet.service";
 
 import type { This as RPA } from "~/fixtures/rpa.steps";
 
@@ -11,12 +12,14 @@ export interface This extends RPA {
   revxexp: RevenueAndExpensesSheetService;
   payout: PayoutSheetService;
   dailysales: DailySalesSheetService;
+  inventory: InventoryManagementSheetService;
 }
 
 Before({}, async function(this: This) {
   this.revxexp = new RevenueAndExpensesSheetService();
   this.payout = new PayoutSheetService();
   this.dailysales = new DailySalesSheetService();
+  this.inventory = new InventoryManagementSheetService();
 });
 
 Given("it's {int} day/days before end of the pay cycle", async function(this: This, offset: number) {
@@ -79,4 +82,16 @@ When("the service account creates expense records for:", async function(this: Th
     const amount = this.revxexp.parseAmount(expense);
     await this.revxexp.createExpensesRecord({ date, category, amount, note });
   }
+});
+
+When("the service account fetches the list of items from the inventory sheet", async function(this: This) {
+  this.parameters.gsheets.inventory.items = await this.inventory.fetchListOfItems();
+});
+
+When("the service account updates the remaining items on the inventory sheet", async function(this: This) {
+  const { date } = createDate();
+
+  const days = date.weekday == 6 ? 2 : date.weekday == 7 ? 1 : 0;
+  const { date: scopeDate } = createDate({ from: date.plus({ days }) });
+  await this.inventory.updateRemainingInventoryFor(scopeDate);
 });
