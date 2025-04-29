@@ -2,8 +2,9 @@ name: RPA
 
 on:
   schedule:
-    # Roughly 11:45 PM GMT or 7:40 AM GMT8
-    - cron: "45 23 * * *"
+    # Roughly 12:30 AM GMT or 8:30 AM GMT8
+    # https://crontab.guru/
+    - cron: "30 00 * * *"
 
   workflow_dispatch:
 
