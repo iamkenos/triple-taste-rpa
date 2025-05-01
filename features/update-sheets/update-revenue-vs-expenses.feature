@@ -29,7 +29,7 @@ Feature: Update Revenue vs Expenses Sheets
       | Mobile Data | 99 | Ops sim load               |
       | Service Fee |  2 | Gcash sim load service fee |
 
-  Scenario: Weekly Mobile Data Charges
+  Scenario: Weekly Gcash Transfer Charges
     Given it's a Sunday
     Then the service account creates expense records for:
       | Service Fee | 15 | Gcash weekly transfer service fee |
