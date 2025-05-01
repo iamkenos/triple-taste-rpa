@@ -60,3 +60,11 @@ export function createDate({ from = DateTime.now(), format = Format.DATETIME_FUL
 export function differenceInDays(reference: DateTime, target: DateTime) {
   return Math.floor(reference.startOf(Unit.DAY).diff(target.startOf(Unit.DAY), "days").days);
 }
+
+export function createDateFromNearestWeekday(weekday: number) {
+  const { date: today } = createDate();
+  const dayOfWeek = today.weekday;
+  const daysToAdd = dayOfWeek <= weekday ? weekday - dayOfWeek : 7 - (dayOfWeek - weekday);
+  const result = createDate({ from: today.plus({ days: daysToAdd }) });
+  return result;
+}

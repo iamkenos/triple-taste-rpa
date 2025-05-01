@@ -20,6 +20,7 @@ import type {
 import type {
   DailySales,
   DailySalesInvoiceData,
+  DepositData,
   StaffPayOutInfo
 } from "~/fixtures/services/gsuite/gsheets/gsheets.types";
 import type {
@@ -76,6 +77,8 @@ export interface Parameters {
     TELEGRAM_BOT_KEY: string;
     /** the telegram chat id c/o userinfobot */
     TELEGRAM_CHAT_ID: string;
+
+    WEBHOOK_RPA_RUNNER_PORT: string;
   };
   sfos: {
     /** an array of downloaded invoices from SFOS ready to be uploaded to the drive */
@@ -110,6 +113,8 @@ export interface Parameters {
         /** the invoice data based on figures for the previous working day */
         invoice: DailySalesInvoiceData,
       };
+      /** the expected deposit amount data */
+      deposit: DepositData;
     };
     inventory: {
       items: string[];
@@ -127,7 +132,7 @@ Before({}, async function(this: This) {
   this.parameters.env = process.env as any;
   this.parameters.sfos = { toUpload: [], toDownload: [] };
   this.parameters.gdrive = { financials: { receipts: { sfos: [] } } };
-  this.parameters.gsheets = { sales: { daily: {} as any }, inventory: { items: [], remaining: [] }, hr: { payout: [] } };
+  this.parameters.gsheets = { sales: { daily: {} as any, deposit: {} as any }, inventory: { items: [], remaining: [] }, hr: { payout: [] } };
   this.parameters.gmail = { staff: { advices: [], rotation: [] } };
 });
 

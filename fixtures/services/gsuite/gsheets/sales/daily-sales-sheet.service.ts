@@ -1,15 +1,19 @@
 import { GSheetsService } from "~/fixtures/services/gsuite/gsheets/gsheets.service";
 import { Format } from "~/fixtures/utils/date.utils";
 
-import type { DailySales, DailySalesInvoiceData } from "~/fixtures/services/gsuite/gsheets/gsheets.types";
+import type { DailySales, DailySalesInvoiceData, DepositData } from "~/fixtures/services/gsuite/gsheets/gsheets.types";
 import type { DateTime } from "luxon";
 
 export class DailySalesSheetService extends GSheetsService {
 
   protected spreadsheetId = this.parameters.env.GSHEETS_SI_SALES_TRACKER_ID;
 
+  private getQSheetFor(date: DateTime) {
+    return date.toFormat(Format.DATE_SHORT_YQ.replace(" ", "_"));
+  }
+
   async fetchDailyFiguresFor(date: DateTime) {
-    const sheetName = date.toFormat(Format.DATE_SHORT_YQ.replace(" ", "_"));
+    const sheetName = this.getQSheetFor(date);
     const searchFor = date.toFormat(Format.DATE_SHORT_DM);
     const totalOf = (breakdown: string) => breakdown.split(" / ").map(i => +i).reduce((a, c) => a + c);
 
@@ -56,6 +60,18 @@ export class DailySalesSheetService extends GSheetsService {
       grabAmount: this.parseAmount(grabValue),
       pandaAmount: this.parseAmount(pandaValue)
     } as DailySales;
+  }
+
+  async fetchDepositAmountFor(date: DateTime) {
+    const sheetName = this.getQSheetFor(date);
+    const searchFor = date.toFormat(Format.DATE_SHORT_DM);
+
+    const searchRange = "AI8:AJ200";
+    const cell = await this.findCell({ sheetName, searchRange, searchFor, partialMatch: true });
+
+    const amountRange = this.serializeToGSheetsCellAddress({ col: cell.col, row: cell.row + 1 });
+    const { value: amount } = await this.fetchRangeContents({ sheetName, range: amountRange });
+    return { amount, date: cell.value } as DepositData;
   }
 
   computeDailyInvoiceData() {

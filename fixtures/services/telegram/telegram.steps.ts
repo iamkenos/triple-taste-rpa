@@ -1,15 +1,15 @@
 import { Before, When } from "@cucumber/cucumber";
 
-import { TelegramSerice } from "./telegram.service";
+import { TelegramService } from "./telegram.service";
 
 import type { This as RPA } from "~/fixtures/rpa.steps";
 
 export interface This extends RPA {
-  telegram: TelegramSerice;
+  telegram: TelegramService;
 }
 
 Before({}, async function(this: This) {
-  this.telegram = new TelegramSerice();
+  this.telegram = new TelegramService();
 });
 
 When("the service account sends an announcement:", async function(this: This, message: string) {
@@ -18,6 +18,10 @@ When("the service account sends an announcement:", async function(this: This, me
 
 When("the service account sends the fortnightly shift rotation announcement", async function(this: This) {
   await this.telegram.sendShiftRotationMessage();
+});
+
+When("the service account sends the expected deposit amount on the channel", async function(this: This) {
+  await this.telegram.sendExpectedDepositAmount();
 });
 
 When("the service account fetches remaining inventory for the day from the ops channel", async function(this: This) {

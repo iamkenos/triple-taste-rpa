@@ -7,7 +7,7 @@ import { createDate, Unit } from "~/fixtures/utils/date.utils";
 
 import type { DailyRemainingInventory } from "~/fixtures/services/telegram/telegram.types";
 
-export class TelegramSerice extends RPA {
+export class TelegramService extends RPA {
 
   private token = this.parameters.env.TELEGRAM_BOT_KEY;
   private id = this.parameters.env.TELEGRAM_CHAT_ID;
@@ -46,6 +46,16 @@ export class TelegramSerice extends RPA {
 *Roster:*
 ${shiftRotationInfo.map(v => `- ${v.shiftIcon} ${firstName(v.staffName)}: ${v.shift}`).join("\n")}
 ────────────────`;
+    await this.sendMessage({ message });
+  }
+
+  async sendExpectedDepositAmount() {
+    const { amount, date } = this.parameters.gsheets.sales.deposit;
+    const message = `
+*Date:*
+- ${date}
+*Amount:*
+- ${amount}`;
     await this.sendMessage({ message });
   }
 

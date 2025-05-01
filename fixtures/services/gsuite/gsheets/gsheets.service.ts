@@ -164,7 +164,7 @@ export class GSheetsService extends GSuiteService {
     return { values, value };
   }
 
-  protected async findCell({ sheetName, searchRange, searchFor }: FindCellInfo) {
+  protected async findCell({ sheetName, searchRange, searchFor, partialMatch }: FindCellInfo) {
     const [start] = searchRange.split(":");
     const { values } = await this.fetchRangeContents({ sheetName, range: searchRange });
     const { col: colOffset, row: rowOffset } = this.deserializeGSheetsCellAddress(start);
@@ -173,11 +173,14 @@ export class GSheetsService extends GSuiteService {
 
     for (let rowIndex = 0; rowIndex < values.length; rowIndex++) {
       for (let colIndex = 0; colIndex < values[rowIndex].length; colIndex++) {
-        if (values[rowIndex][colIndex] === searchFor) {
+        const value = values[rowIndex][colIndex];
+        const condition = partialMatch ? value.includes(searchFor) : value === searchFor;
+        if (condition) {
           const col = colIndex + colOffset[0];
           const row = rowIndex + rowOffset[0];
           const address = this.serializeToGSheetsCellAddress({ col, row });
-          return { col, row, address } as FindCellResult;
+
+          return { col, row, address, value } as FindCellResult;
         }
       }
     }

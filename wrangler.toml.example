@@ -1,0 +1,8 @@
+name = "triple-taste-rpa"
+main = "src/wrangler.ts"
+
+compatibility_date = "2025-05-01"
+
+[vars]
+TELEGRAM_BOT_KEY = ""
+WEBHOOK_RPA_RUNNER_PORT = ""

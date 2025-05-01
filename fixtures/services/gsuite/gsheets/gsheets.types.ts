@@ -40,6 +40,8 @@ export type FindCellInfo = {
   searchRange: string;
   /** the cell content to search for */
   searchFor: string;
+  /** whether to do partial matching on find */
+  partialMatch?: boolean;
 } & Required<Pick<WorkbookResource, "sheetName">>;
 
 export type FindCellResult = {
@@ -49,6 +51,8 @@ export type FindCellResult = {
   col: number;
   /** the cell address */
   address: string;
+  /** the cell value */
+  value: string;
 };
 
 export type DailySales = {
@@ -76,6 +80,13 @@ export type DailySalesInvoiceData = {
   /** the adjusted total */
   adjTotal: number;
 } & DailySales;
+
+export type DepositData = {
+  /** the expected deposit amount */
+  amount: string;
+  /** the date of deposit */
+  date: string;
+};
 
 export type StaffPayOutInfo = {
   /** the sheet name where the information was collected */

@@ -1,5 +1,5 @@
 import { Before, DataTable, Given, Status, When } from "@cucumber/cucumber";
-import { createDate, differenceInDays } from "~/fixtures/utils/date.utils";
+import { createDate, createDateFromNearestWeekday, Day, differenceInDays } from "~/fixtures/utils/date.utils";
 
 import { RevenueAndExpensesSheetService } from "./financials/revenue-and-expenses-sheet.service";
 import { PayoutSheetService } from "./hr/payout-sheet.service";
@@ -54,6 +54,17 @@ When("the service account fetches the sales figures for the previous working day
   const days = date.weekday === 1 ? 3 : 1;
   const { date: scopeDate } = createDate({ from: date.minus({ days }) });
   this.parameters.gsheets.sales.daily.figures = await this.dailysales.fetchDailyFiguresFor(scopeDate);
+});
+
+When("the service account fetches the expected deposit amount for the day", async function(this: This) {
+  const { date } = createDate();
+
+  const day = date.weekday <= Day.TUESDAY ? Day.TUESDAY : Day.FRIDAY;
+  const { date: depositDay } = createDateFromNearestWeekday(day);
+
+  const shouldUseNextWeek = date.weekday > Day.FRIDAY;
+  const { date: scopeDate } = createDate({ from: shouldUseNextWeek ? depositDay.plus({ weeks: 1 }) : depositDay });
+  this.parameters.gsheets.sales.deposit = await this.dailysales.fetchDepositAmountFor(scopeDate);
 });
 
 When("the service account computes the data to invoice", async function(this: This) {

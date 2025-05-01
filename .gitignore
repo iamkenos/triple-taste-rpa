@@ -2,6 +2,7 @@ node_modules/
 results/
 **/snapshots/**/actual
 **/snapshots/**/diff
+wrangler.toml
 .env
 .etc
 downloads/
