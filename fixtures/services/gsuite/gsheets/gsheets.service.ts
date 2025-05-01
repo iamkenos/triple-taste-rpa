@@ -224,6 +224,20 @@ export class GSheetsService extends GSuiteService {
     await this.batchUpdate({ requestBody });
   }
 
+  protected async clearFilters({ sheetName }: WorkbookResource) {
+    const sheetId = await this.fetchWorksheetId({ sheetName });
+    const requestBody = {
+      requests: [
+        {
+          "clearBasicFilter": {
+            sheetId
+          }
+        }
+      ]
+    };
+    await this.batchUpdate({ requestBody });
+  }
+
   protected async updateRangeContents({ sheetName, range, values }: UpdateRangeContentInfo) {
     const { connection, auth } = this.sheets;
     const spreadsheetId = this.spreadsheetId;

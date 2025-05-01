@@ -91,6 +91,7 @@ export class RevenueAndExpensesSheetService extends GSheetsService {
     const range = "A2:D2";
     const values = [date.toFormat(Format.DATE_SHORT_DMY), category, amount, note];
 
+    await this.clearFilters({ sheetName });
     await this.insertRows({ sheetName, startIndex: 1, endIndex: 2 });
     await this.updateRangeContents({ sheetName, range, values });
   }
