@@ -7,10 +7,11 @@
     "start": "cucumber-js -c cucumber.js",
     "preresults": "allure -q generate results/allure/ -c -o results/allure/html/",
     "results": "allure open results/allure/html/",
+    "webhook-rpa": "cucumber-js -c cucumber.webhook.js",
     "webhook": "npx wrangler dev",
     "express": "ts-node src/express.ts",
-    "webhook-rpa": "cucumber-js -c cucumber.webhook.js",
     "tunnel": "cloudflared tunnel --url http://localhost:8787",
+    "bootstrap-webhook": "source .bootstrap.sh && set_webhook_url",
     "serve": "concurrently \"npm run webhook\" \"npm run express\" \"npm run tunnel\""
   },
   "keywords": [],

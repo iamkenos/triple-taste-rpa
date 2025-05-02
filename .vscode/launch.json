@@ -20,7 +20,8 @@
       "env": {
         "HEADLESS": "true",
         "DEBUG": "true",
-        "TAGS": "@debug"
+        "TAGS": "@debug",
+        "PATHS": "features/"
       }
     }
   ],

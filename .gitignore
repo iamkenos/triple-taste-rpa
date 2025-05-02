@@ -3,6 +3,7 @@ results/
 **/snapshots/**/actual
 **/snapshots/**/diff
 wrangler.toml
+.wrangler
 .env
 .etc
 downloads/

@@ -4,6 +4,7 @@ import axios from "axios";
 
 import { RPA } from "~/fixtures/rpa.app";
 import { createDate, Unit } from "~/fixtures/utils/date.utils";
+import { EscapeSequence, unescapeJsonRestricted } from "~/fixtures/utils/string.utils";
 
 import type { DailyRemainingInventory } from "~/fixtures/services/telegram/telegram.types";
 
@@ -11,6 +12,28 @@ export class TelegramService extends RPA {
 
   private token = this.parameters.env.TELEGRAM_BOT_KEY;
   private id = this.parameters.env.TELEGRAM_CHAT_ID;
+
+  private getStatusMessage(isSuccess: boolean): string {
+    const successMessages = [
+      "Great! It's done.",
+      "Sweet! All good.",
+      "Perfect! Mission accomplished.",
+      "Awesome! You're all set.",
+      "Excellent! Done and dusted."
+    ];
+
+    const failureMessages = [
+      "Whoops! Something went wrong.",
+      "Hmm, that didn't work out.",
+      "Darn! There was an issue.",
+      "Sorry, an error occurred.",
+      "Blast! We hit a snag."
+    ];
+
+    const messagesToUse = isSuccess ? successMessages : failureMessages;
+    const randomIndex = Math.floor(Math.random() * messagesToUse.length);
+    return messagesToUse[randomIndex];
+  }
 
   async sendMessage({ message }: { message: string }) {
     try {
@@ -44,12 +67,12 @@ export class TelegramService extends RPA {
 - ${shiftRotationInfo[0].period}
 
 *Roster:*
-${shiftRotationInfo.map(v => `- ${v.shiftIcon} ${firstName(v.staffName)}: ${v.shift}`).join("\n")}
+${shiftRotationInfo.map(v => `- ${v.shiftIcon} ${firstName(v.staffName)}: ${v.shift}`).join(EscapeSequence.LF[0])}
 ────────────────`;
     await this.sendMessage({ message });
   }
 
-  async sendExpectedDepositAmount() {
+  async sendExpectedDepositAmountMessage() {
     const { amount, date } = this.parameters.gsheets.sales.deposit;
     const message = `
 *Date:*
@@ -57,6 +80,11 @@ ${shiftRotationInfo.map(v => `- ${v.shiftIcon} ${firstName(v.staffName)}: ${v.sh
 *Amount:*
 - ${amount}`;
     await this.sendMessage({ message });
+  }
+
+  async sendRemainingInventoryUpdateResultMessage() {
+    const inventory = this.parameters.gsheets.inventory.remaining;
+    await this.sendMessage({ message: this.getStatusMessage(inventory.length > 0) });
   }
 
   async fetchMessagesToday() {
@@ -77,10 +105,8 @@ ${shiftRotationInfo.map(v => `- ${v.shiftIcon} ${firstName(v.staffName)}: ${v.sh
     }
   }
 
-  async fetchInventoryDataForToday() {
-    const messages = await this.fetchMessagesToday();
-    const inventoryMessage: string = messages.slice().reverse().find(v => v.message?.text?.includes("remaining items"))?.message?.text || "";
-    const input = inventoryMessage.split("\n");
+  async parseRemainingItems() {
+    const input = unescapeJsonRestricted(this.parameters.webhook).split(EscapeSequence.LF[0]);
     const items = this.parameters.gsheets.inventory.items;
 
     const normalize = (text: string) => text.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();

@@ -124,6 +124,7 @@ export interface Parameters {
       payout: StaffPayOutInfo[];
     };
   };
+  webhook: any;
 }
 
 export interface This extends World<Parameters> {}
