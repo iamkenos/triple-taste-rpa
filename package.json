@@ -12,7 +12,10 @@
     "express": "ts-node src/express.ts",
     "tunnel": "cloudflared tunnel --url http://localhost:8787",
     "bootstrap-webhook": "source .bootstrap.sh && set_webhook_url",
-    "serve": "concurrently \"npm run webhook\" \"npm run express\" \"npm run tunnel\""
+    "serve:webhook": "pm2 start npm --name triple-taste-rpa-webhook -- run webhook",
+    "serve:express": "pm2 start npm --name triple-taste-rpa-express -- run express",
+    "serve:tunnel": "pm2 start npm --name triple-taste-rpa-tunnel -- run tunnel",
+    "serve": "concurrently \"npm run serve:webhook\" \"npm run serve:express\" \"npm run serve:tunnel\""
   },
   "keywords": [],
   "author": "iamkenos <alexis.matunog@gmail.com>",
