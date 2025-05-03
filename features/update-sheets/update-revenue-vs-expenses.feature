@@ -21,7 +21,7 @@ Feature: Update Revenue vs Expenses Sheets
     Given it's 1 day before end of the pay cycle
     When the service account fetches the payout info for all staff
       And the service account collates the pay advice data
-    Then the service account creates a "Salary Internal" expense record for each pay advise
+    Then the service account creates a "Salary Internal" with "Service Fee" expense record for each pay advise
 
   Scenario: Weekly Mobile Data Charges
     Given it's a Sunday

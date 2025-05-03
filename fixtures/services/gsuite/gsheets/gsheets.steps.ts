@@ -73,7 +73,7 @@ When("the service account computes the data to invoice", async function(this: Th
   if (!shouldIssueInvoice) return Status.SKIPPED.toLowerCase();
 });
 
-When("the service account creates a/an {input_string} expense record for each pay advise", async function(this: This, category: string) {
+When("the service account creates a/an {input_string} with {input_string} expense record for each pay advise", async function(this: This, category: string, serviceFee: string) {
   const { advices } = this.parameters.gmail.staff;
   for (let i = 0; i < advices.length; i++) {
     const { payReminderInfo, date } = advices[i];
@@ -81,6 +81,7 @@ When("the service account creates a/an {input_string} expense record for each pa
     const amount = this.revxexp.parseAmount(grossPay);
     const note = `${payCycleId} - ${staffId}`;
     await this.revxexp.createExpensesRecord({ date, category, amount, note });
+    await this.revxexp.createExpensesRecord({ date, category: serviceFee, amount: 25, note });
   }
 });
 
