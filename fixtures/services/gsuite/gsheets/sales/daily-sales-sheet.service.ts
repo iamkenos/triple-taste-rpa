@@ -70,8 +70,8 @@ export class DailySalesSheetService extends GSheetsService {
     const cell = await this.findCell({ sheetName, searchRange, searchFor, partialMatch: true });
 
     const amountRange = this.serializeToGSheetsCellAddress({ col: cell.col, row: cell.row + 1 });
-    const { value: amount } = await this.fetchRangeContents({ sheetName, range: amountRange });
-    return { amount, date: cell.value } as DepositData;
+    const { value } = await this.fetchRangeContents({ sheetName, range: amountRange });
+    return { amount: value.replace("₵", "₱"), date: cell.value } as DepositData;
   }
 
   computeDailyInvoiceData() {

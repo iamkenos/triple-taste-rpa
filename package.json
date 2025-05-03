@@ -9,13 +9,14 @@
     "results": "allure open results/allure/html/",
     "webhook-rpa": "cucumber-js -c cucumber.webhook.js",
     "webhook": "npx wrangler dev",
-    "express": "ts-node src/express.ts",
+    "handler": "ts-node src/handler.ts",
     "tunnel": "cloudflared tunnel --url http://localhost:8787",
-    "bootstrap-webhook": "source .bootstrap.sh && set_webhook_url",
+    "bootstrap": "ts-node src/bootstrap.ts",
     "serve:webhook": "pm2 start npm --name triple-taste-rpa-webhook -- run webhook",
-    "serve:express": "pm2 start npm --name triple-taste-rpa-express -- run express",
+    "serve:handler": "pm2 start npm --name triple-taste-rpa-handler -- run handler",
     "serve:tunnel": "pm2 start npm --name triple-taste-rpa-tunnel -- run tunnel",
-    "serve": "concurrently \"npm run serve:webhook\" \"npm run serve:express\" \"npm run serve:tunnel\""
+    "serve": "concurrently \"npm run serve:webhook\" \"npm run serve:handler\" \"npm run serve:tunnel\"",
+    "stop": "pm2 delete '/^triple-taste-rpa/'"
   },
   "keywords": [],
   "author": "iamkenos <alexis.matunog@gmail.com>",
@@ -33,6 +34,8 @@
     "nodemailer": "^6.9.16"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.1",
     "@types/luxon": "^3.4.2",
     "@typescript-eslint/eslint-plugin": "^6.12.0",
     "@typescript-eslint/parser": "^6.12.0",

@@ -5,7 +5,6 @@ Feature: Telegram Webhook RPA
     When the service account fetches the list of items from the inventory sheet
       And the service account parses remaining inventory for the day from the ops channel
     Then the service account updates the remaining items on the inventory sheet
-      And the service account sends the remaining inventory result on the channel
 
   @fetch_deposit_amount
   Scenario: Fetch Deposit Amount for the Day

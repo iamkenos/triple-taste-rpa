@@ -13,28 +13,6 @@ export class TelegramService extends RPA {
   private token = this.parameters.env.TELEGRAM_BOT_KEY;
   private id = this.parameters.env.TELEGRAM_CHAT_ID;
 
-  private getStatusMessage(isSuccess: boolean): string {
-    const successMessages = [
-      "Great! It's done.",
-      "Sweet! All good.",
-      "Perfect! Mission accomplished.",
-      "Awesome! You're all set.",
-      "Excellent! Done and dusted."
-    ];
-
-    const failureMessages = [
-      "Whoops! Something went wrong.",
-      "Hmm, that didn't work out.",
-      "Darn! There was an issue.",
-      "Sorry, an error occurred.",
-      "Blast! We hit a snag."
-    ];
-
-    const messagesToUse = isSuccess ? successMessages : failureMessages;
-    const randomIndex = Math.floor(Math.random() * messagesToUse.length);
-    return messagesToUse[randomIndex];
-  }
-
   async sendMessage({ message }: { message: string }) {
     try {
       const result = await axios.post(
@@ -80,11 +58,6 @@ ${shiftRotationInfo.map(v => `- ${v.shiftIcon} ${firstName(v.staffName)}: ${v.sh
 *Amount:*
 - ${amount}`;
     await this.sendMessage({ message });
-  }
-
-  async sendRemainingInventoryUpdateResultMessage() {
-    const inventory = this.parameters.gsheets.inventory.remaining;
-    await this.sendMessage({ message: this.getStatusMessage(inventory.length > 0) });
   }
 
   async fetchMessagesToday() {
@@ -160,6 +133,7 @@ ${shiftRotationInfo.map(v => `- ${v.shiftIcon} ${firstName(v.staffName)}: ${v.sh
     };
 
     const inventoryData = buildInventoryData(input, items);
+    await this.page.expect({ timeout: 1 }).truthy(() => inventoryData.length > 0).poll();
     return inventoryData ;
   }
 }

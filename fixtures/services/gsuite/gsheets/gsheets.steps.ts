@@ -59,11 +59,10 @@ When("the service account fetches the sales figures for the previous working day
 When("the service account fetches the expected deposit amount for the day", async function(this: This) {
   const { date } = createDate();
 
-  const day = date.weekday <= Day.TUESDAY ? Day.TUESDAY : Day.FRIDAY;
-  const { date: depositDay } = createDateFromNearestWeekday(day);
+  const shouldBeForTues = date.weekday <= Day.TUESDAY || date.weekday >= Day.SATURDAY;
+  const nextDepositDay = shouldBeForTues ? Day.TUESDAY : Day.FRIDAY;
+  const { date: scopeDate } = createDateFromNearestWeekday(nextDepositDay);
 
-  const shouldUseNextWeek = date.weekday > Day.FRIDAY;
-  const { date: scopeDate } = createDate({ from: shouldUseNextWeek ? depositDay.plus({ weeks: 1 }) : depositDay });
   this.parameters.gsheets.sales.deposit = await this.dailysales.fetchDepositAmountFor(scopeDate);
 });
 
