@@ -19,7 +19,7 @@ export class PayoutSheetService extends GSheetsService {
     const { sheetName } = sheet;
     const { value: endDate } = await this.fetchRangeContents({ sheetName, range: "K4" });
 
-    const result = createDate({ from: [endDate, Format.DATE_MED] }).date;
+    const result = createDate({ from: [endDate, Format.DATE_MED_S] }).date;
     return result;
   }
 
@@ -33,7 +33,7 @@ export class PayoutSheetService extends GSheetsService {
         const { values: payOutInfo } = await this.fetchRangeContents({ sheetName, range: "R2:S9" });
         const { values: timesheetInfo } = await this.fetchRangeContents({ sheetName, range: "B11:T410" });
         const { value: now } = await this.fetchRangeContents({ sheetName, range: "D1" });
-        const asOf = createDate({ from: [now, Format.DATE_MED] }).date;
+        const asOf = createDate({ from: [now, Format.DATE_MED_S] }).date;
 
         return { asOf, sheetName, employeeInfo, payCycleInfo, workHoursInfo, payOutInfo, timesheetInfo };
       }));

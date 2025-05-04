@@ -9,6 +9,7 @@ export const Format = {
   DATE_SHORT_YQ: "yyyy Qq",
   DATE_SHORT: "yyyyMMdd",
   DATE_MED: "MMM dd, yyyy",
+  DATE_MED_S: "MMM d, yyyy",
   DATE_FULL: "MMMM dd, yyyy",
   DATETIME_FULL: "dd MMM yyyy hh:mm",
   MONTH: "MMMM",
