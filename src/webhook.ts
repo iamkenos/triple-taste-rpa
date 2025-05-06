@@ -133,7 +133,7 @@ export default {
     try {
       const update: TelegramUpdate = await request.json();
 
-      if (!shouldProcess(update, env)) return new Response("No Content", { status: 204 });
+      if (!shouldProcess(update, env)) return new Response(undefined, { status: 204 });
 
       if (isMessage(update)) {
         const message = update.message;
