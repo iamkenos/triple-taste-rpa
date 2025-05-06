@@ -1,10 +1,11 @@
 export const API_URL = "https://api.telegram.org";
 
 export const BOT_BASE_PATH = (key: string) => `/bot${key}`;
-export const BOT_ID = "tripletastebot";
+export const BOT_ID = "tripletaste";
 
 export const BOT_API_URL = (key: string) => `${API_URL}${BOT_BASE_PATH(key)}`;
 export const BOT_API_SEND_MESSAGE_URL = (key: string) => `${BOT_API_URL(key)}/sendMessage`;
+export const BOT_API_ANSWER_QUERY_URL = (key: string) => `${BOT_API_URL(key)}/answerCallbackQuery`;
 export const BOT_API_SET_WEBHOOK_URL = (key: string) => `${BOT_API_URL(key)}/setWebhook`;
 
 export const BOT_COMMANDS = {

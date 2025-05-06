@@ -2,6 +2,7 @@ import axios from "axios";
 
 import { capitalCase } from "change-case";
 import {
+  BOT_API_ANSWER_QUERY_URL,
   BOT_API_SEND_MESSAGE_URL,
   BOT_COMMANDS,
   BOT_COMMANDS_WITH_REPLIES,
@@ -12,15 +13,19 @@ import {
 } from "../fixtures/services/telegram/telegram.constants";
 
 import type { Parameters } from "../fixtures/rpa.steps";
-import type { TelegramMessage, TelegramUpdate } from "../fixtures/services/telegram/telegram.types";
+import type { TelegramCallbackQuery, TelegramMessage, TelegramUpdate } from "../fixtures/services/telegram/telegram.types";
 
-function getCommandFrom(message: TelegramMessage) {
-  return Object.keys(BOT_COMMANDS).find(command => message.text?.includes(capitalCase(command)));
+function getCommandFrom(callback: TelegramCallbackQuery) {
+  return Object.keys(BOT_COMMANDS).find(command => callback.data === command);
 }
 
-function getCommandFromReply(message: TelegramMessage) {
-  const command = Object.entries(BOT_COMMANDS_WITH_REPLIES).find(([, value]) => value === hasCommandReply(message))[0];
-  const parameters = message.text;
+function getCommandKey(command: typeof BOT_COMMANDS[keyof typeof BOT_COMMANDS]) {
+  return Object.entries(BOT_COMMANDS).find(([, value]) => value === command)[0];
+}
+
+function getReply(message: TelegramMessage) {
+  const command = Object.entries(BOT_COMMANDS_WITH_REPLIES).find(([, value]) => value === hasCommandReply(message))?.[0];
+  const parameters = message?.text;
   return { command, parameters };
 }
 
@@ -29,7 +34,7 @@ function getSupportedCommands() {
 }
 
 function getPromptItems() {
-  return Object.keys(BOT_COMMANDS).map(command => ([capitalCase(command)]));
+  return Object.keys(BOT_COMMANDS).map(command => ([ { text: capitalCase(command), callback_data: command } ]));
 }
 
 function getResponseMessage(responses: string[]) {
@@ -51,16 +56,8 @@ function getTaskCompleteResponseMessage(response: Response, sendOnSuccess = true
   return message;
 }
 
-function hasCommand(message: TelegramMessage) {
-  return Object.keys(BOT_COMMANDS).some(command => message.text?.includes(capitalCase(command)));
-}
-
 function hasCommandReply(message: TelegramMessage) {
   return Object.values(BOT_COMMANDS_WITH_REPLIES).find(command => message.reply_to_message.text === command);
-}
-
-function isCommand(command: typeof BOT_COMMANDS[keyof typeof BOT_COMMANDS]) {
-  return Object.entries(BOT_COMMANDS).find(([, value]) => value === command)[0];
 }
 
 function isBotMentioned(message: TelegramMessage) {
@@ -68,91 +65,114 @@ function isBotMentioned(message: TelegramMessage) {
 }
 
 function isBotReply(message: TelegramMessage) {
-  return message.reply_to_message?.from?.username === BOT_ID;
+  const username = message.reply_to_message?.from?.username ?? "";
+  return username.startsWith(BOT_ID) && username.endsWith("bot");
+}
+
+function isMessage(update: TelegramUpdate) {
+  return update.message && update.message?.text;
+}
+
+function isPromptResponse(update: TelegramUpdate) {
+  return update.callback_query?.data && update.callback_query?.message;
+}
+
+function shouldProcess(update: TelegramUpdate, env: Parameters["env"]) {
+  const chatId = update.message?.chat?.id ?? update.callback_query?.message?.chat?.id;
+  const isChatIdAllowed = chatId === +env.TELEGRAM_CHAT_ID;
+  const isUpdateTypeAllowed = isMessage(update) || isPromptResponse(update);
+  const shouldProcess = isChatIdAllowed && isUpdateTypeAllowed;
+  return shouldProcess;
+}
+
+async function showPrompt({ env }: { env: Parameters["env"] }) {
+  const text = `
+  Hi! I can help you with the following:
+
+  ${getSupportedCommands()}
+
+  Tap on the command you need help with so I can assist you with it.
+        `;
+  await axios.post(`${BOT_API_SEND_MESSAGE_URL(env.TELEGRAM_BOT_KEY)}`, {
+    chat_id: +env.TELEGRAM_CHAT_ID,
+    headers: { "Content-Type": "application/json" },
+    text,
+    reply_markup: {
+      inline_keyboard: [...getPromptItems()],
+      resize_keyboard: true,
+      one_time_keyboard: true
+    },
+    parse_mode: "Markdown"
+  });
+}
+
+async function sendMessage({ env, text }: { env: Parameters["env"], text: string }) {
+  await axios.post(`${BOT_API_SEND_MESSAGE_URL(env.TELEGRAM_BOT_KEY)}`, {
+    chat_id: +env.TELEGRAM_CHAT_ID, text
+  });
+}
+
+async function acknowledgePromptCommand({ env, callback }: { env: Parameters["env"], callback: TelegramCallbackQuery }) {
+  await axios.post(`${BOT_API_ANSWER_QUERY_URL(env.TELEGRAM_BOT_KEY)}`, {
+    callback_query_id: callback.id, show_alert: false
+  });
+}
+
+async function runPromptCommand({ env, command, parameters = undefined }: { env: Parameters["env"], command: string, parameters?: any }) {
+  return await fetch(`http://localhost:${env.WEBHOOK_RPA_RUNNER_PORT}/run`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ command, parameters })
+  });
 }
 
 export default {
-  async fetch(request: Request, env: Parameters["env"]): Promise<Response> {
+  async fetch(request: Request, env: Parameters["env"]) {
     if (request.method !== "POST") return new Response("Triple Taste RPA Webhook", { status: 405 });
 
-    const key = env.TELEGRAM_BOT_KEY;
-    const url = `${BOT_API_SEND_MESSAGE_URL(key)}`;
+    try {
+      const update: TelegramUpdate = await request.json();
 
-    const update: TelegramUpdate = await request.json();
-    const message = update.message;
+      if (!shouldProcess(update, env)) return new Response("No Content", { status: 204 });
 
-    if (!message || !message.text) return new Response("No relevant message", { status: 200 });
-    if (message.chat?.id !== +env.TELEGRAM_CHAT_ID) return new Response("Not authorized", { status: 409 });
+      if (isMessage(update)) {
+        const message = update.message;
 
-    const sendMessage = async({ text }) => {
-      try {
-        await axios.post(url, {
-          chat_id: message.chat.id,
-          text
-        });
-      } catch (error) {
-        return new Response(`Unable to send message: ${error}`, { status: 400 });
-      }
-    };
+        if (isBotMentioned(message)) {
+          await showPrompt({ env });
+        } else if (isBotReply(message)) {
+          const { command, parameters } = getReply(message);
 
-    const prompt = async() => {
-      const text = `
-Hi! I can help you with the following:
-
-${getSupportedCommands()}
-
-Tap on the command you need help with so I can assist you with it.
-      `;
-      try {
-        await axios.post(url, {
-          chat_id: message.chat.id,
-          headers: { "Content-Type": "application/json" },
-          text,
-          reply_markup: {
-            keyboard: [...getPromptItems()],
-            resize_keyboard: true,
-            one_time_keyboard: true
-          },
-          parse_mode: "Markdown"
-        });
-      } catch (error) {
-        console.error("Telegram API error:", error.response?.data || error.message);
-        return new Response(`${error.message} - ${error?.response?.data?.description} \n`, { status: 400 });
-      }
-    };
-
-    const runCommand = async({ command, parameters = undefined }) => {
-      return await fetch(`http://localhost:${env.WEBHOOK_RPA_RUNNER_PORT}/run`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ command, parameters })
-      });
-    };
-
-    const success = new Response("OK", { status: 200 });
-
-    if (isBotMentioned(message)) {
-      await prompt();
-    } else if (isBotReply(message)) {
-      if (hasCommand(message)) {
-        const command = getCommandFrom(message);
-
-        if (command === isCommand(BOT_COMMANDS.update_inventory)) {
-          await sendMessage({ text: BOT_COMMANDS_WITH_REPLIES.update_inventory });
-          return success;
+          if (command) {
+            await sendMessage({ env, text: getTaskWIPResponseMessage("short") });
+            const response = await runPromptCommand({ env, command, parameters });
+            const message = getTaskCompleteResponseMessage(response);
+            if (message) await sendMessage({ env, text: message });
+          }
         }
+      } else if (isPromptResponse(update)) {
+        const callback = update.callback_query;
+        const command = getCommandFrom(callback);
 
-        await sendMessage({ text: getTaskWIPResponseMessage() });
-        const response = await runCommand({ command });
-        await sendMessage({ text: getTaskCompleteResponseMessage(response, false) });
-      } else if (hasCommandReply(message)) {
-        const { command, parameters } = getCommandFromReply(message);
-        await sendMessage({ text: getTaskWIPResponseMessage("short") });
-        const response = await runCommand({ command, parameters });
-        await sendMessage({ text: getTaskCompleteResponseMessage(response) });
+        await acknowledgePromptCommand({ env, callback });
+        switch (command) {
+          case getCommandKey(BOT_COMMANDS.update_inventory): {
+            await sendMessage({ env, text: BOT_COMMANDS_WITH_REPLIES.update_inventory });
+            break;
+          }
+          default: {
+            await sendMessage({ env, text: getTaskWIPResponseMessage() });
+            const response = await runPromptCommand({ env, command });
+            const message = getTaskCompleteResponseMessage(response, false);
+            if (message) await sendMessage({ env, text: message });
+            break;
+          }
+        }
       }
+      return new Response("OK", { status: 200 });
+    } catch (err) {
+      console.error("Internal Server Error", "\n", err);
+      return new Response("Internal Server Error", { status: 500 });
     }
-
-    return success;
   }
 };

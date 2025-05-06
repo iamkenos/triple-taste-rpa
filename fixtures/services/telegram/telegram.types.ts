@@ -6,6 +6,7 @@ export type DailyRemainingInventory = {
 export type TelegramUpdate = {
   update_id: number;
   message?: TelegramMessage;
+  callback_query?: TelegramCallbackQuery;
 };
 
 export type TelegramMessage = {
@@ -24,6 +25,13 @@ export type TelegramMessage = {
   };
   entities?: TelegramEntity[];
   reply_to_message?: Omit<TelegramMessage, "reply_to_message">;
+};
+
+export type TelegramCallbackQuery = {
+  id: string;
+  from: TelegramMessage["from"];
+  message: TelegramMessage;
+  data: string;
 };
 
 export type TelegramEntity = {

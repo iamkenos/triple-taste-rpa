@@ -3,8 +3,8 @@ import { distance } from "fastest-levenshtein";
 import axios from "axios";
 
 import { RPA } from "~/fixtures/rpa.app";
-import { createDate, Unit } from "~/fixtures/utils/date.utils";
 import { EscapeSequence, unescapeJsonRestricted } from "~/fixtures/utils/string.utils";
+import { BOT_API_SEND_MESSAGE_URL } from "~/fixtures/services/telegram/telegram.constants";
 
 import type { DailyRemainingInventory } from "~/fixtures/services/telegram/telegram.types";
 
@@ -16,7 +16,7 @@ export class TelegramService extends RPA {
   async sendMessage({ message }: { message: string }) {
     try {
       const result = await axios.post(
-        `https://api.telegram.org/bot${this.token}/sendMessage`, {
+        `${BOT_API_SEND_MESSAGE_URL(this.token)}`, {
           headers: {
             "Content-Type": "application/json"
           },
@@ -58,24 +58,6 @@ ${shiftRotationInfo.map(v => `- ${v.shiftIcon} ${firstName(v.staffName)}: ${v.sh
 *Amount:*
 - ${amount}`;
     await this.sendMessage({ message });
-  }
-
-  async fetchMessagesToday() {
-    try {
-      const offset = 0;
-      const { date } = createDate();
-      const response = await axios.get(`https://api.telegram.org/bot${this.token}/getUpdates`, { params: { offset } });
-      const today = date.startOf(Unit.DAY).toUnixInteger();
-      const messages = response.data.result.filter(v =>
-        v.message?.date >= today &&
-        v.message?.chat?.id === +this.id
-      );
-      return messages;
-    }
-    catch (error) {
-      this.logger.error(error.message);
-      throw error;
-    }
   }
 
   async parseRemainingItems() {
