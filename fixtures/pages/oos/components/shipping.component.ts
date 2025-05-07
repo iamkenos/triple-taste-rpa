@@ -16,12 +16,12 @@ export class Shipping extends Component {
   }
 
   async open() {
-    await this.clickUntil(this.expect().attributeEquals("aria-expanded", "true"), { delay: 500 });
+    await this.clickUntil(this.expect().attributeEquals("aria-expanded", "true"));
   }
 
   async select(method: string) {
     await this.open();
-    await this.rdMethod(method).clickUntil(this.expect().optionSelected(method), { delay: 500 });
+    await this.rdMethod(method).clickUntil(this.expect().optionSelected(method));
     await this.lblAmount().expect().textEmpty({ not: true }).poll();
   }
 }

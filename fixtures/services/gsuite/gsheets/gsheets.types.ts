@@ -116,19 +116,31 @@ export type ExpenseInfo = {
   note: string;
 };
 
-export type DailyRemainingInventory = {
+export type InventoryInfo = {
   name: string;
   value: string;
 };
 
-export type ProductsToOrder = DailyRemainingInventory[];
+export type InventoryFetchSheetProductInfo = {
+  column: string;
+  sheetName: WorkbookResource["sheetName"];
+};
 
-export type OrderDetails = {
-  products: ProductsToOrder;
-  orderDate: DateTime;
-  deliveryDate: DateTime;
-  method: string;
+export type InventorySheetUpdateInfo = {
+  products: InventoryInfo[];
+  date: DateTime;
+  sheetName: WorkbookResource["sheetName"];
+  note?: string;
+};
+
+export type InventoryOrderInfo = {
+  products: InventoryInfo[];
+  orderDate?: DateTime;
+  deliveryDate?: DateTime;
+  method?: string;
+  customerName?: string;
+  orderedBy?: string;
   amount?: string;
   por?: string;
   status?: string;
-}
+};

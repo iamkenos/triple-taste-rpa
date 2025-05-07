@@ -241,6 +241,35 @@ export class GSheetsService extends GSuiteService {
     await this.batchUpdate({ requestBody });
   }
 
+  protected async insertNote({ sheetName, address, note }: WorkbookResource & { address: string, note: string }) {
+    const { col: columnIndex, row: rowIndex } = this.singleCellAddressToIndex(address);
+    const sheetId = await this.fetchWorksheetId({ sheetName });
+    const requestBody = {
+      requests: [
+        {
+          updateCells: {
+            rows: [
+              {
+                values: [
+                  {
+                    note
+                  }
+                ]
+              }
+            ],
+            fields: "note",
+            start: {
+              sheetId,
+              rowIndex,
+              columnIndex
+            }
+          }
+        }
+      ]
+    };
+    await this.batchUpdate({ requestBody });
+  }
+
   protected async updateRangeContents({ sheetName, range, values }: UpdateRangeContentInfo) {
     const { connection, auth } = this.sheets;
     const spreadsheetId = this.spreadsheetId;
@@ -268,9 +297,5 @@ export class GSheetsService extends GSuiteService {
     const gid = sheetId ? `gid=${sheetId}` : "";
     const fvid = viewId ? `&fvid=${viewId}` : "";
     return `https://docs.google.com/spreadsheets/d/${spreadsheetId}/edit#${gid}${fvid}`;
-  }
-
-  parseAmount(amount: string) {
-    return parseFloat(amount.replace(/[^0-9.-]+/g, ""));
   }
 }

@@ -25,4 +25,7 @@ Feature: Telegram Webhook RPA
       And the service account views the OOS cart and checks out
       And the service account completes the OOS order
       And the service account extracts the OOS order details
+      And the service account updates the ordered and arriving items on the inventory sheet
+      And the service account creates an expense record for the newly created order
+      And the service account reverts the order quantity values on the inventory sheet
     Then the service account sends order confirmation on the channel

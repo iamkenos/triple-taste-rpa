@@ -9,6 +9,26 @@ export class RevenueAndExpensesSheetService extends GSheetsService {
 
   protected spreadsheetId = this.parameters.env.GSHEETS_FI_REV_X_EXP_TRACKER_ID;
   private tabs = { revenue: "Revenue Records", expenses: "Expense Records" };
+  categories = {
+    expenses: {
+      rental: "Rental",
+      electric_bill: "Electric Bill",
+      accountant: "Accountant",
+      courier: "Courier",
+      salary: "Salary",
+      cog: "Cost of Goods",
+      mobile_data: "Mobile Data",
+      kiosk_misc: "Kiosk Miscellaneous",
+      documents_related: "Documents Related",
+      tax: "Tax",
+      service_fee: "Service Fee",
+      salary_internal: "Salary Internal"
+    },
+    revenue: {
+      sales: "Sales",
+      reimbursements: "Reimbursements"
+    }
+  };
 
   getWebViewUrl({ sheetId, viewId }: Partial<WorkbookResource>) {
     return super.getWebViewUrl({ sheetId, viewId });

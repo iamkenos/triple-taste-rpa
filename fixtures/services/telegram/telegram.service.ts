@@ -7,7 +7,7 @@ import { EscapeSequence, unescapeJsonRestricted } from "~/fixtures/utils/string.
 import { BOT_API_SEND_MESSAGE_URL } from "~/fixtures/services/telegram/telegram.constants";
 import { Format } from "~/fixtures/utils/date.utils";
 
-import type { DailyRemainingInventory } from "~/fixtures/services/gsuite/gsheets/gsheets.types";
+import type { InventoryInfo } from "~/fixtures/services/gsuite/gsheets/gsheets.types";
 
 export class TelegramService extends RPA {
 
@@ -63,7 +63,7 @@ ${shiftRotationInfo.map(v => `- ${v.shiftIcon} ${firstName(v.staffName)}: ${v.sh
 
   async parseRemainingItems() {
     const input = unescapeJsonRestricted(this.parameters.webhook).split(EscapeSequence.LF[0]);
-    const items = this.parameters.gsheets.inventory.items;
+    const items = this.parameters.gsheets.inventory.products;
 
     const normalize = (text: string) => text.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
     const findBestMatch = (name: string, filters: string[]) => {
@@ -98,7 +98,7 @@ ${shiftRotationInfo.map(v => `- ${v.shiftIcon} ${firstName(v.staffName)}: ${v.sh
       return [rawName, rawValue];
     };
     const buildInventoryData = (input: string[], filters: string[]) => {
-      const output: DailyRemainingInventory[] = [];
+      const output: InventoryInfo[] = [];
       for (const line of input) {
         const split = splitProductLine(line);
         if (!split) continue; // skip non-product lines
@@ -121,15 +121,17 @@ ${shiftRotationInfo.map(v => `- ${v.shiftIcon} ${firstName(v.staffName)}: ${v.sh
   }
 
   async sendOrderConfirmation() {
-    const { amount, deliveryDate, por, status } = this.parameters.gsheets.inventory.order;
+    const { amount, deliveryDate, por, status, customerName } = this.parameters.gsheets.inventory.order;
     const message = `
 ────────────────
 📦 *Order# ${por}*
 ────────────────
 
+*Customer Name:*
+- ${customerName}
 *Delivery Date:*
 - ${deliveryDate.toFormat(Format.DATE_SHORT_DMC)}
-*Amount:*
+*Total Amount:*
 - ${amount}
 *Status:*
 - ${status}`;

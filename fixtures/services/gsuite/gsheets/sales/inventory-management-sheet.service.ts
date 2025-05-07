@@ -2,7 +2,7 @@ import { GSheetsService } from "~/fixtures/services/gsuite/gsheets/gsheets.servi
 import { createDate, Format } from "~/fixtures/utils/date.utils";
 
 import type { DateTime } from "luxon";
-import type { OrderDetails } from "~/fixtures/services/gsuite/gsheets/gsheets.types";
+import type { InventoryFetchSheetProductInfo, InventoryOrderInfo, InventorySheetUpdateInfo } from "~/fixtures/services/gsuite/gsheets/gsheets.types";
 
 export class InventoryManagementSheetService extends GSheetsService {
 
@@ -17,7 +17,7 @@ export class InventoryManagementSheetService extends GSheetsService {
     forecast: "Forecast"
   };
 
-  private async fetchProductsInfo(column: string) {
+  private async fetchMasterSheetProductsInfo(column: string) {
     const sheetName = this.tabs.master;
     const { values: coldWarehouse } = await this.fetchRangeContents({ sheetName, range: `${column}18` });
     const { values: dryWarehouse } = await this.fetchRangeContents({ sheetName, range: `${column}22:${column}50` });
@@ -26,14 +26,17 @@ export class InventoryManagementSheetService extends GSheetsService {
     return items;
   }
 
-  async fetchListOfItems() {
-    const items = await this.fetchProductsInfo("A");
+  private async fetchNodeSheetProductsInfo({ sheetName, column }: InventoryFetchSheetProductInfo) {
+    const { values: coldWarehouse } = await this.fetchRangeContents({ sheetName, range: `${column}6` });
+    const { values: dryWarehouse } = await this.fetchRangeContents({ sheetName, range: `${column}10:${column}45` });
+
+    const items = [...coldWarehouse, ...dryWarehouse].flat().map(i => i.trim()).filter(Boolean);
     return items;
   }
 
-  async fetchItemsToOrder() {
-    const items = await this.fetchListOfItems();
-    const qty = await this.fetchProductsInfo("D");
+  private async fetchItemsToOrder() {
+    const items = await this.fetchListOfProducts();
+    const qty = await this.fetchMasterSheetProductsInfo("D");
 
     await this.page.expect({ timeout: 1000 })
       .setName("Number of products matches quantity")
@@ -43,7 +46,7 @@ export class InventoryManagementSheetService extends GSheetsService {
     return result;
   }
 
-  async fetchNextDeliveryDate() {
+  private async fetchNextDeliveryDate() {
     const sheetName = this.tabs.master;
     const { value: deliveryDate } = await this.fetchRangeContents({ sheetName, range: "D7" });
 
@@ -51,47 +54,128 @@ export class InventoryManagementSheetService extends GSheetsService {
     return result;
   }
 
-  async fetchOrderDate() {
-    const sheetName = this.tabs.master;
-    const { value: orderDate } = await this.fetchRangeContents({ sheetName, range: "A2" });
-
-    const { date: result } = createDate({ from: [orderDate, Format.DATE_SHORT_DMYYYY] });
-    return result;
-  }
-
-  async fetchShippingMethod() {
+  private async fetchShippingMethod() {
     const sheetName = this.tabs.master;
     const { value: method } = await this.fetchRangeContents({ sheetName, range: "C3" });
 
     return method;
   }
 
-  async fetchOrderDetails() {
-    const details = await Promise.allSettled([
+  private async fetchCustomerName() {
+    const sheetName = this.tabs.master;
+    const { value: customerName } = await this.fetchRangeContents({ sheetName, range: "W4" });
+
+    return customerName;
+  }
+
+  async fetchOrderInfo() {
+    const { date: orderDate } = createDate();
+    const details: PromiseSettledResult<any>[] = await Promise.allSettled([
       this.fetchItemsToOrder(),
-      this.fetchOrderDate(),
       this.fetchNextDeliveryDate(),
-      this.fetchShippingMethod()
+      this.fetchShippingMethod(),
+      this.fetchCustomerName()
     ]);
 
-    const [products, orderDate, deliveryDate, method] = await this.fullfilled(details as any);
-    return { products, orderDate, deliveryDate, method } as OrderDetails;
+    const [products, deliveryDate, method, customerName] = await this.fullfilled(details);
+    return { products, orderDate, deliveryDate, method, customerName } as InventoryOrderInfo;
+  }
+
+  async fetchListOfProducts() {
+    const items = await this.fetchMasterSheetProductsInfo("A");
+    return items;
+  }
+
+  async updateProductsSheet({ date, sheetName, products, note }: InventorySheetUpdateInfo) {
+    const searchFor = date.toFormat(Format.DATE_SHORT_DMY);
+    const sheetId = await this.fetchWorksheetId({ sheetName });
+    const { col, row: headerRow } = await this.findCell({ sheetName, searchRange: "H2:NU2", searchFor });
+
+    if (note) {
+      const address = this.serializeToGSheetsCellAddress({ col, row: headerRow + 4 });
+      await this.insertNote({ sheetName, address, note });
+    }
+
+    const content = await Promise.allSettled(products
+      .map(async({ name, value }) => {
+        const { row } = await this.findCell({ sheetName, searchRange: "A1:A45", searchFor: name });
+        return { columnIndex: col, rowIndex: row, stringValue: value, sheetId };
+      }));
+
+    const result = await this.fullfilled(content);
+    const requests = result.map(({ stringValue, rowIndex, columnIndex, sheetId }) => ({
+      updateCells: {
+        rows: [
+          {
+            values: [ { userEnteredValue: { stringValue } } ]
+          }
+        ],
+        fields: "userEnteredValue",
+        start: {
+          sheetId,
+          rowIndex,
+          columnIndex
+        }
+      }
+    }));
+
+    const requestBody = { requests };
+    await this.batchUpdate({ requestBody });
   }
 
   async updateRemainingInventoryFor(date: DateTime) {
+    const { remaining: products } = this.parameters.gsheets.inventory;
     const sheetName = this.tabs.remaining;
-    const searchFor = date.toFormat(Format.DATE_SHORT_DMY);
-    const { col } = await this.findCell({ sheetName, searchRange: "H2:NU2", searchFor });
-    const { remaining } = this.parameters.gsheets.inventory;
 
-    const updated = await Promise.allSettled(remaining
-      .map(async({ name, value }) => {
-        const { row } = await this.findCell({ sheetName, searchRange: "A1:A45", searchFor: name });
-        const range = this.serializeToGSheetsCellAddress({ col, row });
-        await this.updateRangeContents({ sheetName, range, values: [value] });
-        return true;
-      }));
+    await this.updateProductsSheet({ date, sheetName, products });
+  }
 
-    await this.fullfilled(updated);
+  async updateOrderedInventoryFor(date: DateTime) {
+    const { products, por: note } = this.parameters.gsheets.inventory.order;
+    const sheetName = this.tabs.ordered;
+
+    await this.updateProductsSheet({ date, sheetName, products, note });
+  }
+
+  async updateArrivingInventoryFor(date: DateTime) {
+    const { por: note } = this.parameters.gsheets.inventory.order;
+    const items = await this.fetchNodeSheetProductsInfo({ sheetName: this.tabs.ordered, column: "A" });
+    const qty = await this.fetchNodeSheetProductsInfo({ sheetName: this.tabs.ordered, column: "E" });
+    const products = items.map((item, idx) => ({ name: item, value: qty[idx] }));
+
+    const sheetName = this.tabs.arriving;
+    await this.updateProductsSheet({ date, sheetName, products, note });
+  }
+
+  async revertMasterSheetProductsOrderQty() {
+    const sheetName = this.tabs.master;
+    const sheetId = await this.fetchWorksheetId({ sheetName });
+
+    const startRow = 18; const endRow = 50;
+    const rows = Array.from({ length: endRow - startRow + 1 }, (_, i) => i + startRow);
+    const rangeToUpdate = rows.map(v => this.singleCellAddressToIndex(`D${v}`));
+    const values = rows.map(v => `=S${v}`);
+
+    const cellRequests = rangeToUpdate.map((v, idx) => ({
+      updateCells: {
+        rows: [
+          {
+            values: [ { userEnteredValue: { formulaValue: values[idx] } } ]
+          }
+        ],
+        fields: "userEnteredValue",
+        start: {
+          sheetId,
+          rowIndex: v.row,
+          columnIndex: v.col
+        }
+      }
+    }));
+
+    const [first,,,, ...rest] = cellRequests;
+    const requests = [first, ...rest.slice(0, -2)];
+
+    const requestBody = { requests };
+    await this.batchUpdate({ requestBody });
   }
 }

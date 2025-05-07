@@ -29,6 +29,7 @@ export class OOSPage extends BasePage {
 
   private shipping = () => this.page.component(Shipping);
   private btnCompleteOrder = () => this.page.locator("#checkout-pay-button");
+  private lblOrderConfirmation = () => this.page.locator("//h2[contains(text(),'Thank you! Your order has been sent for review.')]");
 
   private tblOrders = () => this.page.locator("#orderTab");
   private trOrderFor = (identifier: string) => this.tblOrders().locator(`//tbody//tr[td[contains(.,'${identifier}')]]`);
@@ -50,7 +51,7 @@ export class OOSPage extends BasePage {
     const btnSearch = this.btnSearch();
     const tfSearch = this.tfSearch();
     await btnSearch.hoverIntoView();
-    await btnSearch.clickUntil(this.tfSearch().expect().displayed(), { delay: 500 });
+    await btnSearch.clickUntil(this.tfSearch().expect().displayed());
     await tfSearch.fill(product);
     await this.page.keyboard.press("Enter");
     await this.lnkProduct(product).expect().displayed().poll();
@@ -70,10 +71,11 @@ export class OOSPage extends BasePage {
       await this.viewProduct(name);
 
       await this.tfQty().expect().enabled().poll();
+      await this.tfQty().clear();
       await this.tfQty().fill(value);
       await this.tfQty().expect().valueEquals(value).poll();
-
-      await this.btnAddToCart().clickUntil(this.divModal().expect().displayed(), { delay: 1000 });
+      await this.btnAddToCart().click();
+      await this.divModal().expect().textContains(name).poll();
       await this.btnModalClose().click();
     }
   }
@@ -91,13 +93,18 @@ export class OOSPage extends BasePage {
     const { method } = this.parameters.gsheets.inventory.order;
     await this.shipping().select(method);
     await this.btnCompleteOrder().click();
+    await this.lblOrderConfirmation().expect().displayed().poll();
   }
 
   async extractOrderDetails() {
     const { deliveryDate } = this.parameters.gsheets.inventory.order;
     const date = deliveryDate.toFormat(Format.DATE_SHORT_MDY.replaceAll("-", "/"));
-
     await this.navigate();
+
+    const action = async() => await this.page.reload();
+    const condition = this.trOrderFor(date).expect().exists();
+
+    await this.tblOrders().doUntil(action, condition);
     const porData = await this.tdPOR(date).textContent();
     const statusData = await this.tdStatus(date).textContent();
     const amountData = await this.tdAmount(date).textContent();

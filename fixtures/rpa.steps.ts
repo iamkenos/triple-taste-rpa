@@ -18,11 +18,11 @@ import type {
   StaffShiftRotationInfo
 } from "~/fixtures/services/gsuite/gmail/gmail.types";
 import type {
-  DailyRemainingInventory,
   DailySales,
   DailySalesInvoiceData,
   DepositData,
-  OrderDetails,
+  InventoryInfo,
+  InventoryOrderInfo,
   StaffPayOutInfo
 } from "~/fixtures/services/gsuite/gsheets/gsheets.types";
 
@@ -123,9 +123,9 @@ export interface Parameters {
       deposit: DepositData;
     };
     inventory: {
-      items: string[];
-      remaining: DailyRemainingInventory[];
-      order: OrderDetails;
+      products: string[];
+      remaining: InventoryInfo[];
+      order: InventoryOrderInfo;
     };
     hr: {
       payout: StaffPayOutInfo[];
@@ -144,9 +144,9 @@ Before({}, async function(this: This) {
   this.parameters.gsheets = {
     sales: { daily: {} as any, deposit: {} as any },
     inventory: {
-      items: [],
+      products: [],
       remaining: [],
-      order: { products: [], orderDate: undefined, deliveryDate: undefined, method: undefined }
+      order: { products: [] }
     },
     hr: { payout: [] }
   };

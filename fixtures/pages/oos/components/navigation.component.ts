@@ -17,7 +17,7 @@ export class Navigation extends Component {
   async clickItem(text: string) {
     const locator = this.navItem(text);
     await locator.hoverIntoView();
-    await locator.clickUntil(this.expect().active(text), { delay: 500 });
+    await locator.clickUntil(this.expect().active(text));
   }
 
   async orders() {

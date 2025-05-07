@@ -55,10 +55,10 @@ export class DailySalesSheetService extends GSheetsService {
       referenceDate: date.toFormat(Format.DATE_MED),
       qty: cups,
       dcAmount: discounts,
-      cohAmount: this.parseAmount(cohValue),
-      gCashAmount: this.parseAmount(gCashValue),
-      grabAmount: this.parseAmount(grabValue),
-      pandaAmount: this.parseAmount(pandaValue)
+      cohAmount: this.parseFloat(cohValue),
+      gCashAmount: this.parseFloat(gCashValue),
+      grabAmount: this.parseFloat(grabValue),
+      pandaAmount: this.parseFloat(pandaValue)
     } as DailySales;
   }
 

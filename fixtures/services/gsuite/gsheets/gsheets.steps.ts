@@ -78,11 +78,18 @@ When("the service account creates a/an {input_string} with {input_string} expens
   for (let i = 0; i < advices.length; i++) {
     const { payReminderInfo, date } = advices[i];
     const { grossPay, staffId, payCycleId } = payReminderInfo;
-    const amount = this.revxexp.parseAmount(grossPay);
+    const amount = this.revxexp.parseFloat(grossPay);
     const note = `${payCycleId} - ${staffId}`;
     await this.revxexp.createExpensesRecord({ date, category, amount, note });
     await this.revxexp.createExpensesRecord({ date, category: serviceFee, amount: 25, note });
   }
+});
+
+When("the service account creates an expense record for the newly created order", async function(this: This) {
+  const { amount: cost, por: note, orderDate: date } = this.parameters.gsheets.inventory.order;
+  const category = this.revxexp.categories.expenses.cog;
+  const amount = this.revxexp.parseFloat(cost);
+  await this.revxexp.createExpensesRecord({ date, category, amount, note });
 });
 
 When("the service account creates expense records for:", async function(this: This, expenses: DataTable) {
@@ -90,17 +97,17 @@ When("the service account creates expense records for:", async function(this: Th
   const records = expenses.raw();
   for (let i = 0; i < records.length; i++) {
     const [category, expense, note = ""] = records[i];
-    const amount = this.revxexp.parseAmount(expense);
+    const amount = this.revxexp.parseFloat(expense);
     await this.revxexp.createExpensesRecord({ date, category, amount, note });
   }
 });
 
 When("the service account fetches the list of items from the inventory sheet", async function(this: This) {
-  this.parameters.gsheets.inventory.items = await this.inventory.fetchListOfItems();
+  this.parameters.gsheets.inventory.products = await this.inventory.fetchListOfProducts();
 });
 
 When("the service account fetches the order details from the inventory sheet", async function(this: This) {
-  this.parameters.gsheets.inventory.order = await this.inventory.fetchOrderDetails();
+  this.parameters.gsheets.inventory.order = await this.inventory.fetchOrderInfo();
 });
 
 When("the service account updates the remaining items on the inventory sheet", async function(this: This) {
@@ -109,4 +116,15 @@ When("the service account updates the remaining items on the inventory sheet", a
   const days = date.weekday == 6 ? 2 : date.weekday == 7 ? 1 : 0;
   const { date: scopeDate } = createDate({ from: date.plus({ days }) });
   await this.inventory.updateRemainingInventoryFor(scopeDate);
+});
+
+When("the service account updates the ordered and arriving items on the inventory sheet", async function(this: This) {
+  const { orderDate, deliveryDate } = this.parameters.gsheets.inventory.order;
+
+  await this.inventory.updateOrderedInventoryFor(orderDate);
+  await this.inventory.updateArrivingInventoryFor(deliveryDate);
+});
+
+When("the service account reverts the order quantity values on the inventory sheet", async function(this: This) {
+  await this.inventory.revertMasterSheetProductsOrderQty();
 });

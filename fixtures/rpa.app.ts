@@ -9,8 +9,12 @@ export class RPA extends ProcessAutomation<Parameters> {
   protected ccy = "₱";
 
   protected format(input: number | string) {
-    const value: number = isNaN(input as any) ? parseFloat((input as string).replace(/[^0-9.-]+/g, "")) : input as number;
+    const value: number = isNaN(input as any) ? this.parseFloat(input as string) : input as number;
     return new Intl.NumberFormat("en-US").format(value);
+  }
+
+  parseFloat(input: string) {
+    return parseFloat(input.replace(/[^0-9.-]+/g, ""));
   }
 
   async fullfilled<T>(r: PromiseSettledResult<T>[]) {
