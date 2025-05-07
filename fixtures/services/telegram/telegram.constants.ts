@@ -11,7 +11,8 @@ export const BOT_API_SET_WEBHOOK_URL = (key: string) => `${BOT_API_URL(key)}/set
 export const BOT_COMMANDS = {
   update_inventory: "Updates the remaining inventory for today.",
   fetch_deposit_amount: "Fetches the expected deposit amount for today.",
-  fetch_shift_rotation: "Fetches the shift rotation for the next pay cycle."
+  fetch_shift_rotation: "Fetches the shift rotation for the next pay cycle.",
+  create_order: "Creates an order on the OOS."
 };
 
 export const BOT_COMMANDS_WITH_REPLIES = {
@@ -32,6 +33,13 @@ export const BOT_WIP_MESSAGES = {
     "Working on it...",
     "Hang tight...",
     "Give me a second..."
+  ],
+  long: [
+    "This might take a few moments, please hold tight. I'll keep you posted.",
+    "Processing... this will take a little while. I'll keep you posted on the progress.",
+    "Working on it – this could take a minute or two. I'll keep you updated.",
+    "Hang tight, this process will take some time. I'll let you know once it completes.",
+    "Thank you for your patience, it will be worth the wait. I'll let you know when it's done."
   ]
 };
 

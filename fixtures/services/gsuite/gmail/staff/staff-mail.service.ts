@@ -219,7 +219,6 @@ export class StaffMailService extends GMailService {
     const templatePath = path.join(this.config.baseDir, this.staffTemplates, daily, "revenue-dly-invoicing.html");
     const template = super.buildBaseEmailTemplate({ templatePath });
 
-    const format = (amount: number) => new Intl.NumberFormat("en-US").format(amount);
     const { invoice } = this.parameters.gsheets.sales.daily;
 
     const subject = `Daily Revenue Invoicing: ${invoice.referenceDate}`;
@@ -227,9 +226,9 @@ export class StaffMailService extends GMailService {
     const body = template
       .replaceAll(markers.scopeDate, invoice.referenceDate)
       .replaceAll(markers.rvQty, `${invoice.adjQty}`)
-      .replaceAll(markers.rvAmount, format(invoice.adjAmount))
-      .replaceAll(markers.rvDcAmount, format(invoice.dcAmount))
-      .replaceAll(markers.rvTotalAmount, format(invoice.adjTotal));
+      .replaceAll(markers.rvAmount, this.format(invoice.adjAmount))
+      .replaceAll(markers.rvDcAmount, this.format(invoice.dcAmount))
+      .replaceAll(markers.rvTotalAmount, this.format(invoice.adjTotal));
 
     const { STAFF_EMAIL_RECIPIENTS: to, STAFF_EMAIL_RECIPIENTS_CC: cc } = this.parameters.env;
     await this.sendEmail({ to, cc, subject, body });

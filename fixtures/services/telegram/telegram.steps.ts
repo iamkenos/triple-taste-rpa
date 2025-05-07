@@ -27,3 +27,7 @@ When("the service account sends the expected deposit amount on the channel", asy
 When("the service account parses remaining inventory for the day from the ops channel", async function(this: This) {
   this.parameters.gsheets.inventory.remaining = await this.telegram.parseRemainingItems();
 });
+
+When("the service account sends order confirmation on the channel", async function(this: This) {
+  await this.telegram.sendOrderConfirmation();
+});

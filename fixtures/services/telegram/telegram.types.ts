@@ -1,8 +1,3 @@
-export type DailyRemainingInventory = {
-  name: string;
-  value: string;
-};
-
 export type TelegramUpdate = {
   update_id: number;
   message?: TelegramMessage;

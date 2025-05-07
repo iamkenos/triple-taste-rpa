@@ -99,6 +99,10 @@ When("the service account fetches the list of items from the inventory sheet", a
   this.parameters.gsheets.inventory.items = await this.inventory.fetchListOfItems();
 });
 
+When("the service account fetches the order details from the inventory sheet", async function(this: This) {
+  this.parameters.gsheets.inventory.order = await this.inventory.fetchOrderDetails();
+});
+
 When("the service account updates the remaining items on the inventory sheet", async function(this: This) {
   const { date } = createDate();
 

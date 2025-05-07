@@ -144,7 +144,7 @@ export default {
           const { command, parameters } = getReply(message);
 
           if (command) {
-            await sendMessage({ env, text: getTaskWIPResponseMessage("short") });
+            await sendMessage({ env, text: getTaskWIPResponseMessage() });
             const response = await runPromptCommand({ env, command, parameters });
             const message = getTaskCompleteResponseMessage(response);
             if (message) await sendMessage({ env, text: message });
@@ -158,6 +158,13 @@ export default {
         switch (command) {
           case getCommandKey(BOT_COMMANDS.update_inventory): {
             await sendMessage({ env, text: BOT_COMMANDS_WITH_REPLIES.update_inventory });
+            break;
+          }
+          case getCommandKey(BOT_COMMANDS.create_order): {
+            await sendMessage({ env, text: getTaskWIPResponseMessage("long") });
+            const response = await runPromptCommand({ env, command });
+            const message = getTaskCompleteResponseMessage(response, false);
+            if (message) await sendMessage({ env, text: message });
             break;
           }
           default: {

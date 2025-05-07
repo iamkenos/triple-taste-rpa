@@ -18,14 +18,13 @@ import type {
   StaffShiftRotationInfo
 } from "~/fixtures/services/gsuite/gmail/gmail.types";
 import type {
+  DailyRemainingInventory,
   DailySales,
   DailySalesInvoiceData,
   DepositData,
+  OrderDetails,
   StaffPayOutInfo
 } from "~/fixtures/services/gsuite/gsheets/gsheets.types";
-import type {
-  DailyRemainingInventory
-} from "~/fixtures/services/telegram/telegram.types";
 
 export interface Parameters {
   env: {
@@ -57,6 +56,13 @@ export interface Parameters {
     GMAIL_USER: string;
     /** the gmail service account app password */
     GMAIL_PKEY: string;
+
+    /** the pc online ordering system url */
+    PCOOS_URL: string;
+    /** the pc online ordering system user email */
+    PCOOS_USER: string;
+    /** the pc online ordering system user password */
+    PCOOS_PKEY: string;
 
     /** the generic email service sender contact number */
     SENDER_EMAIL_CONTACT_NO: string;
@@ -119,6 +125,7 @@ export interface Parameters {
     inventory: {
       items: string[];
       remaining: DailyRemainingInventory[];
+      order: OrderDetails;
     };
     hr: {
       payout: StaffPayOutInfo[];
@@ -133,8 +140,16 @@ Before({}, async function(this: This) {
   this.parameters.env = process.env as any;
   this.parameters.sfos = { toUpload: [], toDownload: [] };
   this.parameters.gdrive = { financials: { receipts: { sfos: [] } } };
-  this.parameters.gsheets = { sales: { daily: {} as any, deposit: {} as any }, inventory: { items: [], remaining: [] }, hr: { payout: [] } };
   this.parameters.gmail = { staff: { advices: [], rotation: [] } };
+  this.parameters.gsheets = {
+    sales: { daily: {} as any, deposit: {} as any },
+    inventory: {
+      items: [],
+      remaining: [],
+      order: { products: [], orderDate: undefined, deliveryDate: undefined, method: undefined }
+    },
+    hr: { payout: [] }
+  };
 });
 
 AfterAll(async function() {

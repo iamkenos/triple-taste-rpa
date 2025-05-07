@@ -115,3 +115,20 @@ export type ExpenseInfo = {
   /** the expense description or comment */
   note: string;
 };
+
+export type DailyRemainingInventory = {
+  name: string;
+  value: string;
+};
+
+export type ProductsToOrder = DailyRemainingInventory[];
+
+export type OrderDetails = {
+  products: ProductsToOrder;
+  orderDate: DateTime;
+  deliveryDate: DateTime;
+  method: string;
+  amount?: string;
+  por?: string;
+  status?: string;
+}

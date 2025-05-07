@@ -6,6 +6,13 @@ export class RPA extends ProcessAutomation<Parameters> {
   url = "";
   title = "";
 
+  protected ccy = "₱";
+
+  protected format(input: number | string) {
+    const value: number = isNaN(input as any) ? parseFloat((input as string).replace(/[^0-9.-]+/g, "")) : input as number;
+    return new Intl.NumberFormat("en-US").format(value);
+  }
+
   async fullfilled<T>(r: PromiseSettledResult<T>[]) {
     await this.page.expect({ timeout: 1 }).truthy(() => r.every(v => v.status === "fulfilled")).poll();
     return r.map((v: PromiseFulfilledResult<T>) => v.value);

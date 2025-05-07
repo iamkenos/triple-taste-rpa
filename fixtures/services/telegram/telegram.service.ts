@@ -5,8 +5,9 @@ import axios from "axios";
 import { RPA } from "~/fixtures/rpa.app";
 import { EscapeSequence, unescapeJsonRestricted } from "~/fixtures/utils/string.utils";
 import { BOT_API_SEND_MESSAGE_URL } from "~/fixtures/services/telegram/telegram.constants";
+import { Format } from "~/fixtures/utils/date.utils";
 
-import type { DailyRemainingInventory } from "~/fixtures/services/telegram/telegram.types";
+import type { DailyRemainingInventory } from "~/fixtures/services/gsuite/gsheets/gsheets.types";
 
 export class TelegramService extends RPA {
 
@@ -117,5 +118,21 @@ ${shiftRotationInfo.map(v => `- ${v.shiftIcon} ${firstName(v.staffName)}: ${v.sh
     const inventoryData = buildInventoryData(input, items);
     await this.page.expect({ timeout: 1 }).truthy(() => inventoryData.length > 0).poll();
     return inventoryData ;
+  }
+
+  async sendOrderConfirmation() {
+    const { amount, deliveryDate, por, status } = this.parameters.gsheets.inventory.order;
+    const message = `
+────────────────
+📦 *Order# ${por}*
+────────────────
+
+*Delivery Date:*
+- ${deliveryDate.toFormat(Format.DATE_SHORT_DMC)}
+*Amount:*
+- ${amount}
+*Status:*
+- ${status}`;
+    await this.sendMessage({ message });
   }
 }
