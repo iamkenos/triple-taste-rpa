@@ -8,6 +8,7 @@ import {
   BOT_COMMANDS_WITH_REPLIES,
   BOT_FAILURE_MESSAGES,
   BOT_ID,
+  BOT_PROMPT_YN,
   BOT_SUCCESS_MESSAGES,
   BOT_WIP_MESSAGES
 } from "../fixtures/services/telegram/telegram.constants";
@@ -143,11 +144,27 @@ export default {
         } else if (isBotReply(message)) {
           const { command, parameters } = getReply(message);
 
-          if (command) {
-            await sendMessage({ env, text: getTaskWIPResponseMessage() });
-            const response = await runPromptCommand({ env, command, parameters });
-            const message = getTaskCompleteResponseMessage(response);
-            if (message) await sendMessage({ env, text: message });
+          switch (command) {
+            case getCommandKey(BOT_COMMANDS.update_inventory): {
+              await sendMessage({ env, text: getTaskWIPResponseMessage("long") });
+              const response = await runPromptCommand({ env, command, parameters });
+              const message = getTaskCompleteResponseMessage(response);
+              if (message) await sendMessage({ env, text: message });
+              break;
+            }
+            case getCommandKey(BOT_COMMANDS.create_order): {
+              if (BOT_PROMPT_YN.YES.includes(parameters.toLowerCase())) {
+                await sendMessage({ env, text: getTaskWIPResponseMessage("long") });
+                const response = await runPromptCommand({ env, command });
+                const message = getTaskCompleteResponseMessage(response, false);
+                if (message) await sendMessage({ env, text: message });
+              } else {
+                await sendMessage({ env, text: "Once your side is ready, please let me know." });
+              }
+              break;
+            }
+            default:
+              break;
           }
         }
       } else if (isPromptResponse(update)) {
@@ -161,10 +178,7 @@ export default {
             break;
           }
           case getCommandKey(BOT_COMMANDS.create_order): {
-            await sendMessage({ env, text: getTaskWIPResponseMessage("long") });
-            const response = await runPromptCommand({ env, command });
-            const message = getTaskCompleteResponseMessage(response, false);
-            if (message) await sendMessage({ env, text: message });
+            await sendMessage({ env, text: BOT_COMMANDS_WITH_REPLIES.create_order });
             break;
           }
           default: {

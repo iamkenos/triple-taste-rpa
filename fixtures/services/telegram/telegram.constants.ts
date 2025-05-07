@@ -16,7 +16,8 @@ export const BOT_COMMANDS = {
 };
 
 export const BOT_COMMANDS_WITH_REPLIES = {
-  update_inventory: "Please reply to this message with the current remaining stock levels for today."
+  update_inventory: "Please reply to this message with the current remaining stock levels for today.",
+  create_order: "Before we proceed, please make sure the inventory sheet is updated with accurate product quantities to order.\n\nHave you done your part?"
 };
 
 export const BOT_WIP_MESSAGES = {
@@ -61,4 +62,9 @@ export const BOT_FAILURE_MESSAGES = {
     "Sorry, an error occurred.",
     "Blast! We hit a snag."
   ]
+};
+
+export const BOT_PROMPT_YN = {
+  YES: ["y", "yes", "ofcourse", "proceed"],
+  NO: ["n", "no"]
 };
