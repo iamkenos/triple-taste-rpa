@@ -7,6 +7,7 @@ export const BOT_API_URL = (key: string) => `${API_URL}${BOT_BASE_PATH(key)}`;
 export const BOT_API_SEND_MESSAGE_URL = (key: string) => `${BOT_API_URL(key)}/sendMessage`;
 export const BOT_API_ANSWER_QUERY_URL = (key: string) => `${BOT_API_URL(key)}/answerCallbackQuery`;
 export const BOT_API_SET_WEBHOOK_URL = (key: string) => `${BOT_API_URL(key)}/setWebhook`;
+export const BOT_API_GET_CHAT_MEMBER_URL = (key: string, chatId: string, userId: any) => `${BOT_API_URL(key)}/getChatMember?chat_id=${chatId}&user_id=${userId}`;
 
 export const BOT_COMMANDS = {
   update_inventory: "Updates the remaining inventory for today.",
@@ -18,6 +19,16 @@ export const BOT_COMMANDS = {
 export const BOT_COMMANDS_WITH_REPLIES = {
   update_inventory: "Please reply to this message with the current remaining stock levels for today.",
   create_order: "Before we proceed, please make sure the inventory sheet is updated with accurate product quantities to order.\n\nHave you done your part?"
+};
+
+export const BOT_ACK_MESSAGES = {
+  default: [
+    (command: string) => `Got it! You selected *${command}*.`,
+    (command: string) => `Acknowledged. *${command}* is now in progress.`,
+    (command: string) => `Understood. You've chosen *${command}*.`,
+    (command: string) => `Okay! Executing *${command}*.`,
+    (command: string) => `Roger that! You've selected *${command}*.`
+  ]
 };
 
 export const BOT_WIP_MESSAGES = {

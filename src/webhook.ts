@@ -2,7 +2,9 @@ import axios from "axios";
 
 import { capitalCase } from "change-case";
 import {
+  BOT_ACK_MESSAGES,
   BOT_API_ANSWER_QUERY_URL,
+  BOT_API_GET_CHAT_MEMBER_URL,
   BOT_API_SEND_MESSAGE_URL,
   BOT_COMMANDS,
   BOT_COMMANDS_WITH_REPLIES,
@@ -86,6 +88,21 @@ function shouldProcess(update: TelegramUpdate, env: Parameters["env"]) {
   return shouldProcess;
 }
 
+function getUserId(update: TelegramUpdate) {
+  const userId = update.message?.from?.id ?? update.callback_query?.from?.id;
+  return userId;
+}
+
+async function fetchIsUpdateFromGroupAdmin({ env, userId }: { env: Parameters["env"], userId: number }) {
+  if (userId) {
+    const key = env.TELEGRAM_BOT_KEY; const chatId = env.TELEGRAM_CHAT_ID;
+    const response = await axios.get(`${BOT_API_GET_CHAT_MEMBER_URL(key, chatId, userId)}`);
+    return ["administrator", "creator"].includes(response?.data?.result?.status);
+  } else {
+    return false;
+  }
+}
+
 async function showPrompt({ env }: { env: Parameters["env"] }) {
   const text = `
   Hi! I can help you with the following:
@@ -109,14 +126,21 @@ async function showPrompt({ env }: { env: Parameters["env"] }) {
 
 async function sendMessage({ env, text }: { env: Parameters["env"], text: string }) {
   await axios.post(`${BOT_API_SEND_MESSAGE_URL(env.TELEGRAM_BOT_KEY)}`, {
-    chat_id: +env.TELEGRAM_CHAT_ID, text
+    chat_id: +env.TELEGRAM_CHAT_ID, text, parse_mode: "Markdown"
   });
 }
 
-async function acknowledgePromptCommand({ env, callback }: { env: Parameters["env"], callback: TelegramCallbackQuery }) {
+async function acknowledgeCallback({ env, callback }: { env: Parameters["env"], callback: TelegramCallbackQuery }) {
   await axios.post(`${BOT_API_ANSWER_QUERY_URL(env.TELEGRAM_BOT_KEY)}`, {
     callback_query_id: callback.id, show_alert: false
   });
+}
+
+async function acknowledgeCommand({ env, command }: { env: Parameters["env"], command: string }) {
+  const randomIndex = Math.floor(Math.random() * BOT_ACK_MESSAGES.default.length);
+  const func = BOT_ACK_MESSAGES.default[randomIndex];
+  const text = func(capitalCase(command));
+  await sendMessage({ env, text });
 }
 
 async function runPromptCommand({ env, command, parameters = undefined }: { env: Parameters["env"], command: string, parameters?: any }) {
@@ -138,6 +162,10 @@ export default {
 
       if (isMessage(update)) {
         const message = update.message;
+
+        const userId = getUserId(update);
+        const isFromGroupAdmin = await fetchIsUpdateFromGroupAdmin({ env, userId });
+        if (!isFromGroupAdmin) return new Response(undefined, { status: 204 });
 
         if (isBotMentioned(message)) {
           await showPrompt({ env });
@@ -169,9 +197,15 @@ export default {
         }
       } else if (isPromptResponse(update)) {
         const callback = update.callback_query;
-        const command = getCommandFrom(callback);
+        await acknowledgeCallback({ env, callback });
 
-        await acknowledgePromptCommand({ env, callback });
+        const userId = getUserId(update);
+        const isFromGroupAdmin = await fetchIsUpdateFromGroupAdmin({ env, userId });
+        if (!isFromGroupAdmin) return new Response(undefined, { status: 204 });
+
+        const command = getCommandFrom(callback);
+        await acknowledgeCommand({ env, command });
+
         switch (command) {
           case getCommandKey(BOT_COMMANDS.update_inventory): {
             await sendMessage({ env, text: BOT_COMMANDS_WITH_REPLIES.update_inventory });
