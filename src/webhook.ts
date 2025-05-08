@@ -56,7 +56,8 @@ function getTaskCompleteResponseMessage(response: Response, sendOnSuccess = true
   const messages = isSuccess ? BOT_SUCCESS_MESSAGES : BOT_FAILURE_MESSAGES;
   const responses = messages[variant] ?? messages.default;
   const message = !isSuccess || (isSuccess && sendOnSuccess) ? getResponseMessage(responses) : undefined;
-  return message;
+  const markedup = !isSuccess ? `[${message}](##replaceme##)` : message;
+  return markedup;
 }
 
 function hasCommandReply(message: TelegramMessage) {

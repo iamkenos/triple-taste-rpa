@@ -85,6 +85,7 @@ export interface Parameters {
     TELEGRAM_CHAT_ID: string;
 
     WEBHOOK_RPA_RUNNER_PORT: string;
+    WEBHOOK_RPA_RESULTS_PORT: string;
   };
   sfos: {
     /** an array of downloaded invoices from SFOS ready to be uploaded to the drive */
