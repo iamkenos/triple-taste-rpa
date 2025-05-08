@@ -99,15 +99,15 @@ export class InventoryManagementSheetService extends GSheetsService {
     const content = await Promise.allSettled(products
       .map(async({ name, value }) => {
         const { row } = await this.findCell({ sheetName, searchRange: "A1:A45", searchFor: name });
-        return { columnIndex: col, rowIndex: row, stringValue: value, sheetId };
+        return { columnIndex: col, rowIndex: row, numberValue: +value, sheetId };
       }));
 
     const result = await this.fullfilled(content);
-    const requests = result.map(({ stringValue, rowIndex, columnIndex, sheetId }) => ({
+    const requests = result.map(({ numberValue, rowIndex, columnIndex, sheetId }) => ({
       updateCells: {
         rows: [
           {
-            values: [ { userEnteredValue: { stringValue } } ]
+            values: [ { userEnteredValue: { numberValue } } ]
           }
         ],
         fields: "userEnteredValue",
