@@ -51,12 +51,12 @@ function getTaskWIPResponseMessage(variant?: string) {
   return message;
 }
 
-function getTaskCompleteResponseMessage(response: Response, sendOnSuccess = true, variant?: string) {
+function getTaskCompleteResponseMessage(env: Parameters["env"], response: Response, sendOnSuccess = true) {
   const isSuccess = response.status === 200;
   const messages = isSuccess ? BOT_SUCCESS_MESSAGES : BOT_FAILURE_MESSAGES;
-  const responses = messages[variant] ?? messages.default;
+  const responses = messages.default;
   const message = !isSuccess || (isSuccess && sendOnSuccess) ? getResponseMessage(responses) : undefined;
-  const markedup = !isSuccess ? `[${message}](##replaceme##)` : message;
+  const markedup = !isSuccess ? `[${message}](${env.WEBHOOK_RESULTS_TUNNEL_URL})` : message;
   return markedup;
 }
 
@@ -177,7 +177,7 @@ export default {
             case getCommandKey(BOT_COMMANDS.update_inventory): {
               await sendMessage({ env, text: getTaskWIPResponseMessage("long") });
               const response = await runPromptCommand({ env, command, parameters });
-              const message = getTaskCompleteResponseMessage(response);
+              const message = getTaskCompleteResponseMessage(env, response);
               if (message) await sendMessage({ env, text: message });
               break;
             }
@@ -185,7 +185,7 @@ export default {
               if (BOT_PROMPT_YN.YES.includes(parameters.toLowerCase())) {
                 await sendMessage({ env, text: getTaskWIPResponseMessage("long") });
                 const response = await runPromptCommand({ env, command });
-                const message = getTaskCompleteResponseMessage(response, false);
+                const message = getTaskCompleteResponseMessage(env, response, false);
                 if (message) await sendMessage({ env, text: message });
               } else {
                 await sendMessage({ env, text: "Once your side is ready, please let me know." });
@@ -219,7 +219,7 @@ export default {
           default: {
             await sendMessage({ env, text: getTaskWIPResponseMessage() });
             const response = await runPromptCommand({ env, command });
-            const message = getTaskCompleteResponseMessage(response, false);
+            const message = getTaskCompleteResponseMessage(env, response, false);
             if (message) await sendMessage({ env, text: message });
             break;
           }

@@ -84,6 +84,9 @@ export interface Parameters {
     /** the telegram chat id c/o userinfobot */
     TELEGRAM_CHAT_ID: string;
 
+    WEBHOOK_MAIN_TUNNEL_URL: string;
+    WEBHOOK_RESULTS_TUNNEL_URL: string;
+
     WEBHOOK_RPA_RUNNER_PORT: string;
     WEBHOOK_RPA_RESULTS_PORT: string;
   };

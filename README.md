@@ -15,7 +15,11 @@
 - NodeJS ≥ 20.10.0 or ≤ LTS
 - JRE ≥ 8
 - Google developer service account
+- [cloudflared](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/get-started/)
+- [pm2](https://pm2.keymetrics.io/)
 
 ## Get Started
 
-- Copy `.env.example` to `.env` and populate
+- Copy and populate:
+  - `.env.example` to `.env`
+  - `wrangler.toml.example` to `wrangler.toml`
