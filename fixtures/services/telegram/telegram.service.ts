@@ -116,8 +116,10 @@ ${shiftRotationInfo.map(v => `- ${v.shiftIcon} ${firstName(v.staffName)}: ${v.sh
     };
 
     const inventoryData = buildInventoryData(input, items);
-    await this.page.expect({ timeout: 1 }).truthy(() => inventoryData.length > 0).poll();
-    return inventoryData ;
+    await this.page.expect({ timeout: 1 })
+      .setName("Expected inventory data to be parsed correctly")
+      .truthy(() => inventoryData.length > 0).poll();
+    return inventoryData;
   }
 
   async sendOrderConfirmation() {

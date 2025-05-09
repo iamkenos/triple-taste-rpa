@@ -33,7 +33,7 @@ function getReply(message: TelegramMessage) {
 }
 
 function getSupportedCommands() {
-  return `${Object.entries(BOT_COMMANDS).map(([command, description]) => `*${capitalCase(command)}*:\n\t▸ ${description}`).join("\n\n")}`;
+  return `${Object.entries(BOT_COMMANDS).map(([command, description]) => `*${capitalCase(command)}*:\n  ▸ ${description}`).join("\n\n")}`;
 }
 
 function getPromptItems() {
@@ -118,11 +118,11 @@ async function fetchIsUpdateFromGroupAdmin({ env, userId }: { env: Parameters["e
 
 async function showPrompt({ env }: { env: Parameters["env"] }) {
   const text = `
-  Hi! I can help you with the following:
+Hi! I can help you with the following:
 
-  ${getSupportedCommands()}
+${getSupportedCommands()}
 
-  Tap on the command you need help with so I can assist you with it.
+Tap on the command you need help with so I can assist you with it.
         `;
   await axios.post(`${BOT_API_SEND_MESSAGE_URL(env.TELEGRAM_BOT_KEY)}`, {
     chat_id: +env.TELEGRAM_CHAT_ID,

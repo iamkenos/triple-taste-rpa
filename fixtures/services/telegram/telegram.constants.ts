@@ -10,10 +10,10 @@ export const BOT_API_GET_CHAT_MEMBER_URL = (key: string, chatId: string, userId:
 export const BOT_API_GET_ME_URL = (key: string) => `${BOT_API_URL(key)}/getMe`;
 
 export const BOT_COMMANDS = {
-  update_inventory: "Updates the remaining inventory for today.",
+  create_order: "Creates an order on the OOS.",
   fetch_deposit_amount: "Fetches the expected deposit amount for today.",
   fetch_shift_rotation: "Fetches the shift rotation for the next pay cycle.",
-  create_order: "Creates an order on the OOS."
+  update_inventory: "Updates the remaining inventory for today."
 };
 
 export const BOT_COMMANDS_WITH_REPLIES = {

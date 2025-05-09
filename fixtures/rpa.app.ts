@@ -18,7 +18,9 @@ export class RPA extends ProcessAutomation<Parameters> {
   }
 
   async fullfilled<T>(r: PromiseSettledResult<T>[]) {
-    await this.page.expect({ timeout: 1 }).truthy(() => r.every(v => v.status === "fulfilled")).poll();
+    await this.page.expect({ timeout: 1 })
+      .setName("Expected all promises to be fulfilled")
+      .truthy(() => r.every(v => v.status === "fulfilled")).poll();
     return r.map((v: PromiseFulfilledResult<T>) => v.value);
   }
 
