@@ -1,4 +1,4 @@
-Feature: Telegram Webhook RPA
+Feature: Webhook Triggered Processes
 
   @update_inventory
   Scenario: Daily Remaining Inventory
