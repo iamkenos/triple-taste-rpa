@@ -1,5 +1,6 @@
 import { GSheetsService } from "~/fixtures/services/gsuite/gsheets/gsheets.service";
 import { createDate, Format } from "~/fixtures/utils/date.utils";
+import { unescapeJsonRestricted } from "~/fixtures/utils/string.utils";
 
 import type { DateTime } from "luxon";
 import type { InventoryFetchSheetProductInfo, InventoryOrderInfo, InventorySheetUpdateInfo } from "~/fixtures/services/gsuite/gsheets/gsheets.types";
@@ -70,6 +71,7 @@ export class InventoryManagementSheetService extends GSheetsService {
 
   async fetchOrderInfo() {
     const { date: orderDate } = createDate();
+    const orderedBy = unescapeJsonRestricted(this.parameters.webhook);
     const details: PromiseSettledResult<any>[] = await Promise.allSettled([
       this.fetchItemsToOrder(),
       this.fetchNextDeliveryDate(),
@@ -78,7 +80,7 @@ export class InventoryManagementSheetService extends GSheetsService {
     ]);
 
     const [products, deliveryDate, method, customerName] = await this.fullfilled(details);
-    return { products, orderDate, deliveryDate, method, customerName } as InventoryOrderInfo;
+    return { products, orderDate, deliveryDate, method, customerName, orderedBy } as InventoryOrderInfo;
   }
 
   async fetchListOfProducts() {
@@ -131,14 +133,16 @@ export class InventoryManagementSheetService extends GSheetsService {
   }
 
   async updateOrderedInventoryFor(date: DateTime) {
-    const { products, por: note } = this.parameters.gsheets.inventory.order;
+    const { products, por, orderedBy } = this.parameters.gsheets.inventory.order;
+    const note = `${por}\n\nSigned: ${orderedBy}`;
     const sheetName = this.tabs.ordered;
 
     await this.updateProductsSheet({ date, sheetName, products, note });
   }
 
   async updateArrivingInventoryFor(date: DateTime) {
-    const { por: note } = this.parameters.gsheets.inventory.order;
+    const { por, orderedBy } = this.parameters.gsheets.inventory.order;
+    const note = `${por}\n\nSigned: ${orderedBy}`;
     const items = await this.fetchNodeSheetProductsInfo({ sheetName: this.tabs.ordered, column: "A" });
     const qty = await this.fetchNodeSheetProductsInfo({ sheetName: this.tabs.ordered, column: "E" });
     const products = items.map((item, idx) => ({ name: item, value: qty[idx] }));

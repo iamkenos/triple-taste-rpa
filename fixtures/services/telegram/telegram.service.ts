@@ -121,7 +121,7 @@ ${shiftRotationInfo.map(v => `- ${v.shiftIcon} ${firstName(v.staffName)}: ${v.sh
   }
 
   async sendOrderConfirmation() {
-    const { amount, deliveryDate, por, status, customerName } = this.parameters.gsheets.inventory.order;
+    const { amount, deliveryDate, por, status, customerName, orderedBy } = this.parameters.gsheets.inventory.order;
     const message = `
 ────────────────
 📦 *Order# ${por}*
@@ -129,6 +129,8 @@ ${shiftRotationInfo.map(v => `- ${v.shiftIcon} ${firstName(v.staffName)}: ${v.sh
 
 *Customer Name:*
 - ${customerName}
+*Ordered By:*
+- ${orderedBy}
 *Delivery Date:*
 - ${deliveryDate.toFormat(Format.DATE_SHORT_DMC)}
 *Total Amount:*
