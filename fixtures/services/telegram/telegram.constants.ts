@@ -1,13 +1,13 @@
 export const API_URL = "https://api.telegram.org";
 
 export const BOT_BASE_PATH = (key: string) => `/bot${key}`;
-export const BOT_ID = "tripletaste";
 
 export const BOT_API_URL = (key: string) => `${API_URL}${BOT_BASE_PATH(key)}`;
 export const BOT_API_SEND_MESSAGE_URL = (key: string) => `${BOT_API_URL(key)}/sendMessage`;
 export const BOT_API_ANSWER_QUERY_URL = (key: string) => `${BOT_API_URL(key)}/answerCallbackQuery`;
 export const BOT_API_SET_WEBHOOK_URL = (key: string) => `${BOT_API_URL(key)}/setWebhook`;
 export const BOT_API_GET_CHAT_MEMBER_URL = (key: string, chatId: string, userId: any) => `${BOT_API_URL(key)}/getChatMember?chat_id=${chatId}&user_id=${userId}`;
+export const BOT_API_GET_ME_URL = (key: string) => `${BOT_API_URL(key)}/getMe`;
 
 export const BOT_COMMANDS = {
   update_inventory: "Updates the remaining inventory for today.",
@@ -23,11 +23,11 @@ export const BOT_COMMANDS_WITH_REPLIES = {
 
 export const BOT_ACK_MESSAGES = {
   default: [
-    (command: string) => `Got it! You selected *${command}*.`,
-    (command: string) => `Acknowledged. *${command}* is now in progress.`,
-    (command: string) => `Understood. You've chosen *${command}*.`,
-    (command: string) => `Okay! Executing *${command}*.`,
-    (command: string) => `Roger that! You've selected *${command}*.`
+    (user: string, command: string) => `Got it, *${user}*! You selected *${command}*.`,
+    (user: string, command: string) => `Acknowledged, *${user}*. *${command}* is now in progress.`,
+    (user: string, command: string) => `Understood, *${user}*. You've chosen *${command}*.`,
+    (user: string, command: string) => `Okay *${user}*! Executing *${command}*.`,
+    (user: string, command: string) => `Roger that, *${user}*! You've selected *${command}*.`
   ]
 };
 

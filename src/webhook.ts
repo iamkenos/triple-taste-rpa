@@ -5,11 +5,11 @@ import {
   BOT_ACK_MESSAGES,
   BOT_API_ANSWER_QUERY_URL,
   BOT_API_GET_CHAT_MEMBER_URL,
+  BOT_API_GET_ME_URL,
   BOT_API_SEND_MESSAGE_URL,
   BOT_COMMANDS,
   BOT_COMMANDS_WITH_REPLIES,
   BOT_FAILURE_MESSAGES,
-  BOT_ID,
   BOT_PROMPT_YN,
   BOT_SUCCESS_MESSAGES,
   BOT_WIP_MESSAGES
@@ -65,12 +65,12 @@ function hasCommandReply(message: TelegramMessage) {
 }
 
 function isBotMentioned(message: TelegramMessage) {
-  return message.entities?.some((e) => e.type === "mention" && message.text.includes(`@${BOT_ID}`));
+  return message.entities?.some((e) => e.type === "mention" && message.text.includes(`@${BOT_NAME}`));
 }
 
 function isBotReply(message: TelegramMessage) {
   const username = message.reply_to_message?.from?.username ?? "";
-  return username.startsWith(BOT_ID) && username.endsWith("bot");
+  return username.startsWith(BOT_NAME) && username.endsWith("bot");
 }
 
 function isMessage(update: TelegramUpdate) {
@@ -89,9 +89,21 @@ function shouldProcess(update: TelegramUpdate, env: Parameters["env"]) {
   return shouldProcess;
 }
 
-function getUserId(update: TelegramUpdate) {
+function getUserInfo(update: TelegramUpdate) {
   const userId = update.message?.from?.id ?? update.callback_query?.from?.id;
-  return userId;
+  const userName = update.message?.from?.username ?? update.callback_query?.from?.username;
+  const firstName = update.message?.from?.first_name ?? update.callback_query?.from?.first_name;
+  const name = firstName || userName;
+  return { userId, name };
+}
+
+async function fetchBotName({ env }: { env: Parameters["env"] }) {
+  if (BOT_NAME) return BOT_NAME;
+
+  const response = await axios.get(`${BOT_API_GET_ME_URL(env.TELEGRAM_BOT_KEY)}`);
+  const username = response.data?.result?.username;
+  BOT_NAME = username;
+  return username;
 }
 
 async function fetchIsUpdateFromGroupAdmin({ env, userId }: { env: Parameters["env"], userId: number }) {
@@ -137,10 +149,10 @@ async function acknowledgeCallback({ env, callback }: { env: Parameters["env"], 
   });
 }
 
-async function acknowledgeCommand({ env, command }: { env: Parameters["env"], command: string }) {
+async function acknowledgeCommand({ env, command, from }: { env: Parameters["env"], command: string, from: string }) {
   const randomIndex = Math.floor(Math.random() * BOT_ACK_MESSAGES.default.length);
   const func = BOT_ACK_MESSAGES.default[randomIndex];
-  const text = func(capitalCase(command));
+  const text = func(from, capitalCase(command));
   await sendMessage({ env, text });
 }
 
@@ -152,21 +164,26 @@ async function runPromptCommand({ env, command, parameters = undefined }: { env:
   });
 }
 
+async function authenticate({ env, update }: { env: Parameters["env"], update: TelegramUpdate }) {
+  const { userId } = getUserInfo(update);
+  const isFromGroupAdmin = await fetchIsUpdateFromGroupAdmin({ env, userId });
+  if (!isFromGroupAdmin) return new Response(undefined, { status: 204 });
+}
+
+let BOT_NAME = undefined;
 export default {
   async fetch(request: Request, env: Parameters["env"]) {
     if (request.method !== "POST") return new Response("Triple Taste RPA Webhook", { status: 405 });
 
     try {
+      await fetchBotName({ env });
       const update: TelegramUpdate = await request.json();
 
       if (!shouldProcess(update, env)) return new Response(undefined, { status: 204 });
 
       if (isMessage(update)) {
         const message = update.message;
-
-        const userId = getUserId(update);
-        const isFromGroupAdmin = await fetchIsUpdateFromGroupAdmin({ env, userId });
-        if (!isFromGroupAdmin) return new Response(undefined, { status: 204 });
+        await authenticate({ update, env });
 
         if (isBotMentioned(message)) {
           await showPrompt({ env });
@@ -183,8 +200,10 @@ export default {
             }
             case getCommandKey(BOT_COMMANDS.create_order): {
               if (BOT_PROMPT_YN.YES.includes(parameters.toLowerCase())) {
+                const { name } = getUserInfo(update);
+
                 await sendMessage({ env, text: getTaskWIPResponseMessage("long") });
-                const response = await runPromptCommand({ env, command });
+                const response = await runPromptCommand({ env, command, parameters: `${name} c/o ${BOT_NAME}` });
                 const message = getTaskCompleteResponseMessage(env, response, false);
                 if (message) await sendMessage({ env, text: message });
               } else {
@@ -199,13 +218,11 @@ export default {
       } else if (isPromptResponse(update)) {
         const callback = update.callback_query;
         await acknowledgeCallback({ env, callback });
+        await authenticate({ update, env });
 
-        const userId = getUserId(update);
-        const isFromGroupAdmin = await fetchIsUpdateFromGroupAdmin({ env, userId });
-        if (!isFromGroupAdmin) return new Response(undefined, { status: 204 });
-
+        const { name: from } = getUserInfo(update);
         const command = getCommandFrom(callback);
-        await acknowledgeCommand({ env, command });
+        await acknowledgeCommand({ env, command, from });
 
         switch (command) {
           case getCommandKey(BOT_COMMANDS.update_inventory): {
