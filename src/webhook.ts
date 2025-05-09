@@ -156,6 +156,19 @@ async function acknowledgeCommand({ env, command, from }: { env: Parameters["env
   await sendMessage({ env, text });
 }
 
+async function rejectCommand({ env, command, from }: { env: Parameters["env"], command: string, from: string }) {
+  const randomIndex = Math.floor(Math.random() * BOT_ACK_MESSAGES.reject.length);
+  const func = BOT_ACK_MESSAGES.reject[randomIndex];
+  const text = func(from, capitalCase(command));
+  await sendMessage({ env, text });
+}
+
+async function parkCommand({ env }: { env: Parameters["env"] }) {
+  const randomIndex = Math.floor(Math.random() * BOT_ACK_MESSAGES.wait.length);
+  const text = BOT_ACK_MESSAGES.wait[randomIndex];
+  await sendMessage({ env, text });
+}
+
 async function runPromptCommand({ env, command, parameters = undefined }: { env: Parameters["env"], command: string, parameters?: any }) {
   return await fetch(`http://localhost:${env.WEBHOOK_RPA_RUNNER_PORT}/run`, {
     method: "POST",
@@ -207,7 +220,7 @@ export default {
                 const message = getTaskCompleteResponseMessage(env, response, false);
                 if (message) await sendMessage({ env, text: message });
               } else {
-                await sendMessage({ env, text: "Once your side is ready, please let me know." });
+                await parkCommand({ env });
               }
               break;
             }
@@ -222,6 +235,12 @@ export default {
 
         const { name: from } = getUserInfo(update);
         const command = getCommandFrom(callback);
+
+        if (!command) {
+          await rejectCommand({ env, command: callback.data, from });
+          return new Response(undefined, { status: 204 });
+        }
+
         await acknowledgeCommand({ env, command, from });
 
         switch (command) {

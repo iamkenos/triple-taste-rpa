@@ -28,6 +28,20 @@ export const BOT_ACK_MESSAGES = {
     (user: string, command: string) => `Understood, *${user}*. You've chosen *${command}*.`,
     (user: string, command: string) => `Okay *${user}*! Executing *${command}*.`,
     (user: string, command: string) => `Roger that, *${user}*! You've selected *${command}*.`
+  ],
+  reject: [
+    (user: string, command: string) => `Apologies *${user}*, but *${command}* isn't supported.`,
+    (user: string, command: string) => `Sorry, *${user}*. I can't handle *${command}* just yet.`,
+    (user: string, command: string) => `Oops! *${command}* is not something I can do, *${user}*.`,
+    (user: string, command: string) => `Unfortunately, *${command}* is beyond me, *${user}*.`,
+    (user: string, command: string) => `Hey *${user}*! Regrettably, I'm unable to process *${command}*.`
+  ],
+  wait: [
+    "Waiting for your part so we can carry on!",
+    "Ready when you've finished your input!",
+    "Over to you first then we can proceed!",
+    "Once your side is ready, please let me know!",
+    "Just waiting for you to finish up!"
   ]
 };
 
