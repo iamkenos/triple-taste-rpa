@@ -38,7 +38,7 @@ export class PayoutSheetService extends GSheetsService {
         return { asOf, sheetName, employeeInfo, payCycleInfo, workHoursInfo, payOutInfo, timesheetInfo };
       }));
 
-    const result = await this.fullfilled(payOutInfo);
+    const result = await this.fulfilled(payOutInfo);
     return result;
   }
 
@@ -50,7 +50,7 @@ export class PayoutSheetService extends GSheetsService {
         const { value: cycle } = await this.fetchRangeContents({ sheetName, range });
         await this.updateRangeContents({ sheetName, range, values: [`${+cycle + 1}`] });
       }));
-    await this.fullfilled(payCycle);
+    await this.fulfilled(payCycle);
   }
 
   async revertToCurrentPayCycle() {
@@ -60,6 +60,6 @@ export class PayoutSheetService extends GSheetsService {
         const range = "K2";
         await this.updateRangeContents({ sheetName, range, values: ["=F1"] });
       }));
-    await this.fullfilled(payCycle);
+    await this.fulfilled(payCycle);
   }
 }

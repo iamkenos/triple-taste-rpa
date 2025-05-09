@@ -79,6 +79,6 @@ export class GDriveService extends GSuiteService {
         return true;
       }));
 
-    await this.fullfilled(deleted);
+    await this.fulfilled(deleted);
   }
 }

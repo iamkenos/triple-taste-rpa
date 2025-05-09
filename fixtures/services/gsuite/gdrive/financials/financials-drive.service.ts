@@ -70,7 +70,7 @@ export class FinancialsDriveService extends GDriveService {
         await this.createFileUnder({ parent, filename, body, mimeType });
       }));
 
-    const result = await this.fullfilled(uploaded);
+    const result = await this.fulfilled(uploaded);
     this.logger.debug("Uploaded %s new files.", result.length);
   }
 

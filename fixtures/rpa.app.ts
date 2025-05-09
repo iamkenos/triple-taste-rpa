@@ -17,7 +17,7 @@ export class RPA extends ProcessAutomation<Parameters> {
     return parseFloat(input.replace(/[^0-9.-]+/g, ""));
   }
 
-  async fullfilled<T>(r: PromiseSettledResult<T>[]) {
+  async fulfilled<T>(r: PromiseSettledResult<T>[]) {
     await this.page.expect({ timeout: 1 })
       .setName("Expected all promises to be fulfilled")
       .truthy(() => r.every(v => v.status === "fulfilled")).poll();

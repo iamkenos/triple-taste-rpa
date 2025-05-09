@@ -79,7 +79,7 @@ export class InventoryManagementSheetService extends GSheetsService {
       this.fetchCustomerName()
     ]);
 
-    const [products, deliveryDate, method, customerName] = await this.fullfilled(details);
+    const [products, deliveryDate, method, customerName] = await this.fulfilled(details);
     return { products, orderDate, deliveryDate, method, customerName, orderedBy } as InventoryOrderInfo;
   }
 
@@ -104,7 +104,7 @@ export class InventoryManagementSheetService extends GSheetsService {
         return { columnIndex: col, rowIndex: row, numberValue: +value, sheetId };
       }));
 
-    const result = await this.fullfilled(content);
+    const result = await this.fulfilled(content);
     const requests = result.map(({ numberValue, rowIndex, columnIndex, sheetId }) => ({
       updateCells: {
         rows: [

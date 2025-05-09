@@ -246,7 +246,7 @@ export class StaffMailService extends GMailService {
         return { payReminderInfo, payAdvisePdf, timesheetPdf, date };
       }));
 
-    const result = await this.fullfilled(collated);
+    const result = await this.fulfilled(collated);
     return result;
   }
 
@@ -268,7 +268,7 @@ export class StaffMailService extends GMailService {
         return { staffName, emailAddress, shift, shiftIcon, shiftIndex, period } as StaffShiftRotationInfo;
       }));
 
-    const result = await this.fullfilled(collated);
+    const result = await this.fulfilled(collated);
     const sorted = result.sort((a, b) => a.shiftIndex - b.shiftIndex);
     return sorted;
   }
@@ -291,7 +291,7 @@ export class StaffMailService extends GMailService {
         const attachments = [{ filename: payAdvisePdf.filename, path: payAdvisePdf.filepath, contentType: MimeType.PDF }];
         await this.sendEmail({ to, subject, body, attachments });
       }));
-    await this.fullfilled(emails);
+    await this.fulfilled(emails);
   }
 
   async sendFortnightlyPayReminderEmail() {

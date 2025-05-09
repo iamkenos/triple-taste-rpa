@@ -44,7 +44,7 @@ export class HRDriveService extends GDriveService {
         await this.createFileUnder({ filename: timesheetPdf.filename, mimeType, parent: folderId, body: timesheet });
       }));
 
-    const result = await this.fullfilled(uploaded);
+    const result = await this.fulfilled(uploaded);
     this.logger.debug("Uploaded %s new files.", result.length * 2);
   }
 }
