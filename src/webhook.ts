@@ -180,7 +180,7 @@ async function runPromptCommand({ env, command, parameters = undefined }: { env:
 async function authenticate({ env, update }: { env: Parameters["env"], update: TelegramUpdate }) {
   const { userId } = getUserInfo(update);
   const isFromGroupAdmin = await fetchIsUpdateFromGroupAdmin({ env, userId });
-  if (!isFromGroupAdmin) return new Response(undefined, { status: 204 });
+  return isFromGroupAdmin;
 }
 
 let BOT_NAME = undefined;
@@ -196,7 +196,8 @@ export default {
 
       if (isMessage(update)) {
         const message = update.message;
-        await authenticate({ update, env });
+        const isFromGroupAdmin = await authenticate({ update, env });
+        if (!isFromGroupAdmin) return new Response(undefined, { status: 204 });
 
         if (isBotMentioned(message)) {
           await showPrompt({ env });
@@ -239,7 +240,8 @@ export default {
       } else if (isPromptResponse(update)) {
         const callback = update.callback_query;
         await acknowledgeCallback({ env, callback });
-        await authenticate({ update, env });
+        const isFromGroupAdmin = await authenticate({ update, env });
+        if (!isFromGroupAdmin) return new Response(undefined, { status: 204 });
 
         const { name: from } = getUserInfo(update);
         const command = getCommandFrom(callback);
