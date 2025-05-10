@@ -20,7 +20,7 @@ Feature: Webhook Triggered Processes
 
   @fetch_shift_rotation
   Scenario: Fetch Shift Rotation
-    When the service account fetches the next pay cycle shift info for all staff
+    When the service account fetches the shift info for all staff
       And the service account collates the shift rotation data
     Then the service account sends the fortnightly shift rotation announcement
 

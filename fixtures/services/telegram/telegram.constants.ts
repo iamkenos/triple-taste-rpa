@@ -12,13 +12,14 @@ export const BOT_API_GET_ME_URL = (key: string) => `${BOT_API_URL(key)}/getMe`;
 export const BOT_COMMANDS = {
   create_order: "Creates an order on the OOS.",
   fetch_deposit_amount: "Fetches the expected deposit amount for today.",
-  fetch_shift_rotation: "Fetches the shift rotation for the next pay cycle.",
+  fetch_shift_rotation: "Fetches the shift assignments for the current or next pay cycle.",
   update_inventory: "Updates the remaining inventory for today."
 };
 
 export const BOT_COMMANDS_WITH_REPLIES = {
-  update_inventory: "Please reply to this message with the current remaining stock levels for today.",
-  create_order: "Before we proceed, please make sure the inventory sheet is updated with accurate product quantities to order.\n\nHave you done your part?"
+  create_order: "Before we proceed, please make sure the inventory sheet is updated with accurate product quantities to order.\n\nHave you done your part?",
+  fetch_shift_rotation: "Please reply to this message with 'current' if you need the data for the current pay cycle.\n\nAny other response will get you the data for the next pay cycle.",
+  update_inventory: "Please reply to this message with the current remaining stock levels for today."
 };
 
 export const BOT_ACK_MESSAGES = {

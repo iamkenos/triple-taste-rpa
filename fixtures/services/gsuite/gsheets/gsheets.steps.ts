@@ -42,10 +42,14 @@ When("the service account fetches the payout info for all staff", async function
   this.parameters.gsheets.hr.payout = await this.payout.fetchPayOutInfo();
 });
 
-When("the service account fetches the next pay cycle shift info for all staff", async function(this: This) {
-  await this.payout.updateToNextPayCycle();
-  this.parameters.gsheets.hr.payout = await this.payout.fetchPayOutInfo();
-  await this.payout.revertToCurrentPayCycle();
+When("the service account fetches the shift info for all staff", async function(this: This) {
+  if (this.parameters.webhook) {
+    this.parameters.gsheets.hr.payout = await this.payout.fetchPayOutInfo();
+  } else {
+    await this.payout.updateToNextPayCycle();
+    this.parameters.gsheets.hr.payout = await this.payout.fetchPayOutInfo();
+    await this.payout.revertToCurrentPayCycle();
+  }
 });
 
 When("the service account fetches the sales figures for the previous working day", async function(this: This) {

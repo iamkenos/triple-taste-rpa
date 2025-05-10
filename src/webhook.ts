@@ -204,13 +204,6 @@ export default {
           const { command, parameters } = getReply(message);
 
           switch (command) {
-            case getCommandKey(BOT_COMMANDS.update_inventory): {
-              await sendMessage({ env, text: getTaskWIPResponseMessage("long") });
-              const response = await runPromptCommand({ env, command, parameters });
-              const message = getTaskCompleteResponseMessage(env, response);
-              if (message) await sendMessage({ env, text: message });
-              break;
-            }
             case getCommandKey(BOT_COMMANDS.create_order): {
               if (BOT_PROMPT_YN.YES.includes(parameters.toLowerCase())) {
                 const { name } = getUserInfo(update);
@@ -222,6 +215,21 @@ export default {
               } else {
                 await parkCommand({ env });
               }
+              break;
+            }
+            case getCommandKey(BOT_COMMANDS.fetch_shift_rotation): {
+              await sendMessage({ env, text: getTaskWIPResponseMessage() });
+              const isForCurrent = parameters === "current";
+              const response = await runPromptCommand({ env, command, parameters: isForCurrent ? true : undefined });
+              const message = getTaskCompleteResponseMessage(env, response);
+              if (message) await sendMessage({ env, text: message });
+              break;
+            }
+            case getCommandKey(BOT_COMMANDS.update_inventory): {
+              await sendMessage({ env, text: getTaskWIPResponseMessage("long") });
+              const response = await runPromptCommand({ env, command, parameters });
+              const message = getTaskCompleteResponseMessage(env, response);
+              if (message) await sendMessage({ env, text: message });
               break;
             }
             default:
@@ -244,12 +252,16 @@ export default {
         await acknowledgeCommand({ env, command, from });
 
         switch (command) {
-          case getCommandKey(BOT_COMMANDS.update_inventory): {
-            await sendMessage({ env, text: BOT_COMMANDS_WITH_REPLIES.update_inventory });
-            break;
-          }
           case getCommandKey(BOT_COMMANDS.create_order): {
             await sendMessage({ env, text: BOT_COMMANDS_WITH_REPLIES.create_order });
+            break;
+          }
+          case getCommandKey(BOT_COMMANDS.fetch_shift_rotation): {
+            await sendMessage({ env, text: BOT_COMMANDS_WITH_REPLIES.fetch_shift_rotation });
+            break;
+          }
+          case getCommandKey(BOT_COMMANDS.update_inventory): {
+            await sendMessage({ env, text: BOT_COMMANDS_WITH_REPLIES.update_inventory });
             break;
           }
           default: {
