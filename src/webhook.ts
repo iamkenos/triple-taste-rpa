@@ -222,7 +222,7 @@ export default {
               await sendMessage({ env, text: getTaskWIPResponseMessage() });
               const isForCurrent = parameters === "current";
               const response = await runPromptCommand({ env, command, parameters: isForCurrent ? true : undefined });
-              const message = getTaskCompleteResponseMessage(env, response);
+              const message = getTaskCompleteResponseMessage(env, response, false);
               if (message) await sendMessage({ env, text: message });
               break;
             }
