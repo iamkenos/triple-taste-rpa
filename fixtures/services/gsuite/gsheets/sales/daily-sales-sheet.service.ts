@@ -71,7 +71,7 @@ export class DailySalesSheetService extends GSheetsService {
 
     const amountRange = this.serializeToGSheetsCellAddress({ col: cell.col, row: cell.row + 1 });
     const { value } = await this.fetchRangeContents({ sheetName, range: amountRange });
-    return { amount: value.replace("₵", this.ccy), date: cell.value } as DepositData;
+    return { amount: value, date: cell.value } as DepositData;
   }
 
   computeDailyInvoiceData() {

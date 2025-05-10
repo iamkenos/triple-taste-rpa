@@ -35,14 +35,31 @@ export type FetchRangeContentInfo = {
   filter?: () => boolean;
 } & Required<Pick<WorkbookResource, "sheetName">>;
 
-export type FindCellInfo = {
-  /** the search range; e.g. A1:E21 */
-  searchRange: string;
+export type FindIn = {
   /** the cell content to search for */
   searchFor: string;
   /** whether to do partial matching on find */
   partialMatch?: boolean;
-} & Required<Pick<WorkbookResource, "sheetName">>;
+  /** the values to search from */
+  values: string[][];
+};
+
+export type FindCellInfo = {
+  /** the search range; e.g. A1:E21 */
+  searchRange: string;
+} & Required<Pick<WorkbookResource, "sheetName">>
+  & Pick<FindIn, "partialMatch" | "searchFor">;
+
+export type FindCellsInfo = {
+  searchFor: string[];
+} & Omit<FindCellInfo, "searchFor">;
+
+export type BatchUpdateRequestInfo = {
+  type: "number" | "formula" | "string";
+  /** the value to update */
+  value: string | number;
+} & Required<Pick<WorkbookResource, "sheetId">>
+  & Pick<FindCellResult, "row" | "col">;
 
 export type FindCellResult = {
   /** the 0-based row index */
@@ -54,6 +71,8 @@ export type FindCellResult = {
   /** the cell value */
   value: string;
 };
+
+export type FindCellsResult = FindCellResult[];
 
 export type DailySales = {
   /** the previous working day */

@@ -125,6 +125,6 @@ When("the service account updates the ordered and arriving items on the inventor
   await this.inventory.updateArrivingInventoryFor(deliveryDate);
 });
 
-When("the service account reverts the order quantity values on the inventory sheet", async function(this: This) {
-  await this.inventory.revertMasterSheetProductsOrderQty();
+When("the service account reverts the master formula references on inventory sheet", async function(this: This) {
+  await this.inventory.revertMasterSheetFormulas();
 });

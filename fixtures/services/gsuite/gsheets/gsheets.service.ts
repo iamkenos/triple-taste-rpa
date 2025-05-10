@@ -3,9 +3,13 @@ import { DateTime } from "luxon";
 import { GSuiteService } from "~/fixtures/services/gsuite/gsuite.service";
 
 import type {
+  BatchUpdateRequestInfo,
   FetchRangeContentInfo,
   FindCellInfo,
   FindCellResult,
+  FindCellsInfo,
+  FindCellsResult,
+  FindIn,
   UpdateRangeContentInfo,
   WorkbookBatchUpdateInfo,
   WorkbookFetchSheetsFilter,
@@ -23,6 +27,43 @@ export class GSheetsService extends GSuiteService {
     const auth = this.auth();
     const connection = google.sheets({ version: "v4", auth });
     return { auth, connection };
+  }
+
+  private batchUpdateUserEnteredValueRequest({ sheetId, row, col, value, type }: BatchUpdateRequestInfo) {
+    return {
+      updateCells: {
+        rows: [
+          {
+            values: [ { userEnteredValue: { [`${type}Value`]: value } } ]
+          }
+        ],
+        fields: "userEnteredValue",
+        start: {
+          sheetId,
+          rowIndex: row,
+          columnIndex: col
+        }
+      }
+    };
+  }
+
+  private findIn({ values, partialMatch, searchFor, colOffset, rowOffset }: FindIn & { colOffset?: number, rowOffset?: number }) {
+    if (!values) return null;
+
+    for (let rowIndex = 0; rowIndex < values.length; rowIndex++) {
+      for (let colIndex = 0; colIndex < values[rowIndex].length; colIndex++) {
+        const value = values[rowIndex][colIndex];
+        const condition = partialMatch ? value.includes(searchFor) : value === searchFor;
+        if (condition) {
+          const col = colIndex + (colOffset ?? 0);
+          const row = rowIndex + (rowOffset ?? 0);
+          const address = this.serializeToGSheetsCellAddress({ col, row });
+
+          return { col, row, address, value } as FindCellResult;
+        }
+      }
+    }
+    return null;
   }
 
   protected async fetchWorksheetId({ sheetName }: WorkbookResource) {
@@ -152,6 +193,18 @@ export class GSheetsService extends GSuiteService {
     return result;
   }
 
+  protected batchUpdateUserEnteredNumberValueRequest({ sheetId, row, col, value }: Omit<BatchUpdateRequestInfo, "type">) {
+    return this.batchUpdateUserEnteredValueRequest({ sheetId, row, col, value, type: "number" });
+  }
+
+  protected batchUpdateUserEnteredStringValueRequest({ sheetId, row, col, value }: Omit<BatchUpdateRequestInfo, "type">) {
+    return this.batchUpdateUserEnteredValueRequest({ sheetId, row, col, value, type: "string" });
+  }
+
+  protected batchUpdateUserEnteredFormulaValueRequest({ sheetId, row, col, value }: Omit<BatchUpdateRequestInfo, "type">) {
+    return this.batchUpdateUserEnteredValueRequest({ sheetId, row, col, value, type: "formula" });
+  }
+
   protected async fetchRangeContents({ sheetName, range, filter }: FetchRangeContentInfo) {
     const { connection } = this.sheets;
     const spreadsheetId = this.spreadsheetId;
@@ -167,25 +220,23 @@ export class GSheetsService extends GSuiteService {
   protected async findCell({ sheetName, searchRange, searchFor, partialMatch }: FindCellInfo) {
     const [start] = searchRange.split(":");
     const { values } = await this.fetchRangeContents({ sheetName, range: searchRange });
-    const { col: colOffset, row: rowOffset } = this.deserializeGSheetsCellAddress(start);
+    const { col, row } = this.deserializeGSheetsCellAddress(start);
+    const [colOffset] = col;
+    const [rowOffset] = row;
 
-    if (!values) return null;
+    const result = this.findIn({ values, searchFor, partialMatch, colOffset, rowOffset }) as FindCellResult;
+    return result;
+  }
 
-    for (let rowIndex = 0; rowIndex < values.length; rowIndex++) {
-      for (let colIndex = 0; colIndex < values[rowIndex].length; colIndex++) {
-        const value = values[rowIndex][colIndex];
-        const condition = partialMatch ? value.includes(searchFor) : value === searchFor;
-        if (condition) {
-          const col = colIndex + colOffset[0];
-          const row = rowIndex + rowOffset[0];
-          const address = this.serializeToGSheetsCellAddress({ col, row });
+  protected async findCells({ sheetName, searchRange, searchFor, partialMatch }: FindCellsInfo) {
+    const [start] = searchRange.split(":");
+    const { values } = await this.fetchRangeContents({ sheetName, range: searchRange });
+    const { col, row } = this.deserializeGSheetsCellAddress(start);
+    const [colOffset] = col;
+    const [rowOffset] = row;
 
-          return { col, row, address, value } as FindCellResult;
-        }
-      }
-    }
-
-    return null;
+    const result = searchFor.map(v => this.findIn({ values, searchFor: v, partialMatch, colOffset, rowOffset })) as FindCellsResult;
+    return result;
   }
 
   protected async insertRows({ sheetName, startIndex, endIndex }: WorkbookResource & { startIndex: number, endIndex: number }) {
@@ -232,9 +283,7 @@ export class GSheetsService extends GSuiteService {
     const requestBody = {
       requests: [
         {
-          "clearBasicFilter": {
-            sheetId
-          }
+          clearBasicFilter: { sheetId }
         }
       ]
     };

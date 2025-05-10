@@ -6,15 +6,23 @@ export const EscapeSequence = {
 };
 
 export function escapeJsonRestricted(str: string): string {
-  for (const [char, replacement] of Object.values(EscapeSequence)) {
-    str = str.replaceAll(char, replacement);
+  try {
+    for (const [char, replacement] of Object.values(EscapeSequence)) {
+      str = str.replaceAll(char, replacement);
+    }
+    return str;
+  } catch (error) {
+    return str;
   }
-  return str;
 }
 
 export function unescapeJsonRestricted(str: string): string {
-  for (const [char, replacement] of Object.values(EscapeSequence)) {
-    str = str.replaceAll(replacement, char);
+  try {
+    for (const [char, replacement] of Object.values(EscapeSequence)) {
+      str = str.replaceAll(replacement, char);
+    }
+    return str;
+  } catch (error) {
+    return str;
   }
-  return str;
 }
