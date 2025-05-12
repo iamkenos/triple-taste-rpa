@@ -141,7 +141,7 @@ export type InventoryInfo = {
 };
 
 export type InventoryFetchSheetProductInfo = {
-  column: string;
+  range: string;
   sheetName: WorkbookResource["sheetName"];
 };
 

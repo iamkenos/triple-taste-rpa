@@ -64,6 +64,7 @@ ${shiftRotationInfo.map(v => `- ${v.shiftIcon} ${firstName(v.staffName)}: ${v.sh
   async parseRemainingItems() {
     const input = unescapeJsonRestricted(this.parameters.webhook).split(EscapeSequence.LF[0]);
     const items = this.parameters.gsheets.inventory.products;
+    const defaultValue = "0";
 
     const normalize = (text: string) => text.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
     const findBestMatch = (name: string, filters: string[]) => {
@@ -108,7 +109,7 @@ ${shiftRotationInfo.map(v => `- ${v.shiftIcon} ${firstName(v.staffName)}: ${v.sh
 
         if (name) {
           const numericMatch = rawValue.match(/\d+/);
-          const value = numericMatch ? numericMatch[0] : "0";
+          const value = numericMatch ? numericMatch[0] : defaultValue;
           output.push({ name, value });
         }
       }
@@ -116,10 +117,14 @@ ${shiftRotationInfo.map(v => `- ${v.shiftIcon} ${firstName(v.staffName)}: ${v.sh
     };
 
     const inventoryData = buildInventoryData(input, items);
+    const missingFromReport = items.filter(v => !inventoryData.map(({ name }) => name).includes(v))
+      .map(name => ({ name, value: defaultValue }));
+
+    const reconciled = [...inventoryData, ...missingFromReport];
     await this.page.expect({ timeout: 1 })
       .setName("Expected inventory data to be parsed correctly")
-      .truthy(() => inventoryData.length > 0).poll();
-    return inventoryData;
+      .truthy(() => reconciled.length > 0).poll();
+    return reconciled;
   }
 
   async sendOrderConfirmation() {

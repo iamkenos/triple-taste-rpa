@@ -18,33 +18,40 @@ export class InventoryManagementSheetService extends GSheetsService {
     forecast: "Forecast"
   };
   private functions = {
-    nextArrivalDate: "=UTIL_NEXT_ORDER_ARRIVAL_DATE()"
+    nextDeliveryDate: "=F_NEXT_ORDER_DELIVERY_DATE()"
   };
+  private ranges = {
+    dates: "H2:NU2",
+    nodeProducts: "A6:A40",
+    masterProductsName: "R_PRODUCTS",
+    masterProductsOrdered: "R_PRODUCTS_ORDERED",
+    masterOrderDropDate: "R_ORDER_DROP_DATE",
+    masterOrderScheduleDate: "R_ORDER_SCHEDULE_DATE",
+    masterOrderShippingMethod: "R_ORDER_SHIPPING_METHOD",
+    masterOrderCustomerName: "R_ORDER_CUST_NAME",
+    dataOrdered: "R_DATA_ORDERED"
+  };
+
   private updateProductNote = (note: string, sign: string) => `${note}\n\nSigned: ${sign}`;
 
-  private skipGapsBetweenColdAndDryProducts<T>(list: T[]) {
-    const [cold, , , , ...dry] = list;
-    return [cold, ...dry];
-  }
-
-  private async fetchMasterSheetProductsInfo(column: string) {
+  private async fetchMasterSheetProductsInfo(range: string) {
     const sheetName = this.tabs.master;
-    const { values } = await this.fetchRangeContents({ sheetName, range: `${column}18:${column}50` });
+    const { values } = await this.fetchRangeContents({ sheetName, range });
 
-    const items = this.skipGapsBetweenColdAndDryProducts(values).flat().map(i => i.trim()).filter(Boolean);
+    const items = values.flat().map(i => i.trim()).filter(Boolean);
     return items;
   }
 
-  private async fetchNodeSheetProductsInfo({ sheetName, column }: InventoryFetchSheetProductInfo) {
-    const { values } = await this.fetchRangeContents({ sheetName, range: `${column}6:${column}45` });
+  private async fetchNodeSheetProductsInfo({ sheetName, range }: InventoryFetchSheetProductInfo) {
+    const { values } = await this.fetchRangeContents({ sheetName, range });
 
-    const items = this.skipGapsBetweenColdAndDryProducts(values).flat().map(i => i.trim()).filter(Boolean);
+    const items = values.flat().map(i => i.trim()).filter(Boolean);
     return items;
   }
 
   private async fetchItemsToOrder() {
     const items = await this.fetchListOfProducts();
-    const qty = await this.fetchMasterSheetProductsInfo("D");
+    const qty = await this.fetchMasterSheetProductsInfo(this.ranges.masterProductsOrdered);
 
     await this.page.expect({ timeout: 1000 })
       .setName("Number of products matches quantity")
@@ -56,7 +63,7 @@ export class InventoryManagementSheetService extends GSheetsService {
 
   private async fetchNextDeliveryDate() {
     const sheetName = this.tabs.master;
-    const { value: deliveryDate } = await this.fetchRangeContents({ sheetName, range: "D7" });
+    const { value: deliveryDate } = await this.fetchRangeContents({ sheetName, range: this.ranges.masterOrderDropDate });
 
     const { date: result } = createDate({ from: [deliveryDate, Format.DATE_SHORT_DMC] });
     return result;
@@ -64,14 +71,14 @@ export class InventoryManagementSheetService extends GSheetsService {
 
   private async fetchShippingMethod() {
     const sheetName = this.tabs.master;
-    const { value: method } = await this.fetchRangeContents({ sheetName, range: "C3" });
+    const { value: method } = await this.fetchRangeContents({ sheetName, range: this.ranges.masterOrderShippingMethod });
 
     return method;
   }
 
   private async fetchCustomerName() {
     const sheetName = this.tabs.master;
-    const { value: customerName } = await this.fetchRangeContents({ sheetName, range: "W4" });
+    const { value: customerName } = await this.fetchRangeContents({ sheetName, range: this.ranges.masterOrderCustomerName });
 
     return customerName;
   }
@@ -91,13 +98,13 @@ export class InventoryManagementSheetService extends GSheetsService {
   }
 
   async fetchListOfProducts() {
-    const items = await this.fetchMasterSheetProductsInfo("A");
+    const items = await this.fetchMasterSheetProductsInfo(this.ranges.masterProductsName);
     return items;
   }
 
   async updateProductsSheet({ date, sheetName, products, note }: InventorySheetUpdateInfo) {
     const searchForDate = date.toFormat(Format.DATE_SHORT_DMY);
-    const searchRangeForDate = "H2:NU2";
+    const searchRangeForDate = this.ranges.dates;
     const sheetId = await this.fetchWorksheetId({ sheetName });
     const { col, row: headerRow } = await this.findCell({ sheetName, searchRange: searchRangeForDate, searchFor: searchForDate });
 
@@ -106,7 +113,7 @@ export class InventoryManagementSheetService extends GSheetsService {
       await this.insertNote({ sheetName, address, note });
     }
 
-    const searchRange = "A1:A45";
+    const searchRange = this.ranges.nodeProducts;
     const searchFor = products.map(v => v.name);
     const searchResult = await this.findCells({ sheetName, searchRange, searchFor });
 
@@ -137,8 +144,8 @@ export class InventoryManagementSheetService extends GSheetsService {
   async updateArrivingInventoryFor(date: DateTime) {
     const { por, orderedBy } = this.parameters.gsheets.inventory.order;
     const note = this.updateProductNote(por, orderedBy);
-    const items = await this.fetchNodeSheetProductsInfo({ sheetName: this.tabs.ordered, column: "A" });
-    const qty = await this.fetchNodeSheetProductsInfo({ sheetName: this.tabs.ordered, column: "E" });
+    const items = await this.fetchNodeSheetProductsInfo({ sheetName: this.tabs.ordered, range: this.ranges.nodeProducts });
+    const qty = await this.fetchNodeSheetProductsInfo({ sheetName: this.tabs.ordered, range: this.ranges.dataOrdered });
     const products = items.map((item, idx) => ({ name: item, value: qty[idx] }));
 
     const sheetName = this.tabs.arriving;
@@ -151,19 +158,19 @@ export class InventoryManagementSheetService extends GSheetsService {
 
     const arrivalDateRange = this.singleCellAddressToIndex("D7");
     const arrivalDateRevertRequest = this.batchUpdateUserEnteredFormulaValueRequest(
-      { sheetId, row: arrivalDateRange.row, col: arrivalDateRange.col, value: this.functions.nextArrivalDate }
+      { sheetId, row: arrivalDateRange.row, col: arrivalDateRange.col, value: this.functions.nextDeliveryDate }
     );
 
-    const productsStartRow = 18; const productsEndRow = 50;
+    const productsStartRow = 11; const productsEndRow = 39;
     const productsRows = Array.from({ length: productsEndRow - productsStartRow + 1 }, (_, i) => i + productsStartRow);
-    const productsOrderQtyRange = productsRows.map(v => this.singleCellAddressToIndex(`D${v}`));
-    const productsOrderQtyFormulas = productsRows.map(v => `=S${v}`);
+    const productsOrderQtyRange = productsRows.map(v => this.singleCellAddressToIndex(`B${v}`));
+    const productsOrderQtyFormulas = productsRows.map(v => `=R${v}`);
     const productsRevertOrderQtyRequests = productsOrderQtyRange
       .map(({ row, col }, idx) => {
         return this.batchUpdateUserEnteredFormulaValueRequest({ sheetId, row, col, value: productsOrderQtyFormulas[idx] });
       });
 
-    const cleanedRevertOrderQtyRequests = this.skipGapsBetweenColdAndDryProducts(productsRevertOrderQtyRequests).slice(0, -2);
+    const cleanedRevertOrderQtyRequests = productsRevertOrderQtyRequests.slice(0, -2);
     const requests = [arrivalDateRevertRequest, ...cleanedRevertOrderQtyRequests];
 
     const requestBody = { requests };

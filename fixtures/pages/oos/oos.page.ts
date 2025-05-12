@@ -1,9 +1,11 @@
 import { BasePage } from "~/fixtures/pages/base.page";
 import { Format } from "~/fixtures/utils/date.utils";
+import { EscapeSequence } from "~/fixtures/utils/string.utils";
 
 import { DatePicker } from "./components/datepicker.component";
 import { Navigation } from "./components/navigation.component";
 import { Shipping } from "./components/shipping.component";
+
 
 export class OOSPage extends BasePage {
   url = this.parameters.env.PCOOS_URL;
@@ -58,6 +60,8 @@ export class OOSPage extends BasePage {
   }
 
   async viewProduct(product: string) {
+    await this.page.expect().domContentLoaded().poll();
+    await this.lnkProduct(product).isEnabled();
     await this.lnkProduct(product).click();
     await this.headerProduct(product).expect().displayed().poll();
   }
@@ -66,16 +70,17 @@ export class OOSPage extends BasePage {
     const products = this.parameters.gsheets.inventory.order.products.filter(i => +i.value);
     for (let i = 0; i < products.length; i++) {
       const { name, value } = products[i];
+      const product = name.replaceAll(EscapeSequence.DBQT[0], "");
 
-      await this.searchProduct(name);
-      await this.viewProduct(name);
+      await this.searchProduct(product);
+      await this.viewProduct(product);
 
       await this.tfQty().expect().enabled().poll();
       await this.tfQty().clear();
       await this.tfQty().fill(value);
       await this.tfQty().expect().valueEquals(value).poll();
       await this.btnAddToCart().click();
-      await this.divModal().expect().textContains(name).poll();
+      await this.divModal().expect().textContains(product).poll();
       await this.btnModalClose().click();
     }
   }
