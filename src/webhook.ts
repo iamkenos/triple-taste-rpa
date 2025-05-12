@@ -51,8 +51,9 @@ function getTaskWIPResponseMessage(variant?: string) {
   return message;
 }
 
-function getTaskCompleteResponseMessage(env: Parameters["env"], response: Response, sendOnSuccess = true) {
-  const isSuccess = response.status === 200;
+async function getTaskCompleteResponseMessage(env: Parameters["env"], response: Response, sendOnSuccess = true) {
+  const result = await response.text();
+  const isSuccess = result === "\"Completed\"";
   const messages = isSuccess ? BOT_SUCCESS_MESSAGES : BOT_FAILURE_MESSAGES;
   const responses = messages.default;
   const message = !isSuccess || (isSuccess && sendOnSuccess) ? getResponseMessage(responses) : undefined;
@@ -211,7 +212,7 @@ export default {
 
                 await sendMessage({ env, text: getTaskWIPResponseMessage("long") });
                 const response = await runPromptCommand({ env, command, parameters: `${name} c/o ${BOT_NAME}` });
-                const message = getTaskCompleteResponseMessage(env, response, false);
+                const message = await getTaskCompleteResponseMessage(env, response, false);
                 if (message) await sendMessage({ env, text: message });
               } else {
                 await parkCommand({ env });
@@ -222,14 +223,14 @@ export default {
               await sendMessage({ env, text: getTaskWIPResponseMessage() });
               const isForCurrent = parameters === "current";
               const response = await runPromptCommand({ env, command, parameters: isForCurrent ? true : undefined });
-              const message = getTaskCompleteResponseMessage(env, response, false);
+              const message = await getTaskCompleteResponseMessage(env, response, false);
               if (message) await sendMessage({ env, text: message });
               break;
             }
             case getCommandKey(BOT_COMMANDS.update_inventory): {
               await sendMessage({ env, text: getTaskWIPResponseMessage("long") });
               const response = await runPromptCommand({ env, command, parameters });
-              const message = getTaskCompleteResponseMessage(env, response);
+              const message = await getTaskCompleteResponseMessage(env, response);
               if (message) await sendMessage({ env, text: message });
               break;
             }
@@ -269,7 +270,7 @@ export default {
           default: {
             await sendMessage({ env, text: getTaskWIPResponseMessage() });
             const response = await runPromptCommand({ env, command });
-            const message = getTaskCompleteResponseMessage(env, response, false);
+            const message = await getTaskCompleteResponseMessage(env, response, false);
             if (message) await sendMessage({ env, text: message });
             break;
           }
@@ -278,7 +279,7 @@ export default {
       return new Response("OK", { status: 200 });
     } catch (err) {
       console.error("Internal Server Error", "\n", err);
-      return new Response("Internal Server Error", { status: 500 });
+      return new Response("Internal Server Error", { status: 200 });
     }
   }
 };

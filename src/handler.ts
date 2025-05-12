@@ -17,14 +17,14 @@ function serve() {
   // @ts-ignore
   app.post("/run", (req, res) => {
     const { command, parameters } = req.body as any;
-    if (!command) return res.status(400).json({ message: "No command provided." });
+    if (!command) return res.status(200).json({ message: "No command provided." });
 
     const basecmd = `TAGS=@${command} npx cucumber-js -c cucumber.webhook.js`;
     const proc = parameters ? `${basecmd} --world-parameters '${JSON.stringify({ webhook: escapeJsonRestricted(parameters) })}'` : basecmd;
 
     exec(proc, (error, stdout, stderr) => {
-      if (error) return res.status(500).json({ message: `${stderr || stdout}` });
-      return res.status(200).json({ message: "Completed" });
+      if (error) return res.status(200).json({ message: `${stderr || stdout}` });
+      return res.status(200).json("Completed");
     });
   });
 
