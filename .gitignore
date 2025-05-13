@@ -6,4 +6,5 @@ wrangler.toml
 .wrangler
 .env
 .etc
+.handler.lock
 downloads/
