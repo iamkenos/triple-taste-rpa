@@ -12,10 +12,6 @@ Before({}, async function(this: This) {
   this.telegram = new TelegramService();
 });
 
-When("the service account sends an announcement:", async function(this: This, message: string) {
-  await this.telegram.sendMessage({ message });
-});
-
 When("the service account sends the fortnightly shift rotation announcement", async function(this: This) {
   await this.telegram.sendShiftRotationMessage();
 });

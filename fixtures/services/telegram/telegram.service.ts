@@ -1,37 +1,15 @@
 import { distance } from "fastest-levenshtein";
 
-import axios from "axios";
-
+import { TelegramBot } from "./telegram.bot";
 import { RPA } from "~/fixtures/rpa.app";
 import { EscapeSequence, unescapeJsonRestricted } from "~/fixtures/utils/string.utils";
-import { BOT_API_SEND_MESSAGE_URL } from "~/fixtures/services/telegram/telegram.constants";
 import { Format } from "~/fixtures/utils/date.utils";
 
 import type { InventoryInfo } from "~/fixtures/services/gsuite/gsheets/gsheets.types";
 
 export class TelegramService extends RPA {
 
-  private token = this.parameters.env.TELEGRAM_BOT_KEY;
-  private id = this.parameters.env.TELEGRAM_CHAT_ID;
-
-  async sendMessage({ message }: { message: string }) {
-    try {
-      const result = await axios.post(
-        `${BOT_API_SEND_MESSAGE_URL(this.token)}`, {
-          headers: {
-            "Content-Type": "application/json"
-          },
-          chat_id: this.id,
-          text: message,
-          parse_mode: "Markdown"
-        });
-      return result.data;
-    }
-    catch (error) {
-      this.logger.error(error.message, error?.response?.data?.description);
-      throw error;
-    }
-  }
+  private bot = new TelegramBot(this.parameters.env);
 
   async sendShiftRotationMessage() {
     const shiftRotationInfo = this.parameters.gmail.staff.rotation;
@@ -48,7 +26,7 @@ export class TelegramService extends RPA {
 *Roster:*
 ${shiftRotationInfo.map(v => `- ${v.shiftIcon} ${firstName(v.staffName)}: ${v.shift}`).join(EscapeSequence.LF[0])}
 ────────────────`;
-    await this.sendMessage({ message });
+    await this.bot.sendMessage({ message });
   }
 
   async sendExpectedDepositAmountMessage() {
@@ -58,7 +36,7 @@ ${shiftRotationInfo.map(v => `- ${v.shiftIcon} ${firstName(v.staffName)}: ${v.sh
 - ${date}
 *Amount:*
 - ${amount}`;
-    await this.sendMessage({ message });
+    await this.bot.sendMessage({ message });
   }
 
   async parseRemainingItems() {
@@ -144,6 +122,6 @@ ${shiftRotationInfo.map(v => `- ${v.shiftIcon} ${firstName(v.staffName)}: ${v.sh
 - ${amount}
 *Status:*
 - ${status}`;
-    await this.sendMessage({ message });
+    await this.bot.sendMessage({ message });
   }
 }

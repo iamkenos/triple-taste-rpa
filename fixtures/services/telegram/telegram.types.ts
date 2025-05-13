@@ -34,3 +34,9 @@ export type TelegramEntity = {
   length: number;
   type: string;
 };
+
+export type SendMessageOptions = {
+  variant?: string;
+  notifyOnFailureLink?: string;
+};
+

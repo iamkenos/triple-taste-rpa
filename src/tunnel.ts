@@ -5,7 +5,8 @@ import dotenv from "dotenv";
 import fs from "fs";
 import path from "path";
 
-import { BOT_API_SET_WEBHOOK_URL } from "../fixtures/services/telegram/telegram.constants";
+import { TelegramBot } from "../fixtures/services/telegram/telegram.bot";
+import type { Env } from "./types";
 
 dotenv.config();
 function tunnel(port: number | string): Promise<string> {
@@ -64,12 +65,12 @@ async function bootstrap(key: string, value: string) {
 
 async function main() {
   try {
+    const bot = new TelegramBot(process.env as Env);
     const WEBHOOK_PORT = 8787;
     const RESULTS_PORT = process.env.WEBHOOK_RPA_RESULTS_PORT;
-    const KEY = process.env.TELEGRAM_BOT_KEY;
     const webhookTURL = await tunnel(WEBHOOK_PORT);
     await reachable(webhookTURL);
-    const response = await axios.post(`${BOT_API_SET_WEBHOOK_URL(KEY)}`, { url: webhookTURL });
+    const response = await bot.setWebhook({ url: webhookTURL });
     bootstrap("WEBHOOK_MAIN_TUNNEL_URL", webhookTURL);
     console.log("Axios response:", response.data);
 
