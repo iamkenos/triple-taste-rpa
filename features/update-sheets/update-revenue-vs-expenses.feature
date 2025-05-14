@@ -33,3 +33,9 @@ Feature: Update Revenue vs Expenses Sheets
     Given it's a Sunday
     Then the service account creates expense records for:
       | Service Fee | 15 | Gcash weekly transfer service fee |
+
+  Scenario: Daily Revenue Offset
+    Given it's a week day
+    When the service account fetches the sales figures for the previous working day
+      And the service account computes the data to invoice
+    Then the service account creates a revenue record for the computed invoice

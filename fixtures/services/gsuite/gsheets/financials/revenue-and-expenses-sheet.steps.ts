@@ -34,3 +34,8 @@ When("the service account creates expense records for:", async function(this: Th
     await this.revxexp.createExpensesRecord({ date, category, amount, note });
   }
 });
+
+When("the service account creates a revenue record for the computed invoice", async function(this: This) {
+  const { date, adjTotal: amount } = this.parameters.gsheets.sales.daily.invoice;
+  await this.revxexp.createRevenueRecord({ date, amount, adj: true });
+});

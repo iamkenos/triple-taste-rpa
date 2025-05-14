@@ -52,6 +52,7 @@ export class DailySalesSheetService extends GSheetsService {
     const discounts = totalOf(dcBreakdown);
 
     return {
+      date,
       referenceDate: date.toFormat(Format.DATE_MED),
       qty: cups,
       dcAmount: discounts,

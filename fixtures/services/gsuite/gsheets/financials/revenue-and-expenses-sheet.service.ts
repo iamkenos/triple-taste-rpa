@@ -3,7 +3,7 @@ import { GSheetsService } from "~/fixtures/services/gsuite/gsheets/gsheets.servi
 import { Format } from "~/fixtures/utils/date.utils";
 
 import type { DateTime } from "luxon";
-import type { ExpenseInfo, WorkbookResource } from "~/fixtures/services/gsuite/gsheets/gsheets.types";
+import type { ExpenseAndRevenueInfo, WorkbookResource } from "~/fixtures/services/gsuite/gsheets/gsheets.types";
 
 export class RevenueAndExpensesSheetService extends GSheetsService {
 
@@ -28,6 +28,9 @@ export class RevenueAndExpensesSheetService extends GSheetsService {
       sales: "Sales",
       reimbursements: "Reimbursements"
     }
+  };
+  private ranges = {
+    record: "A2:D2"
   };
 
   getWebViewUrl({ sheetId, viewId }: Partial<WorkbookResource>) {
@@ -106,9 +109,22 @@ export class RevenueAndExpensesSheetService extends GSheetsService {
     }
   }
 
-  async createExpensesRecord({ date, category, amount, note }: ExpenseInfo) {
+  async createExpensesRecord({ date, category, amount, note }: ExpenseAndRevenueInfo) {
     const sheetName = this.tabs.expenses;
-    const range = "A2:D2";
+    const range = this.ranges.record;
+    const values = [date.toFormat(Format.DATE_SHORT_DMY), category, amount, note];
+
+    await this.clearFilters({ sheetName });
+    await this.insertRows({ sheetName, startIndex: 1, endIndex: 2 });
+    await this.updateRangeContents({ sheetName, range, values });
+  }
+
+  async createRevenueRecord({ date, amount, note, adj = false }: Partial<ExpenseAndRevenueInfo> & { adj: boolean }) {
+    const prefix = adj ? "Adj " : "";
+    const sheetName = `${prefix}${this.tabs.revenue}`;
+    const category = `${prefix}${this.categories.revenue.sales}`;
+
+    const range = this.ranges.record;
     const values = [date.toFormat(Format.DATE_SHORT_DMY), category, amount, note];
 
     await this.clearFilters({ sheetName });

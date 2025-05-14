@@ -81,6 +81,8 @@ export type FindCellResult = {
 export type FindCellsResult = FindCellResult[];
 
 export type DailySales = {
+  /** the previous working date */
+  date: DateTime;
   /** the previous working day */
   referenceDate: string;
   /** the number of cups sold */
@@ -130,14 +132,14 @@ export type StaffPayOutInfo = {
   timesheetInfo: string[][];
 };
 
-export type ExpenseInfo = {
-  /** the expense date */
+export type ExpenseAndRevenueInfo = {
+  /** the date */
   date: DateTime;
-  /** the expense category */
+  /** the category */
   category: string;
-  /** the expense amount */
+  /** the amount */
   amount: number;
-  /** the expense description or comment */
+  /** the description or comment */
   note: string;
 };
 
