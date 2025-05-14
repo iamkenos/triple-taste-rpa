@@ -80,7 +80,7 @@ I completed the updates but the following items seem to be missing from the repo
 
 ${missing.map(({ name, value }) => `▸ ${name}: ${value}`).join("\n")}
 
-If you think there's an error with the report you sent, we can fix it by replying to the original prompt witht the corrected values.`;
+If you think there's an error with the report you sent, we can fix it if you reply to the original prompt with the corrected values.`;
       await this.bot.sendMessage({ message });
     } else {
       await this.bot.sendSuccessMessage();
