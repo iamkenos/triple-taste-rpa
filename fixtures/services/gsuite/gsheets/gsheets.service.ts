@@ -3,7 +3,8 @@ import { DateTime } from "luxon";
 import { GSuiteService } from "~/fixtures/services/gsuite/gsuite.service";
 
 import type {
-  BatchUpdateRequestInfo,
+  BatchHideColumnsRequestInfo,
+  BatchUpdateUserEnteredValueRequestInfo,
   FetchRangeContentInfo,
   FindCellInfo,
   FindCellResult,
@@ -29,24 +30,6 @@ export class GSheetsService extends GSuiteService {
     return { auth, connection };
   }
 
-  private batchUpdateUserEnteredValueRequest({ sheetId, row, col, value, type }: BatchUpdateRequestInfo) {
-    return {
-      updateCells: {
-        rows: [
-          {
-            values: [ { userEnteredValue: { [`${type}Value`]: value } } ]
-          }
-        ],
-        fields: "userEnteredValue",
-        start: {
-          sheetId,
-          rowIndex: row,
-          columnIndex: col
-        }
-      }
-    };
-  }
-
   private findIn({ values, partialMatch, searchFor, colOffset, rowOffset }: FindIn & { colOffset?: number, rowOffset?: number }) {
     if (!values) return null;
 
@@ -64,6 +47,39 @@ export class GSheetsService extends GSuiteService {
       }
     }
     return null;
+  }
+
+  protected batchUpdateUserEnteredValueRequest({ sheetId, row, col, value, type }: BatchUpdateUserEnteredValueRequestInfo) {
+    return {
+      updateCells: {
+        rows: [
+          {
+            values: [ { userEnteredValue: { [`${type}Value`]: value } } ]
+          }
+        ],
+        fields: "userEnteredValue",
+        start: {
+          sheetId,
+          rowIndex: row,
+          columnIndex: col
+        }
+      }
+    };
+  }
+
+  protected batchUpdateHideColumnsRequest({ sheetId, startIndex, endIndex }: BatchHideColumnsRequestInfo) {
+    return {
+      updateDimensionProperties: {
+        range: {
+          sheetId,
+          dimension: "COLUMNS",
+          startIndex,
+          endIndex
+        },
+        properties: { hiddenByUser: true },
+        fields: "hiddenByUser"
+      }
+    };
   }
 
   protected async fetchWorksheetId({ sheetName }: WorkbookResource) {
@@ -193,15 +209,15 @@ export class GSheetsService extends GSuiteService {
     return result;
   }
 
-  protected batchUpdateUserEnteredNumberValueRequest({ sheetId, row, col, value }: Omit<BatchUpdateRequestInfo, "type">) {
+  protected batchUpdateUserEnteredNumberValueRequest({ sheetId, row, col, value }: Omit<BatchUpdateUserEnteredValueRequestInfo, "type">) {
     return this.batchUpdateUserEnteredValueRequest({ sheetId, row, col, value, type: "number" });
   }
 
-  protected batchUpdateUserEnteredStringValueRequest({ sheetId, row, col, value }: Omit<BatchUpdateRequestInfo, "type">) {
+  protected batchUpdateUserEnteredStringValueRequest({ sheetId, row, col, value }: Omit<BatchUpdateUserEnteredValueRequestInfo, "type">) {
     return this.batchUpdateUserEnteredValueRequest({ sheetId, row, col, value, type: "string" });
   }
 
-  protected batchUpdateUserEnteredFormulaValueRequest({ sheetId, row, col, value }: Omit<BatchUpdateRequestInfo, "type">) {
+  protected batchUpdateUserEnteredFormulaValueRequest({ sheetId, row, col, value }: Omit<BatchUpdateUserEnteredValueRequestInfo, "type">) {
     return this.batchUpdateUserEnteredValueRequest({ sheetId, row, col, value, type: "formula" });
   }
 
@@ -225,7 +241,7 @@ export class GSheetsService extends GSuiteService {
     const [rowOffset] = row;
 
     const result = this.findIn({ values, searchFor, partialMatch, colOffset, rowOffset }) as FindCellResult;
-    return result;
+    return result || {} as typeof result;
   }
 
   protected async findCells({ sheetName, searchRange, searchFor, partialMatch }: FindCellsInfo) {

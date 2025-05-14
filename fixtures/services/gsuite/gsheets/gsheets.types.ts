@@ -54,12 +54,18 @@ export type FindCellsInfo = {
   searchFor: string[];
 } & Omit<FindCellInfo, "searchFor">;
 
-export type BatchUpdateRequestInfo = {
+export type BatchUpdateUserEnteredValueRequestInfo = {
   type: "number" | "formula" | "string";
   /** the value to update */
   value: string | number;
 } & Required<Pick<WorkbookResource, "sheetId">>
   & Pick<FindCellResult, "row" | "col">;
+
+export type BatchHideColumnsRequestInfo = {
+  /** the value to update */
+  startIndex: number;
+  endIndex: number;
+} & Required<Pick<WorkbookResource, "sheetId">>
 
 export type FindCellResult = {
   /** the 0-based row index */

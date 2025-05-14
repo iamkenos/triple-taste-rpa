@@ -10,7 +10,7 @@ Feature: Webhook Triggered Processes
       And the service account extracts the OOS order details
       And the service account updates the ordered and arriving items on the inventory sheet
       And the service account creates an expense record for the newly created order
-      And the service account reverts the master formula references on inventory sheet
+      And the service account reverts the master formula references on the inventory sheet
     Then the service account sends the order confirmation on the ops channel
 
   @fetch_deposit_amount
@@ -29,6 +29,7 @@ Feature: Webhook Triggered Processes
     When the service account fetches the list of items from the inventory sheet
       And the service account gets remaining inventory from the webhook message
       And the service account updates the remaining items on the inventory sheet
-      And the service account fetches the remaining items for the previous working day
-      And the service account fetches the usage items for the previous working day
-    Then the service account sends the inventory update confirmation on the ops channel
+      And the service account fetches the remaining items for the previous working day from the inventory sheet
+      And the service account fetches the usage items for the previous working day from the inventory sheet
+    Then the service account hides the columns for the previous days on the inventory sheet
+      And the service account sends the inventory update confirmation on the ops channel

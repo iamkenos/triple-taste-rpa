@@ -176,6 +176,26 @@ export class InventoryManagementSheetService extends GSheetsService {
     await this.updateProductsSheet({ date, sheetName, products, note });
   }
 
+  async hideColumnsUntil(date: DateTime) {
+    const { col: endIndex } = await this.findCellFor({ sheetName: this.tabs.remaining, date });
+    const { col } = this.deserializeGSheetsCellAddress(this.ranges.dates);
+    const [startIndex] = col;
+
+    if (endIndex !== undefined) {
+      const sheetNames = Object.values(this.tabs).filter(value => value !== this.tabs.master);
+      const sheetIds = await Promise.allSettled(sheetNames
+        .map(async(sheetName: string) => {
+          return this.fetchWorksheetId({ sheetName });
+        }));
+
+      const result = await this.fulfilled(sheetIds);
+      const requests = result.map(sheetId => this.batchUpdateHideColumnsRequest({ sheetId, startIndex, endIndex }));
+
+      const requestBody = { requests };
+      await this.batchUpdate({ requestBody });
+    }
+  }
+
   async revertMasterSheetFormulas() {
     const sheetName = this.tabs.master;
     const sheetId = await this.fetchWorksheetId({ sheetName });
@@ -265,4 +285,5 @@ export class InventoryManagementSheetService extends GSheetsService {
       .truthy(missing.length !== items.length, { missing: items }).poll();
     return { remaining, missing };
   }
+
 }

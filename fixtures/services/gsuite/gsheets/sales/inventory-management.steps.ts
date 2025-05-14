@@ -1,5 +1,5 @@
 import { When } from "@cucumber/cucumber";
-import { createDate, getPreviousWorkingDateFrom } from "~/fixtures/utils/date.utils";
+import { createDate, getPreviousWorkingDateFrom, Unit } from "~/fixtures/utils/date.utils";
 
 import type { This as GSHeets } from "~/fixtures/services/gsuite/gsheets/gsheets.steps";
 
@@ -35,14 +35,20 @@ When("the service account updates the ordered and arriving items on the inventor
   await this.inventory.updateArrivingInventoryFor(deliveryDate);
 });
 
-When("the service account fetches the {word} items for the previous working day", async function(this: This, tab: string) {
+When("the service account fetches the {word} items for the previous working day from the inventory sheet", async function(this: This, tab: string) {
   const { date } = createDate();
 
   const scopeDate = getPreviousWorkingDateFrom(date);
   this.parameters.gsheets.inventory[tab] = await this.inventory.fetchProductSheetInventoryInfoFor(scopeDate, tab);
 });
 
-When("the service account reverts the master formula references on inventory sheet", async function(this: This) {
+When("the service account reverts the master formula references on the inventory sheet", async function(this: This) {
   await this.inventory.revertMasterSheetFormulas();
 });
 
+When("the service account hides the columns for the previous days on the inventory sheet", async function(this: This) {
+  const { date } = createDate();
+
+  const scopeDate = date.startOf(Unit.WEEK).minus({ week: 1, day: 2 });
+  await this.inventory.hideColumnsUntil(scopeDate);
+});
