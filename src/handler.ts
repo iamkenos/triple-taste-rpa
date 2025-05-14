@@ -24,7 +24,7 @@ function serve() {
 
   // @ts-ignore
   app.post("/run", (req, res) => {
-    const { command, parameters, notifyOnSuccess, notifyOnFailureLink } = req.body as RPAPayload;
+    const { command, parameters, notifyOnStartedVariant, notifyOnSuccess, notifyOnFailureLink } = req.body as RPAPayload;
     if (!command) res.status(200).json({ message: "No command provided." });
 
     const isLocked = fs.existsSync(lockfile);
@@ -33,7 +33,7 @@ function serve() {
         const lock = fs.readFileSync(lockfile, "utf8");
         await bot.sendMessage({
           message: `
-Apologies, I can't do ${capitalCase(command)} just yet as ${capitalCase(lock) || "The previous command"} is still in progress.
+Whoops! Apologies, I can't do ${capitalCase(command)} just yet as ${capitalCase(lock) || "The previous command"} is still in progress.
 
 Please try again after a few minutes. Thank you for your patience.`
         });
@@ -46,6 +46,8 @@ Please try again after a few minutes. Thank you for your patience.`
 
     fs.writeFileSync(lockfile, command);
     res.status(200).send("Command in progress...");
+
+    (async() => await bot.sendInProgressMessage({ variant: notifyOnStartedVariant }))();
     exec(proc, (error) => {
       fs.rmSync(lockfile, { force: true, recursive: true });
       (async() => {

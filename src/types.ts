@@ -5,6 +5,7 @@ export type Env = Parameters["env"];
 export type RPAPayload = {
   command: string;
   parameters?: any;
-  notifyOnFailureLink?: string;
+  notifyOnStartedVariant?: string;
   notifyOnSuccess?: boolean;
+  notifyOnFailureLink?: string;
 };

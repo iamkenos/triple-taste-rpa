@@ -194,7 +194,8 @@ Tap on the command you need help with so I can assist you with it.`;
 
   async sendFailureMessage(options?: SendMessageOptions) {
     const messages = this.BOT_FAILURE_MESSAGES[options?.variant] ?? this.BOT_FAILURE_MESSAGES.default;
-    const message = `[${this.getRandomMessageFrom({ messages })}](${options?.notifyOnFailureLink})`;
+    const text = this.getRandomMessageFrom({ messages });
+    const message = options?.notifyOnFailureLink ? `[${text}](${options?.notifyOnFailureLink})` : text;
     await this.sendMessage({ message });
   }
 

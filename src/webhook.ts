@@ -53,23 +53,19 @@ export default {
               if (hasConfirmed) {
                 const botName = await bot.fetchBotName();
                 const from = bot.getUserInfoFrom({ update }).name;
-
-                await bot.sendInLongProgressMessage();
-                await runCommand({ env, command, parameters: `${from} c/o ${botName}`, notifyOnSuccess: false });
+                await runCommand({ env, command, parameters: `${from} c/o ${botName}`, notifyOnStartedVariant: "long", notifyOnSuccess: false });
               } else {
                 await bot.sendCommandParkedMessage({ update, command });
               }
               break;
             }
             case bot.getCommandKey({ command: fetch_shift_rotation }): {
-              await bot.sendInProgressMessage();
               const isForCurrent = parameters === "current";
               await runCommand({ env, command, parameters: isForCurrent ? true : undefined });
               break;
             }
             case bot.getCommandKey({ command: update_inventory }): {
-              await bot.sendInLongProgressMessage();
-              await runCommand({ env, command, parameters });
+              await runCommand({ env, command, parameters, notifyOnStartedVariant: "long" });
               break;
             }
             default:
@@ -104,7 +100,6 @@ export default {
             break;
           }
           default: {
-            await bot.sendInProgressMessage();
             await runCommand({ env, command, notifyOnSuccess: false });
             break;
           }
