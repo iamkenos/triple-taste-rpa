@@ -8,7 +8,7 @@ import type { ExpenseAndRevenueInfo, WorkbookResource } from "~/fixtures/service
 export class RevenueAndExpensesSheetService extends GSheetsService {
 
   protected spreadsheetId = this.parameters.env.GSHEETS_FI_REV_X_EXP_TRACKER_ID;
-  private tabs = { revenue: "Revenue Records", expenses: "Expense Records" };
+  private tabs = { revenue: "Revenue Records", expenses: "Expense Records", invoice: "Invoice Records" };
   categories = {
     expenses: {
       rental: "Rental",
@@ -27,6 +27,9 @@ export class RevenueAndExpensesSheetService extends GSheetsService {
     revenue: {
       sales: "Sales",
       reimbursements: "Reimbursements"
+    },
+    invoice: {
+      default: "Invoice"
     }
   };
   private ranges = {
@@ -71,20 +74,6 @@ export class RevenueAndExpensesSheetService extends GSheetsService {
               }
             }
           }
-        },
-        {
-          updateDimensionProperties: {
-            range: {
-              sheetId,
-              dimension: "COLUMNS",
-              startIndex: 4,
-              endIndex: 7
-            },
-            properties: {
-              hiddenByUser: true
-            },
-            fields: "hiddenByUser"
-          }
         }
       ]
     };
@@ -119,10 +108,20 @@ export class RevenueAndExpensesSheetService extends GSheetsService {
     await this.updateRangeContents({ sheetName, range, values });
   }
 
-  async createRevenueRecord({ date, amount, note, adj = false }: Partial<ExpenseAndRevenueInfo> & { adj: boolean }) {
-    const prefix = adj ? "Adj " : "";
-    const sheetName = `${prefix}${this.tabs.revenue}`;
-    const category = `${prefix}${this.categories.revenue.sales}`;
+  async createRevenueRecord({ date, category, amount, note }: ExpenseAndRevenueInfo) {
+    const sheetName = this.tabs.revenue;
+
+    const range = this.ranges.record;
+    const values = [date.toFormat(Format.DATE_SHORT_DMY), category, amount, note];
+
+    await this.clearFilters({ sheetName });
+    await this.insertRows({ sheetName, startIndex: 1, endIndex: 2 });
+    await this.updateRangeContents({ sheetName, range, values });
+  }
+
+  async createInvoiceRecord({ date, amount, note }: Partial<ExpenseAndRevenueInfo>) {
+    const sheetName = this.tabs.invoice;
+    const category = this.categories.invoice.default;
 
     const range = this.ranges.record;
     const values = [date.toFormat(Format.DATE_SHORT_DMY), category, amount, note];

@@ -38,4 +38,4 @@ Feature: Update Revenue vs Expenses Sheets
     Given it's a week day
     When the service account fetches the sales figures for the previous working day
       And the service account computes the data to invoice
-    Then the service account creates a revenue record for the computed invoice
+    Then the service account creates an invoice record for the computed data
