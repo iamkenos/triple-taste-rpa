@@ -129,6 +129,8 @@ export interface Parameters {
     inventory: {
       products: string[];
       remaining: InventoryInfo[];
+      missing: InventoryInfo[];
+      usage: InventoryInfo[];
       order: InventoryOrderInfo;
     };
     hr: {
@@ -150,6 +152,8 @@ Before({}, async function(this: This) {
     inventory: {
       products: [],
       remaining: [],
+      missing: [],
+      usage: [],
       order: { products: [] }
     },
     hr: { payout: [] }

@@ -46,6 +46,7 @@ export const Day = {
 
 export const Unit = {
   DAY: "day" as DateTimeUnit,
+  WEEK: "week" as DateTimeUnit,
   MONTH: "month" as DateTimeUnit,
   QUARTER: "quarter" as DateTimeUnit,
   YEAR: "year" as DateTimeUnit
@@ -71,4 +72,10 @@ export function createDateFromNearestWeekday(weekday: number) {
   const daysToAdd = dayOfWeek <= weekday ? weekday - dayOfWeek : 7 - (dayOfWeek - weekday);
   const result = createDate({ from: today.plus({ days: daysToAdd }) });
   return result;
+}
+
+export function getPreviousWorkingDateFrom(reference: DateTime) {
+  const yesterday = reference.minus({ days: 1 });
+  if ([Day.SATURDAY, Day.SUNDAY].includes(yesterday.weekday)) return getPreviousWorkingDateFrom(yesterday);
+  return yesterday;
 }

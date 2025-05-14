@@ -1,9 +1,16 @@
+import { distance } from "fastest-levenshtein";
+
 import { GSheetsService } from "~/fixtures/services/gsuite/gsheets/gsheets.service";
 import { createDate, Format } from "~/fixtures/utils/date.utils";
-import { unescapeJsonRestricted } from "~/fixtures/utils/string.utils";
+import { EscapeSequence, unescapeJsonRestricted } from "~/fixtures/utils/string.utils";
 
 import type { DateTime } from "luxon";
-import type { InventoryFetchSheetProductInfo, InventoryOrderInfo, InventorySheetUpdateInfo } from "~/fixtures/services/gsuite/gsheets/gsheets.types";
+import type {
+  InventoryFetchSheetProductInfo,
+  InventoryInfo,
+  InventoryOrderInfo,
+  InventorySheetUpdateInfo
+} from "~/fixtures/services/gsuite/gsheets/gsheets.types";
 
 export class InventoryManagementSheetService extends GSheetsService {
 
@@ -83,6 +90,13 @@ export class InventoryManagementSheetService extends GSheetsService {
     return customerName;
   }
 
+  private async findCellFor({ sheetName, date }) {
+    const searchForDate = date.toFormat(Format.DATE_SHORT_DMY);
+    const searchRangeForDate = this.ranges.dates;
+    const cell = await this.findCell({ sheetName, searchRange: searchRangeForDate, searchFor: searchForDate });
+    return cell;
+  }
+
   async fetchOrderInfo() {
     const { date: orderDate } = createDate();
     const orderedBy = unescapeJsonRestricted(this.parameters.webhook);
@@ -102,11 +116,21 @@ export class InventoryManagementSheetService extends GSheetsService {
     return items;
   }
 
+  async fetchProductSheetInventoryInfoFor(date: DateTime, tab: string) {
+    const sheetName = this.tabs[tab];
+    const { address } = await this.findCellFor({ sheetName, date });
+
+    const qtyRange = this.ranges.nodeProducts.replaceAll(/[A-Z]/g, address.replaceAll(/[0-9]/g, ""));
+    const { values: qty } = await this.fetchRangeContents({ sheetName, range: qtyRange });
+    const products = await this.fetchListOfProducts();
+
+    const info = products.map((product, idx) => ({ name: product, value: qty[idx][0] }));
+    return info;
+  }
+
   async updateProductsSheet({ date, sheetName, products, note }: InventorySheetUpdateInfo) {
-    const searchForDate = date.toFormat(Format.DATE_SHORT_DMY);
-    const searchRangeForDate = this.ranges.dates;
+    const { col, row: headerRow } = await this.findCellFor({ sheetName, date });
     const sheetId = await this.fetchWorksheetId({ sheetName });
-    const { col, row: headerRow } = await this.findCell({ sheetName, searchRange: searchRangeForDate, searchFor: searchForDate });
 
     if (note) {
       const address = this.serializeToGSheetsCellAddress({ col, row: headerRow + 4 });
@@ -175,5 +199,70 @@ export class InventoryManagementSheetService extends GSheetsService {
 
     const requestBody = { requests };
     await this.batchUpdate({ requestBody });
+  }
+
+  async getRemainingItemsFromWebhook() {
+    const input = unescapeJsonRestricted(this.parameters.webhook).split(EscapeSequence.LF[0]);
+    const items = this.parameters.gsheets.inventory.products;
+    const defaultValue = "0";
+
+    const normalize = (text: string) => text.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+    const findBestMatch = (name: string, filters: string[]) => {
+      const normalizedName = normalize(name);
+
+      // try partial matches first
+      for (const filter of filters) {
+        const normalizedFilter = normalize(filter);
+        if (normalizedName.includes(normalizedFilter) || normalizedFilter.includes(normalizedName)) {
+          return filter;
+        }
+      }
+
+      // fallback: fuzzy match
+      for (const filter of filters) {
+        const normalizedFilter = normalize(filter);
+        const score = distance(normalizedName, normalizedFilter);
+        if (score <= 3) {
+          return filter;
+        }
+      }
+    };
+    const splitProductLine = (line: string) => {
+      const lastEqual = line.lastIndexOf("=");
+      const lastDash = line.lastIndexOf("-");
+      const splitIndex = Math.max(lastEqual, lastDash);
+
+      if (splitIndex === -1) return null; // not a valid product line
+      const rawName = line.slice(0, splitIndex).trim();
+      const rawValue = line.slice(splitIndex + 1).trim();
+
+      return [rawName, rawValue];
+    };
+    const buildInventoryData = (input: string[], filters: string[]) => {
+      const output: InventoryInfo[] = [];
+      for (const line of input) {
+        const split = splitProductLine(line);
+        if (!split) continue; // skip non-product lines
+
+        const [rawName, rawValue] = split;
+        const name = findBestMatch(rawName, filters);
+
+        if (name) {
+          const numericMatch = rawValue.match(/\d+/);
+          const value = numericMatch ? numericMatch[0] : defaultValue;
+          output.push({ name, value });
+        }
+      }
+      return output;
+    };
+
+    const remaining = buildInventoryData(input, items);
+    const missing = items.filter(v => !remaining.map(({ name }) => name).includes(v))
+      .map(name => ({ name, value: defaultValue }));
+
+    await this.page.expect({ timeout: 1 })
+      .setName("Expected inventory data to be parsed correctly")
+      .truthy(missing.length !== items.length, { missing: items }).poll();
+    return { remaining, missing };
   }
 }

@@ -111,11 +111,6 @@ export class TelegramBot {
       .map(command => ([ { text: capitalCase(command), callback_data: command } ]));
   }
 
-  private getRandomMessageFrom({ messages }: { messages: string[] }) {
-    const randomIndex = Math.floor(Math.random() * messages.length);
-    return messages[randomIndex];
-  }
-
   async getMe() {
     const path = `${this.botURL}/${this.getMe.name}`;
     return await axios.get(path);
@@ -259,6 +254,11 @@ Tap on the command you need help with so I can assist you with it.`;
     const isAllowedChannel = chatId === +this.chatID;
     const isAllowedUpdateType = this.isMessage({ update }) || this.isPromptResponse({ update });
     return isAllowedChannel && isAllowedUpdateType;
+  }
+
+  getRandomMessageFrom({ messages }: { messages: string[] }) {
+    const randomIndex = Math.floor(Math.random() * messages.length);
+    return messages[randomIndex];
   }
 
   getUserInfoFrom({ update }: { update: TelegramUpdate }) {

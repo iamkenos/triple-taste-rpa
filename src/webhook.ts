@@ -65,7 +65,7 @@ export default {
               break;
             }
             case bot.getCommandKey({ command: update_inventory }): {
-              await runCommand({ env, command, parameters, notifyOnStartedVariant: "long" });
+              await runCommand({ env, command, parameters, notifyOnStartedVariant: "long", notifyOnSuccess: false });
               break;
             }
             default:
