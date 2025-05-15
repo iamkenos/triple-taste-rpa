@@ -16,7 +16,7 @@ export class OOSPage extends BasePage {
   private tfSearch = () => this.btnSearch().locator("//*[@aria-label='Search Site']");
 
   private divProducts = () => this.page.locator("//div[contains(@class,'products-grid')]");
-  private lnkProduct = (hasText: string) => this.divProducts().locator("//a", { hasText });
+  private lnkProduct = (hasText: string) => this.divProducts().locator("//a", { hasText }).first();
   private headerProduct = (hasText: string) => this.page.locator("//header[contains(@class,'product-title')]", { hasText });
 
   private tfQty = () => this.page.locator("#quantity");

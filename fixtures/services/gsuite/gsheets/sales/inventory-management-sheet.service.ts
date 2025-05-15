@@ -25,7 +25,7 @@ export class InventoryManagementSheetService extends GSheetsService {
     forecast: "Forecast"
   };
   private functions = {
-    nextDeliveryDate: "=F_NEXT_ORDER_DELIVERY_DATE()"
+    nextDeliveryDate: "=F_NEXT_ORDER_DELIVERY_DATE(0)"
   };
   private ranges = {
     dates: "H2:NU2",
