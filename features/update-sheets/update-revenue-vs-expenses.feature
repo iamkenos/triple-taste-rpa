@@ -4,7 +4,7 @@ Feature: Update Revenue vs Expenses Sheets
     Given it's the 27th of the month
     Then the service account creates expense records for:
       | Accountant  | 2500 | Monthly bank transfer        |
-      | Service Fee |   30 | Accountant bank transfer fee |
+      | Service Fee |   25 | Accountant bank transfer fee |
 
   Scenario: Monthly Rent Fees
     Given it's the 1st of the month
@@ -15,7 +15,7 @@ Feature: Update Revenue vs Expenses Sheets
     Given it's the 15th of the month
     Then the service account creates expense records for:
       | Rental      | 5000 | Storage rent                   |
-      | Service Fee |   30 | Storage rent bank transfer fee |
+      | Service Fee |   25 | Storage rent bank transfer fee |
 
   Scenario: Fortnightly Staff Wages
     Given it's 1 day before end of the pay cycle
