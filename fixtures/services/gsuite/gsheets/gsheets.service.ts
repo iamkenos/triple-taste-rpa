@@ -324,23 +324,6 @@ export class GSheetsService extends GSuiteService {
               endIndex
             }
           }
-        },
-        {
-          copyPaste: {
-            source: {
-              sheetId,
-              startRowIndex: endIndex,
-              endRowIndex: endIndex + 1,
-              startColumnIndex: 0
-            },
-            destination: {
-              sheetId,
-              startRowIndex: startIndex,
-              endRowIndex: endIndex,
-              startColumnIndex: 0
-            },
-            pasteType: "PASTE_FORMULA"
-          }
         }
       ]
     };
