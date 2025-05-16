@@ -60,7 +60,7 @@ export default {
               break;
             }
             case bot.getCommandKey({ command: fetch_shift_rotation }): {
-              const isForCurrent = parameters === "current";
+              const isForCurrent = parameters.toLowerCase() === "current";
               await runCommand({ env, command, parameters: isForCurrent ? true : undefined });
               break;
             }
