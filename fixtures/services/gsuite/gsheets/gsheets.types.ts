@@ -189,6 +189,7 @@ export type InventorySheetUpdateInfo = {
 
 export type InventoryOrderInfo = {
   products: InventoryInfo[];
+  adhoc: InventoryInfo[];
   orderDate?: DateTime;
   deliveryDate?: DateTime;
   method?: string;

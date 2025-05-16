@@ -44,6 +44,7 @@ When("the service account fetches the {word} items for the previous working day 
 
 When("the service account reverts the master formula references on the inventory sheet", async function(this: This) {
   await this.inventory.revertMasterSheetFormulas();
+  await this.inventory.clearAdhocItems();
 });
 
 When("the service account hides the columns for the previous days on the inventory sheet", async function(this: This) {

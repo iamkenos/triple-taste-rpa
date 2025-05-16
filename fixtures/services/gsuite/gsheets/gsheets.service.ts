@@ -275,13 +275,19 @@ export class GSheetsService extends GSuiteService {
     return this.batchUpdateUserEnteredValueRequest({ sheetId, row, col, value, type: "formula" });
   }
 
+  protected async clearRangeContents({ range }: Pick<FetchRangeContentInfo, "range">) {
+    const { connection } = this.sheets;
+    const spreadsheetId = this.spreadsheetId;
+    await connection.spreadsheets.values.clear({ spreadsheetId, range });
+  }
+
   protected async fetchRangeContents({ sheetName, range, filter }: FetchRangeContentInfo) {
     const { connection } = this.sheets;
     const spreadsheetId = this.spreadsheetId;
 
     const fullRange = `${sheetName}!${range}`;
     const response = await connection.spreadsheets.values.get({ spreadsheetId, range: fullRange });
-    const values: string[][] = response.data.values.filter(filter ?? (() => true));
+    const values: string[][] = response.data.values?.filter(filter ?? (() => true));
     const value: string = values?.[0]?.[0] || null;
 
     return { values, value };

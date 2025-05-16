@@ -33,6 +33,8 @@ export class InventoryManagementSheetService extends GSheetsService {
     nodeDataOrdered: "R_NODE_DATA_ORDERED",
     masterProductsName: "R_PRODUCTS",
     masterProductsOrdered: "R_PRODUCTS_ORDERED",
+    masterAdhocName: "R_PRODUCTS_ADHOC",
+    masterAdhocOrdered: "R_PRODUCTS_ADHOC_ORDERED",
     masterProductsToOrder: "R_PRODUCTS_TO_ORDER",
     masterOrderDropDate: "R_ORDER_DROP_DATE",
     masterOrderScheduleDate: "R_ORDER_SCHEDULE_DATE",
@@ -42,11 +44,17 @@ export class InventoryManagementSheetService extends GSheetsService {
 
   private updateProductNote = (note: string, sign: string) => `${note}\n\nSigned: ${sign}`;
 
+  private async assertItemsVsQty({ items, qty }: { items: string[], qty: string[], }) {
+    await this.page.expect({ timeout: 1000 })
+      .setName("Number of products matches quantity")
+      .equals(items.length, qty.length).poll();
+  }
+
   private async fetchMasterSheetProductsInfo(range: string) {
     const sheetName = this.tabs.master;
     const { values } = await this.fetchRangeContents({ sheetName, range });
 
-    const items = values.flat().map(i => i.trim()).filter(Boolean);
+    const items = values?.flat().map(i => i.trim()).filter(Boolean) || [];
     return items;
   }
 
@@ -57,13 +65,19 @@ export class InventoryManagementSheetService extends GSheetsService {
     return items;
   }
 
-  private async fetchItemsToOrder() {
+  private async fetchFixedItemsToOrder() {
     const items = await this.fetchListOfProducts();
     const qty = await this.fetchMasterSheetProductsInfo(this.ranges.masterProductsOrdered);
+    await this.assertItemsVsQty({ items, qty });
 
-    await this.page.expect({ timeout: 1000 })
-      .setName("Number of products matches quantity")
-      .equals(items.length, qty.length).poll();
+    const result = items.map((item, idx) => ({ name: item, value: qty[idx] }));
+    return result;
+  }
+
+  private async fetchAdhocItemsToOrder() {
+    const items = await this.fetchMasterSheetProductsInfo(this.ranges.masterAdhocName);
+    const qty = await this.fetchMasterSheetProductsInfo(this.ranges.masterAdhocOrdered);
+    await this.assertItemsVsQty({ items, qty });
 
     const result = items.map((item, idx) => ({ name: item, value: qty[idx] }));
     return result;
@@ -103,14 +117,15 @@ export class InventoryManagementSheetService extends GSheetsService {
     const { date: orderDate } = createDate();
     const orderedBy = unescapeJsonRestricted(this.parameters.webhook);
     const details: PromiseSettledResult<any>[] = await Promise.allSettled([
-      this.fetchItemsToOrder(),
+      this.fetchFixedItemsToOrder(),
+      this.fetchAdhocItemsToOrder(),
       this.fetchNextDeliveryDate(),
       this.fetchShippingMethod(),
       this.fetchCustomerName()
     ]);
 
-    const [products, deliveryDate, method, customerName] = await this.fulfilled(details);
-    return { products, orderDate, deliveryDate, method, customerName, orderedBy } as InventoryOrderInfo;
+    const [products, adhoc, deliveryDate, method, customerName] = await this.fulfilled(details);
+    return { products, adhoc, orderDate, deliveryDate, method, customerName, orderedBy } as InventoryOrderInfo;
   }
 
   async fetchListOfProducts() {
@@ -233,6 +248,14 @@ export class InventoryManagementSheetService extends GSheetsService {
 
     const requestBody = { requests };
     await this.batchUpdate({ requestBody });
+  }
+
+  async clearAdhocItems() {
+    const hasAdhocItems = this.parameters.gsheets.inventory.order.adhoc.length > 0;
+    if (hasAdhocItems) {
+      await this.clearRangeContents({ range: this.ranges.masterAdhocName });
+      await this.clearRangeContents({ range: this.ranges.masterAdhocOrdered });
+    }
   }
 
   async getRemainingItemsFromWebhook() {

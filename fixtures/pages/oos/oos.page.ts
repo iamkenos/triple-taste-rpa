@@ -67,7 +67,8 @@ export class OOSPage extends BasePage {
   }
 
   async addToCart() {
-    const products = this.parameters.gsheets.inventory.order.products.filter(i => +i.value);
+    const { products: fixed, adhoc } = this.parameters.gsheets.inventory.order;
+    const products = [...fixed, ...adhoc].filter(i => +i.value);
     for (let i = 0; i < products.length; i++) {
       const { name, value } = products[i];
       const product = name.replaceAll(EscapeSequence.DBQT[0], "");
