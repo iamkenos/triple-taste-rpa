@@ -25,7 +25,7 @@ When("the service account fetches the expected deposit amount for the day", asyn
 });
 
 When("the service account computes the data to invoice", async function(this: This) {
-  this.parameters.gsheets.sales.daily.invoice = this.dailysales.computeDailyInvoiceData();
+  this.parameters.gsheets.sales.daily.invoice = await this.dailysales.computeDailyInvoiceData();
 
   const shouldIssueInvoice = this.parameters.gsheets.sales.daily.invoice.adjTotal > 0;
   if (!shouldIssueInvoice) return Status.SKIPPED.toLowerCase();

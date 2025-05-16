@@ -5,12 +5,16 @@ import { GSuiteService } from "~/fixtures/services/gsuite/gsuite.service";
 import type {
   BatchHideColumnsRequestInfo,
   BatchUpdateUserEnteredValueRequestInfo,
+  FetchNamedRangeData,
   FetchRangeContentInfo,
+  FindCellData,
   FindCellInfo,
-  FindCellResult,
+  FindCellsData,
   FindCellsInfo,
-  FindCellsResult,
   FindIn,
+  PackRangeInfo,
+  UnpackRangeData,
+  UnpackRangeInfo,
   UpdateRangeContentInfo,
   WorkbookBatchUpdateInfo,
   WorkbookFetchSheetsFilter,
@@ -23,6 +27,7 @@ export class GSheetsService extends GSuiteService {
 
   protected spreadsheetId = "";
   private sheets = this.connect();
+  protected delimiters = { sheetName: "!", range: ":" };
 
   private connect() {
     const auth = this.auth();
@@ -42,7 +47,7 @@ export class GSheetsService extends GSuiteService {
           const row = rowIndex + (rowOffset ?? 0);
           const address = this.serializeToGSheetsCellAddress({ col, row });
 
-          return { col, row, address, value } as FindCellResult;
+          return { col, row, address, value } as FindCellData;
         }
       }
     }
@@ -80,6 +85,55 @@ export class GSheetsService extends GSuiteService {
         fields: "hiddenByUser"
       }
     };
+  }
+
+  private splitSheetNameAndAddress({ range }: UnpackRangeInfo) {
+    const separator = range.lastIndexOf(this.delimiters.sheetName);
+    const sheetNameWrapped = range.substring(0, separator);
+    const sheetName = sheetNameWrapped?.replaceAll("'", "");
+    const address = range.substring(separator + 1);
+    return { sheetName, sheetNameWrapped, address };
+  }
+
+  protected unpackRange({ range }: UnpackRangeInfo) {
+    const { sheetName, sheetNameWrapped, address } = this.splitSheetNameAndAddress({ range });
+    const [start, end] = address.split(":");
+    const getCoordinates = (from: string) => ({ col: from?.replaceAll(/[0-9]/g, ""), row: from?.replaceAll(/[A-Z]/g, "") });
+    const { col: startCol, row: startRow } = getCoordinates(start);
+    const { col: endCol, row: endRow } = getCoordinates(end);
+    return { sheetName, sheetNameWrapped, address, startAddress: start, startCol, startRow, endAddress: end, endCol, endRow } as UnpackRangeData;
+  }
+
+  protected packRange({ startRow, startCol, endRow, endCol }: PackRangeInfo) {
+    const startRange = `${startCol}${startRow}`;
+    if (endRow) return `${startRange}${this.delimiters.range}${endCol || startCol}${endRow}`;
+    return startRange;
+  }
+
+  protected async fetchNamedRangeInfo({ name }: { name: string }) {
+    try {
+      const { connection } = this.sheets;
+      const spreadsheetId = this.spreadsheetId;
+      const response = await connection.spreadsheets.get({ spreadsheetId, fields: "namedRanges,sheets.properties" });
+      const namedRange = response.data.namedRanges?.find(nr => nr.name === name);
+
+      if (namedRange) {
+        const range = namedRange.range;
+        const sheet = response.data.sheets?.find(s => s.properties?.sheetId === range?.sheetId);
+        const sheetName = sheet.properties?.title;
+        const startRow = range?.startRowIndex; const startCol = range?.startColumnIndex;
+        const endRow = range?.endRowIndex - 1; const endCol = range?.endColumnIndex - 1;
+        const startAddress = this.serializeToGSheetsCellAddress({ row: startRow, col: startCol });
+        const endAddress = this.serializeToGSheetsCellAddress({ row: endRow, col: endCol });
+        const address = startAddress !== endAddress ? `${startAddress}:${endAddress}` : startAddress;
+        return { sheetName, startAddress, endAddress, address } as FetchNamedRangeData;
+      } else {
+        throw new Error(`Unable to find named range "${name}" sheet from "${spreadsheetId}".`);
+      }
+    } catch (error) {
+      this.logger.error(error.message);
+      throw error;
+    }
   }
 
   protected async fetchWorksheetId({ sheetName }: WorkbookResource) {
@@ -240,7 +294,7 @@ export class GSheetsService extends GSuiteService {
     const [colOffset] = col;
     const [rowOffset] = row;
 
-    const result = this.findIn({ values, searchFor, partialMatch, colOffset, rowOffset }) as FindCellResult;
+    const result = this.findIn({ values, searchFor, partialMatch, colOffset, rowOffset }) as FindCellData;
     return result || {} as typeof result;
   }
 
@@ -251,7 +305,7 @@ export class GSheetsService extends GSuiteService {
     const [colOffset] = col;
     const [rowOffset] = row;
 
-    const result = searchFor.map(v => this.findIn({ values, searchFor: v, partialMatch, colOffset, rowOffset })) as FindCellsResult;
+    const result = searchFor.map(v => this.findIn({ values, searchFor: v, partialMatch, colOffset, rowOffset })) as FindCellsData;
     return result;
   }
 

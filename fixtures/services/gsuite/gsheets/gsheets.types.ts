@@ -35,6 +35,33 @@ export type FetchRangeContentInfo = {
   filter?: () => boolean;
 } & Required<Pick<WorkbookResource, "sheetName">>;
 
+export type FetchNamedRangeData = {
+  /** the starting cell address */
+  startAddress: string;
+  /** the ending cell address */
+  endAddress: string;
+  /** the cell address */
+  address: string;
+} & Required<Pick<WorkbookResource, "sheetName">>;
+
+export type PackRangeInfo = {
+  /** the cell address start row; e.g. 1 from A1 */
+  startRow: string;
+  /** the cell address start col; e.g. A from A1 */
+  startCol: string;
+  /** the cell address end row; e.g. 21 from A1:E21 */
+  endRow?: string;
+  /** the cell address end col; e.g. E from A1:E21 */
+  endCol?: string;
+};
+
+export type UnpackRangeInfo = {
+  /** the range to split; e.g. A1:E21 or 'Sheet Name'!A1:E21 */
+  range: string;
+};
+
+export type UnpackRangeData = PackRangeInfo & FetchNamedRangeData;
+
 export type FindIn = {
   /** the cell content to search for */
   searchFor: string;
@@ -59,7 +86,7 @@ export type BatchUpdateUserEnteredValueRequestInfo = {
   /** the value to update */
   value: string | number;
 } & Required<Pick<WorkbookResource, "sheetId">>
-  & Pick<FindCellResult, "row" | "col">;
+  & Pick<FindCellData, "row" | "col">;
 
 export type BatchHideColumnsRequestInfo = {
   /** the value to update */
@@ -67,7 +94,7 @@ export type BatchHideColumnsRequestInfo = {
   endIndex: number;
 } & Required<Pick<WorkbookResource, "sheetId">>
 
-export type FindCellResult = {
+export type FindCellData = {
   /** the 0-based row index */
   row: number;
   /** the 0-based column index */
@@ -78,7 +105,7 @@ export type FindCellResult = {
   value: string;
 };
 
-export type FindCellsResult = FindCellResult[];
+export type FindCellsData = FindCellData[];
 
 export type DailySales = {
   /** the previous working date */

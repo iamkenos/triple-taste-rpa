@@ -1,5 +1,5 @@
 import { GSheetsService } from "~/fixtures/services/gsuite/gsheets/gsheets.service";
-import { Format } from "~/fixtures/utils/date.utils";
+import { createDate, differenceInDays, Format } from "~/fixtures/utils/date.utils";
 
 import type { DailySales, DailySalesInvoiceData, DepositData } from "~/fixtures/services/gsuite/gsheets/gsheets.types";
 import type { DateTime } from "luxon";
@@ -7,9 +7,14 @@ import type { DateTime } from "luxon";
 export class DailySalesSheetService extends GSheetsService {
 
   protected spreadsheetId = this.parameters.env.GSHEETS_SI_SALES_TRACKER_ID;
+  private ranges = {
+    breakdown: "R_BREAKDOWN_FOR_DATES",
+    deposit: "R_DEPOSIT_FOR_DATES",
+    invoiceRates: "R_INVOICE_RATES"
+  };
 
   private getQSheetFor(date: DateTime) {
-    return date.toFormat(Format.DATE_SHORT_YQ.replace(" ", "_"));
+    return date.toFormat(Format.DATE_Q);
   }
 
   async fetchDailyFiguresFor(date: DateTime) {
@@ -17,7 +22,7 @@ export class DailySalesSheetService extends GSheetsService {
     const searchFor = date.toFormat(Format.DATE_SHORT_DM);
     const totalOf = (breakdown: string) => breakdown.split(" / ").map(i => +i).reduce((a, c) => a + c);
 
-    const searchRange = "K8:AD200";
+    const { address: searchRange } = await this.fetchNamedRangeInfo({ name: this.ranges.breakdown });
     const cell = await this.findCell({ sheetName, searchRange, searchFor });
 
     if (!cell) throw new Error(`Failed to read any data for "${searchFor}" on the daily sales tracker.`);
@@ -67,7 +72,7 @@ export class DailySalesSheetService extends GSheetsService {
     const sheetName = this.getQSheetFor(date);
     const searchFor = date.toFormat(Format.DATE_SHORT_DM);
 
-    const searchRange = "AI8:AJ200";
+    const { address: searchRange } = await this.fetchNamedRangeInfo({ name: this.ranges.deposit });
     const cell = await this.findCell({ sheetName, searchRange, searchFor, partialMatch: true });
 
     const amountRange = this.serializeToGSheetsCellAddress({ col: cell.col, row: cell.row + 1 });
@@ -75,10 +80,16 @@ export class DailySalesSheetService extends GSheetsService {
     return { amount: value, date: cell.value } as DepositData;
   }
 
-  computeDailyInvoiceData() {
+  async computeDailyInvoiceData() {
     const { figures } = this.parameters.gsheets.sales.daily;
-    const adjRate = 0.45;
+    const { address: range, sheetName } = await this.fetchNamedRangeInfo({ name: this.ranges.invoiceRates });
 
+    const { values } = await this.fetchRangeContents({ sheetName, range });
+    const { rate } = values
+      .map(([date, rate]) => ({ date: createDate({ from: [date, Format.DATE_SHORT_DMYYYY] }).date, rate }))
+      .slice().reverse().find(v => differenceInDays(figures.date, v.date) >= 0);
+
+    const adjRate = this.parseFloat(rate);
     const adjQty = Math.floor(figures.qty - (figures.qty * (adjRate + 0.05)));
     const cohAndGCashAmount = figures.cohAmount + figures.gCashAmount;
     const adjAmount = cohAndGCashAmount - (cohAndGCashAmount * adjRate);

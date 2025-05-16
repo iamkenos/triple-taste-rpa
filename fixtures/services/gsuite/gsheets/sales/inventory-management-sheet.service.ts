@@ -28,15 +28,16 @@ export class InventoryManagementSheetService extends GSheetsService {
     nextDeliveryDate: "=F_NEXT_ORDER_DELIVERY_DATE(0)"
   };
   private ranges = {
-    dates: "H2:NU2",
-    nodeProducts: "A6:A40",
+    nodeDates: "R_NODE_DATE_RANGE",
+    nodeProducts: "R_NODE_PRODUCTS",
+    nodeDataOrdered: "R_NODE_DATA_ORDERED",
     masterProductsName: "R_PRODUCTS",
     masterProductsOrdered: "R_PRODUCTS_ORDERED",
+    masterProductsToOrder: "R_PRODUCTS_TO_ORDER",
     masterOrderDropDate: "R_ORDER_DROP_DATE",
     masterOrderScheduleDate: "R_ORDER_SCHEDULE_DATE",
     masterOrderShippingMethod: "R_ORDER_SHIPPING_METHOD",
-    masterOrderCustomerName: "R_ORDER_CUST_NAME",
-    dataOrdered: "R_DATA_ORDERED"
+    masterOrderCustomerName: "R_ORDER_CUST_NAME"
   };
 
   private updateProductNote = (note: string, sign: string) => `${note}\n\nSigned: ${sign}`;
@@ -92,7 +93,8 @@ export class InventoryManagementSheetService extends GSheetsService {
 
   private async findCellFor({ sheetName, date }) {
     const searchForDate = date.toFormat(Format.DATE_SHORT_DMY);
-    const searchRangeForDate = this.ranges.dates;
+    const { address: range } = await this.fetchNamedRangeInfo({ name: this.ranges.nodeDates });
+    const { address: searchRangeForDate } = this.unpackRange({ range });
     const cell = await this.findCell({ sheetName, searchRange: searchRangeForDate, searchFor: searchForDate });
     return cell;
   }
@@ -118,9 +120,13 @@ export class InventoryManagementSheetService extends GSheetsService {
 
   async fetchProductSheetInventoryInfoFor(date: DateTime, tab: string) {
     const sheetName = this.tabs[tab];
-    const { address } = await this.findCellFor({ sheetName, date });
+    const { address: dateAddress } = await this.findCellFor({ sheetName, date });
+    const { startCol } = this.unpackRange({ range: dateAddress });
 
-    const qtyRange = this.ranges.nodeProducts.replaceAll(/[A-Z]/g, address.replaceAll(/[0-9]/g, ""));
+    const { address: range } = await this.fetchNamedRangeInfo({ name: this.ranges.nodeProducts });
+    const { startRow, endRow } = this.unpackRange({ range });
+
+    const qtyRange = this.packRange({ startCol, startRow, endRow });
     const { values: qty } = await this.fetchRangeContents({ sheetName, range: qtyRange });
     const products = await this.fetchListOfProducts();
 
@@ -137,7 +143,7 @@ export class InventoryManagementSheetService extends GSheetsService {
       await this.insertNote({ sheetName, address, note });
     }
 
-    const searchRange = this.ranges.nodeProducts;
+    const { address: searchRange } = await this.fetchNamedRangeInfo({ name: this.ranges.nodeProducts });
     const searchFor = products.map(v => v.name);
     const searchResult = await this.findCells({ sheetName, searchRange, searchFor });
 
@@ -169,7 +175,7 @@ export class InventoryManagementSheetService extends GSheetsService {
     const { por, orderedBy } = this.parameters.gsheets.inventory.order;
     const note = this.updateProductNote(por, orderedBy);
     const items = await this.fetchNodeSheetProductsInfo({ sheetName: this.tabs.ordered, range: this.ranges.nodeProducts });
-    const qty = await this.fetchNodeSheetProductsInfo({ sheetName: this.tabs.ordered, range: this.ranges.dataOrdered });
+    const qty = await this.fetchNodeSheetProductsInfo({ sheetName: this.tabs.ordered, range: this.ranges.nodeDataOrdered });
     const products = items.map((item, idx) => ({ name: item, value: qty[idx] }));
 
     const sheetName = this.tabs.arriving;
@@ -178,7 +184,9 @@ export class InventoryManagementSheetService extends GSheetsService {
 
   async hideColumnsUntil(date: DateTime) {
     const { col: endIndex } = await this.findCellFor({ sheetName: this.tabs.remaining, date });
-    const { col } = this.deserializeGSheetsCellAddress(this.ranges.dates);
+    const { address: range } = await this.fetchNamedRangeInfo({ name: this.ranges.nodeDates });
+    const { address } = this.unpackRange({ range });
+    const { col } = this.deserializeGSheetsCellAddress(address);
     const [startIndex] = col;
 
     if (endIndex !== undefined) {
@@ -199,16 +207,22 @@ export class InventoryManagementSheetService extends GSheetsService {
   async revertMasterSheetFormulas() {
     const sheetName = this.tabs.master;
     const sheetId = await this.fetchWorksheetId({ sheetName });
+    const { startAddress } = await this.fetchNamedRangeInfo({ name: this. ranges.masterOrderDropDate });
 
-    const arrivalDateRange = this.singleCellAddressToIndex("D7");
+    const arrivalDateRange = this.singleCellAddressToIndex(startAddress);
     const arrivalDateRevertRequest = this.batchUpdateUserEnteredFormulaValueRequest(
       { sheetId, row: arrivalDateRange.row, col: arrivalDateRange.col, value: this.functions.nextDeliveryDate }
     );
 
-    const productsStartRow = 11; const productsEndRow = 39;
+    const { address: toOrder } = await this.fetchNamedRangeInfo({ name: this. ranges.masterProductsToOrder });
+    const { address: ordered } = await this.fetchNamedRangeInfo({ name: this. ranges.masterProductsOrdered });
+    const { startRow, endRow, startCol: colToUpdate } = this.unpackRange({ range: ordered });
+    const { startCol: colToRefer } = this.unpackRange({ range: toOrder });
+
+    const productsStartRow = +startRow; const productsEndRow = +endRow;
     const productsRows = Array.from({ length: productsEndRow - productsStartRow + 1 }, (_, i) => i + productsStartRow);
-    const productsOrderQtyRange = productsRows.map(v => this.singleCellAddressToIndex(`B${v}`));
-    const productsOrderQtyFormulas = productsRows.map(v => `=R${v}`);
+    const productsOrderQtyRange = productsRows.map(v => this.singleCellAddressToIndex(`${colToUpdate}${v}`));
+    const productsOrderQtyFormulas = productsRows.map(v => `=${colToRefer}${v}`);
     const productsRevertOrderQtyRequests = productsOrderQtyRange
       .map(({ row, col }, idx) => {
         return this.batchUpdateUserEnteredFormulaValueRequest({ sheetId, row, col, value: productsOrderQtyFormulas[idx] });

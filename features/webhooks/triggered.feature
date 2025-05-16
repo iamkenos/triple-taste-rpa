@@ -9,8 +9,8 @@ Feature: Webhook Triggered Processes
       And the service account completes the OOS order
       And the service account extracts the OOS order details
       And the service account updates the ordered and arriving items on the inventory sheet
-      And the service account creates an expense record for the newly created order
       And the service account reverts the master formula references on the inventory sheet
+      And the service account creates an expense record for the newly created order
     Then the service account sends the order confirmation on the ops channel
 
   @fetch_deposit_amount
