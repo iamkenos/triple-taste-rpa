@@ -285,7 +285,7 @@ export class GSheetsService extends GSuiteService {
     const { connection } = this.sheets;
     const spreadsheetId = this.spreadsheetId;
 
-    const fullRange = `${sheetName}!${range}`;
+    const fullRange = sheetName ? `${sheetName}${this.delimiters.sheetName}${range}` : range;
     const response = await connection.spreadsheets.values.get({ spreadsheetId, range: fullRange });
     const values: string[][] = response.data.values?.filter(filter ?? (() => true));
     const value: string = values?.[0]?.[0] || null;

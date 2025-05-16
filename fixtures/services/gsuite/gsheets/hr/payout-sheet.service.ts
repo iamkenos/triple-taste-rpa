@@ -29,7 +29,7 @@ export class PayoutSheetService extends GSheetsService {
     const payOutInfo = await Promise.allSettled(sheets
       .map(async({ sheetName }) => {
         const { values: employeeInfo } = await this.fetchRangeContents({ sheetName, range: "B2:D9" });
-        const { values: payCycleInfo } = await this.fetchRangeContents({ sheetName, range: "J2:K9" });
+        const { values: payCycleInfo } = await this.fetchRangeContents({ sheetName, range: "J2:L9" });
         const { values: workHoursInfo } = await this.fetchRangeContents({ sheetName, range: "N2:O9" });
         const { values: payOutInfo } = await this.fetchRangeContents({ sheetName, range: "R2:S9" });
         const { values: timesheetInfo } = await this.fetchRangeContents({ sheetName, range: "B11:T410" });

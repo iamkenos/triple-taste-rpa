@@ -45,7 +45,7 @@ export class StaffMailService extends GMailService {
       paAmtNight: "[[PA_AMT_NIGHT]]",
       paAmtTnt: "[[PA_AMT_TNT]]",
       paAmtHoliday: "[[PA_AMT_HOL]]",
-      paAmtAdj: "[[PA_AMT_ADJ]]",
+      paAmtMisc: "[[PA_AMT_MISC]]",
       paAmtGross: "[[PA_AMT_GRS]]"
     };
   }
@@ -91,7 +91,7 @@ export class StaffMailService extends GMailService {
       frequency: "Fortnightly",
       payCycleId:  `${asOf.year}-${payCycleInfo[0][1]}`,
       period: `${payCycleInfo[1][1]} to ${payCycleInfo[2][1]}`,
-      retroAdjustments: payCycleInfo[5][1]
+      retroAdjustments: payCycleInfo[5][2] ? `${payCycleInfo[5][1]} ▸ ${payCycleInfo[5][2]}` : payCycleInfo[5][1]
     };
 
     const workHoursSection = {
@@ -167,7 +167,7 @@ export class StaffMailService extends GMailService {
       .replaceAll(markers.paAmtNight, content.earningsSection.nightPay)
       .replaceAll(markers.paAmtTnt, content.earningsSection.tntMonthPay)
       .replaceAll(markers.paAmtHoliday, content.earningsSection.holidayPay)
-      .replaceAll(markers.paAmtAdj, content.earningsSection.otherAdjustments)
+      .replaceAll(markers.paAmtMisc, content.earningsSection.otherAdjustments)
       .replaceAll(markers.paAmtGross, content.earningsSection.grossPay)
       .replaceAll(markers.tblData, content.staffTimeSheet);
 
