@@ -35,6 +35,7 @@ export class StaffMailService extends GMailService {
       paCycFreq: "[[PA_CYC_FREQ]]",
       paCycPeriod: "[[PA_CYC_PERIOD]]",
       paCycAdj: "[[PA_CYC_ADJ]]",
+      paHrsShift: "[[PA_HRS_SHIFT]]",
       paHrsBase: "[[PA_HRS_BASE]]",
       paHrsOt: "[[PA_HRS_OT]]",
       paHrsNight: "[[PA_HRS_NIGHT]]",
@@ -157,6 +158,7 @@ export class StaffMailService extends GMailService {
       .replaceAll(markers.paCycFreq, content.payCycleSection.frequency)
       .replaceAll(markers.paCycPeriod, content.payCycleSection.period)
       .replaceAll(markers.paCycAdj, content.payCycleSection.retroAdjustments)
+      .replaceAll(markers.paHrsShift, content.workHoursSection.shift)
       .replaceAll(markers.paHrsBase, content.workHoursSection.baseHours)
       .replaceAll(markers.paHrsOt, content.workHoursSection.overtimeHours)
       .replaceAll(markers.paHrsNight, content.workHoursSection.nightHours)
