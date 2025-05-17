@@ -8,9 +8,9 @@ export class DailySalesSheetService extends GSheetsService {
 
   protected spreadsheetId = this.parameters.env.GSHEETS_SI_SALES_TRACKER_ID;
   private ranges = {
-    breakdown: "R_BREAKDOWN_FOR_DATES",
-    deposit: "R_DEPOSIT_FOR_DATES",
-    invoiceRates: "R_INVOICE_RATES"
+    R_BREAKDOWN_FOR_DATES: "R_BREAKDOWN_FOR_DATES",
+    R_DEPOSIT_FOR_DATES: "R_DEPOSIT_FOR_DATES",
+    R_INVOICE_RATES: "R_INVOICE_RATES"
   };
 
   private getQSheetFor(date: DateTime) {
@@ -22,7 +22,7 @@ export class DailySalesSheetService extends GSheetsService {
     const searchFor = date.toFormat(Format.DATE_SHORT_DM);
     const totalOf = (breakdown: string) => breakdown.split(" / ").map(i => +i).reduce((a, c) => a + c);
 
-    const { address: searchRange } = await this.fetchNamedRangeInfo({ name: this.ranges.breakdown });
+    const { address: searchRange } = await this.fetchNamedRangeInfo({ name: this.ranges.R_BREAKDOWN_FOR_DATES });
     const cell = await this.findCell({ sheetName, searchRange, searchFor });
 
     if (!cell) throw new Error(`Failed to read any data for "${searchFor}" on the daily sales tracker.`);
@@ -72,7 +72,7 @@ export class DailySalesSheetService extends GSheetsService {
     const sheetName = this.getQSheetFor(date);
     const searchFor = date.toFormat(Format.DATE_SHORT_DM);
 
-    const { address: searchRange } = await this.fetchNamedRangeInfo({ name: this.ranges.deposit });
+    const { address: searchRange } = await this.fetchNamedRangeInfo({ name: this.ranges.R_DEPOSIT_FOR_DATES });
     const cell = await this.findCell({ sheetName, searchRange, searchFor, partialMatch: true });
 
     const amountRange = this.serializeToGSheetsCellAddress({ col: cell.col, row: cell.row + 1 });
@@ -82,7 +82,7 @@ export class DailySalesSheetService extends GSheetsService {
 
   async computeDailyInvoiceData() {
     const { figures } = this.parameters.gsheets.sales.daily;
-    const { address: range, sheetName } = await this.fetchNamedRangeInfo({ name: this.ranges.invoiceRates });
+    const { address: range, sheetName } = await this.fetchNamedRangeInfo({ name: this.ranges.R_INVOICE_RATES });
 
     const { values } = await this.fetchRangeContents({ sheetName, range });
     const { rate } = values

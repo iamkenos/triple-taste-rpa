@@ -33,7 +33,7 @@ export class RevenueAndExpensesSheetService extends GSheetsService {
     }
   };
   private ranges = {
-    record: "A2:D2"
+    RECORD: "A2:D2"
   };
 
   getWebViewUrl({ sheetId, viewId }: Partial<WorkbookResource>) {
@@ -41,7 +41,7 @@ export class RevenueAndExpensesSheetService extends GSheetsService {
   }
 
   private async createNewRecord({ sheetName, values }: WorkbookResource & Pick<UpdateRangeContentInfo, "values">) {
-    const range = this.ranges.record;
+    const range = this.ranges.RECORD;
     await this.clearFilters({ sheetName });
     await this.insertRows({ sheetName, startIndex: 1, endIndex: 2 });
     await this.updateRangeContents({ sheetName, range, values });
