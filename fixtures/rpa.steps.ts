@@ -154,7 +154,7 @@ Before({}, async function(this: This) {
       remaining: [],
       missing: [],
       usage: [],
-      order: { products: [] }
+      order: { products: [], adhoc: [] }
     },
     hr: { payout: [] }
   };

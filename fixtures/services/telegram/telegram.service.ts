@@ -38,7 +38,7 @@ ${shiftRotationInfo.map(v => `- ${v.shiftIcon} ${firstName(v.staffName)}: ${v.sh
   }
 
   async sendOrderConfirmation() {
-    const { amount, deliveryDate, por, status, customerName, orderedBy } = this.parameters.gsheets.inventory.order;
+    const { amount, deliveryDate, por, status, customerName, orderedBy, autoIssuance } = this.parameters.gsheets.inventory.order;
     const message = `
 ────────────────
 📦 *Order# ${por}*
@@ -55,6 +55,15 @@ ${shiftRotationInfo.map(v => `- ${v.shiftIcon} ${firstName(v.staffName)}: ${v.sh
 *Status:*
 - ${status}`;
     await this.bot.sendMessage({ message });
+    if (autoIssuance) {
+      const autoIssued = autoIssuance.split(/(?=[[])/).slice(1).map(v => `▸ ${v.trim()}`);
+      const text = `
+The following products has been auto issued for this order:
+
+${autoIssued.join("\n")}
+`;
+      await this.bot.sendMessage({ message: text });
+    }
   }
 
   async sendInventoryUpdateConfirmation() {

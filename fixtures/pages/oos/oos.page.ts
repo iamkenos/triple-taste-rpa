@@ -27,6 +27,9 @@ export class OOSPage extends BasePage {
   private datepicker = () => this.page.component(DatePicker);
   private btnViewCart = () => this.page.locator("#cartToggle");
   private lblSubTotal = () => this.page.locator("//*[@class='total-price']/p");
+  private divModalAutoIssuance = () => this.page.locator("//div[contains(@class,'modal')][contains(.,'Auto Issuance')]");
+  private lblListAutoIssuance = () => this.divModalAutoIssuance().locator("//div[contains(@class,'html-container')]");
+  private btnAcceptAutoIssuance = () => this.divModalAutoIssuance().locator("//button", { hasText: "OK" });
   private btnCheckout = () => this.page.locator("#checkoutBtnId");
 
   private shipping = () => this.page.component(Shipping);
@@ -86,11 +89,25 @@ export class OOSPage extends BasePage {
     }
   }
 
-  async checkout() {
-    const { deliveryDate } = this.parameters.gsheets.inventory.order;
+  async viewCart() {
     await this.btnViewCart().click();
     await this.lblSubTotal().expect().displayed().poll();
+  }
 
+  async acknowledgeAutoIssuance() {
+    const timeout = 3000;
+    const autoIssuanceNotice = this.divModalAutoIssuance();
+    const hasAutoIssuance = await autoIssuanceNotice.waitUntil({ timeout }).displayed().poll();
+
+    if (hasAutoIssuance) {
+      const products = await this.lblListAutoIssuance().textContent();
+      await this.btnAcceptAutoIssuance().clickUntil(autoIssuanceNotice.waitUntil({ timeout }).displayed({ not: true }));
+      return products;
+    }
+  }
+
+  async checkout() {
+    const { deliveryDate } = this.parameters.gsheets.inventory.order;
     await this.datepicker().select(deliveryDate);
     await this.btnCheckout().click();
   }

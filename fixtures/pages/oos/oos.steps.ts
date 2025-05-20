@@ -19,7 +19,15 @@ When("the service account adds each product to order in the OOS cart", async fun
   await this.oos.addToCart();
 });
 
-When("the service account views the OOS cart and checks out", async function(this: This) {
+When("the service account views the OOS cart", async function(this: This) {
+  await this.oos.viewCart();
+});
+
+When("the service account accepts any products subject for OOS auto issuance", async function(this: This) {
+  this.parameters.gsheets.inventory.order.autoIssuance = await this.oos.acknowledgeAutoIssuance();
+});
+
+When("the service account selects the delivery date and checks out the OOS cart contents", async function(this: This) {
   await this.oos.checkout();
 });
 
