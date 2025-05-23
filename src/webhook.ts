@@ -3,13 +3,13 @@ import { TelegramBot } from "../fixtures/services/telegram/telegram.bot";
 import type { Env, RPAPayload } from "./types";
 import type { TelegramUpdate } from "../fixtures/services/telegram/telegram.types";
 
-async function runCommand({ env, command, parameters = undefined, notifyOnSuccess = true }: RPAPayload & { env: Env } ) {
+async function runCommand({ env, command, parameters = undefined, notifyOnSuccess = true, notifyOnStartedVariant }: RPAPayload & { env: Env } ) {
   const rpaEndpoint = `http://localhost:${env.WEBHOOK_RPA_RUNNER_PORT}/run`;
   const notifyOnFailureLink = env.WEBHOOK_RESULTS_TUNNEL_URL;
   await fetch(rpaEndpoint, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ command, parameters, notifyOnSuccess, notifyOnFailureLink })
+    body: JSON.stringify({ command, parameters, notifyOnSuccess, notifyOnFailureLink, notifyOnStartedVariant })
   });
 }
 
@@ -46,6 +46,7 @@ export default {
           await bot.showPrompt();
         } else if (isBotReply) {
           const { command, parameters } = bot.getCommandReplyFrom({ message });
+          const notifyOnSuccess = false;
 
           switch (command) {
             case bot.getCommandKey({ command: create_order }): {
@@ -53,7 +54,7 @@ export default {
               if (hasConfirmed) {
                 const botName = await bot.fetchBotName();
                 const from = bot.getUserInfoFrom({ update }).name;
-                await runCommand({ env, command, parameters: `${from} c/o ${botName}`, notifyOnStartedVariant: "long", notifyOnSuccess: false });
+                await runCommand({ env, command, parameters: `${from} c/o ${botName}`, notifyOnStartedVariant: "long", notifyOnSuccess });
               } else {
                 await bot.sendCommandParkedMessage({ update, command });
               }
@@ -61,11 +62,11 @@ export default {
             }
             case bot.getCommandKey({ command: fetch_shift_rotation }): {
               const isForCurrent = parameters.toLowerCase() === "current";
-              await runCommand({ env, command, parameters: isForCurrent ? true : undefined });
+              await runCommand({ env, command, parameters: isForCurrent ? true : undefined, notifyOnSuccess });
               break;
             }
             case bot.getCommandKey({ command: update_inventory }): {
-              await runCommand({ env, command, parameters, notifyOnStartedVariant: "long", notifyOnSuccess: false });
+              await runCommand({ env, command, parameters, notifyOnSuccess });
               break;
             }
             default:
@@ -100,7 +101,7 @@ export default {
             break;
           }
           default: {
-            await runCommand({ env, command, notifyOnSuccess: false });
+            await runCommand({ env, command, notifyOnSuccess: false, notifyOnStartedVariant: "short" });
             break;
           }
         }

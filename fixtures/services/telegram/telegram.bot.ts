@@ -124,7 +124,7 @@ export class TelegramBot {
   async sendMessage({ message, options = {} }: { message: string, options?: Record<string, any> }) {
     const path = `${this.botURL}/${this.sendMessage.name}`;
     return await axios.post(path, {
-      chat_id: this.chatID, text: message, parse_mode: "Markdown", ...options
+      chat_id: this.chatID, text: message, parse_mode: "Markdown", reply_markup: { remove_keyboard: true }, ...options
     });
   }
 
