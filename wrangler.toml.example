@@ -1,7 +1,7 @@
 name = "triple-taste-rpa"
-main = "src/wrangler.ts"
+main = "src/webhook.ts"
 
-compatibility_date = "2025-05-01"
+compatibility_date = "2025-04-24"
 
 [vars]
 TELEGRAM_BOT_KEY=""
