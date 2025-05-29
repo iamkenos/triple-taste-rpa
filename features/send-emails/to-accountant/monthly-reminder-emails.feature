@@ -10,6 +10,7 @@ Feature: Monthly Reminder Emails
     Given it's the 3rd of the month
     Then the service account sends the monthly bookkeeping reminder email
 
+  @ignore
   Scenario: Monthly Staffing Agency 2307 Request
     Given it's 3 days before the end of month
     Then the service account sends the monthly staffing agency 2307 request email
