@@ -199,4 +199,5 @@ export type InventoryOrderInfo = {
   por?: string;
   status?: string;
   autoIssuance?: string;
+  errors?: string[];
 };

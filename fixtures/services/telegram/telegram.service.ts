@@ -37,6 +37,20 @@ ${shiftRotationInfo.map(v => `- ${v.shiftIcon} ${firstName(v.staffName)}: ${v.sh
     await this.bot.sendMessage({ message });
   }
 
+  async sendOrderRatioErrors() {
+    const { errors } = this.parameters.gsheets.inventory.order;
+    const LF = EscapeSequence.LF[0];
+
+    if (errors.length > 0) {
+      const header = this.bot.getRandomMessageFrom({ messages: this.bot.BOT_FAILURE_MESSAGES.default });
+      const message = `${header} Kindly revisit the inventory order sheet and address the following:
+
+${errors.map(v => `▸ ${v.trim()}`).join(LF)}`;
+      await this.bot.sendMessage({ message });
+      return message;
+    }
+  }
+
   async sendOrderConfirmation() {
     const { amount, deliveryDate, por, status, customerName, orderedBy, autoIssuance } = this.parameters.gsheets.inventory.order;
     const message = `
@@ -69,6 +83,7 @@ ${autoIssued.join("\n")}
   async sendInventoryUpdateConfirmation() {
     const { usage, remaining, missing } = this.parameters.gsheets.inventory;
     const negative = usage.filter(item => +item.value < 0);
+    const LF = EscapeSequence.LF[0];
 
     if (negative.length > 0) {
       const header = this.bot.getRandomMessageFrom({ messages: this.bot.BOT_FAILURE_MESSAGES.default });
@@ -77,7 +92,7 @@ ${autoIssued.join("\n")}
 
 I completed the updates but it looks like the remaining values for these products may have some issues:
 
-${negative.map(({ name, value }) => `*${name}*\n  ▸ Yesterday: ${getvalue(name)}\n  ▸ Today: ${+getvalue(name) + Math.abs(+value)}`).join("\n")}
+${negative.map(({ name, value }) => `*${name}*${LF}  ▸ Yesterday: ${getvalue(name)}${LF}  ▸ Today: ${+getvalue(name) + Math.abs(+value)}`).join(LF)}
 
 Feel free to resend the updated values if necessary, by replying to the original prompt.`;
       await this.bot.sendMessage({ message });
@@ -87,7 +102,7 @@ Feel free to resend the updated values if necessary, by replying to the original
 
 I completed the updates but the following items seem to be missing from the report:
 
-${missing.map(({ name, value }) => `▸ ${name}: ${value}`).join("\n")}
+${missing.map(({ name, value }) => `▸ ${name}: ${value}`).join(LF)}
 
 If you think there's an error with the report you sent, we can fix it if you reply to the original prompt with the corrected values.`;
       await this.bot.sendMessage({ message });

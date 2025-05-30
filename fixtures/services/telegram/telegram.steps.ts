@@ -1,4 +1,4 @@
-import { Before, When } from "@cucumber/cucumber";
+import { Before, Status, When } from "@cucumber/cucumber";
 
 import { TelegramService } from "./telegram.service";
 
@@ -18,6 +18,11 @@ When("the service account sends the fortnightly shift rotation announcement on t
 
 When("the service account sends the expected deposit amount on the ops channel", async function(this: This) {
   await this.telegram.sendExpectedDepositAmountMessage();
+});
+
+When("the service account sends any order ratio errors on the ops channel", async function(this: This) {
+  const hasErrors = await this.telegram.sendOrderRatioErrors();
+  if (hasErrors) return Status.SKIPPED.toLowerCase();
 });
 
 When("the service account sends the order confirmation on the ops channel", async function(this: This) {

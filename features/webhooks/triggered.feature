@@ -3,6 +3,7 @@ Feature: Webhook Triggered Processes
   @create_order
   Scenario: Create PC Order
     Given the service account fetches the order details from the inventory sheet
+    Then the service account sends any order ratio errors on the ops channel
     When the service account logs in to OOS
       And the service account adds each product to order in the OOS cart
       And the service account views the OOS cart

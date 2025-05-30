@@ -41,6 +41,7 @@ export class InventoryManagementSheetService extends GSheetsService {
     R_MASTER_ORDER_DELIVER_DATE: "R_MASTER_ORDER_DELIVER_DATE",
     R_MASTER_ORDER_SHIPPING_METHOD: "R_MASTER_ORDER_SHIPPING_METHOD",
     R_MASTER_ORDER_QTY: "R_MASTER_ORDER_QTY",
+    R_MASTER_ORDER_RATIO_ERROR: "R_MASTER_ORDER_RATIO_ERROR",
     R_MASTER_ADHOC_ORDER_PRODUCTS: "R_MASTER_ADHOC_ORDER_PRODUCTS",
     R_MASTER_ADHOC_ORDER_QTY: "R_MASTER_ADHOC_ORDER_QTY",
     R_MASTER_TO_ORDER_QTY_PORTAL: "R_MASTER_TO_ORDER_QTY_PORTAL"
@@ -109,6 +110,13 @@ export class InventoryManagementSheetService extends GSheetsService {
     return customerName;
   }
 
+  private async fetchOrderError() {
+    const sheetName = this.tabs.master;
+    const { values: errors = [[]] } = await this.fetchRangeContents({ sheetName, range: this.ranges.R_MASTER_ORDER_RATIO_ERROR });
+
+    return errors.flat().map(i => i.trim()).filter(Boolean);
+  }
+
   private async findCellFor({ sheetName, date }) {
     const searchForDate = date.toFormat(Format.DATE_SHORT_DMY);
     const { address: range } = await this.fetchNamedRangeInfo({ name: this.ranges.R_NODE_DATE_RANGE });
@@ -125,11 +133,12 @@ export class InventoryManagementSheetService extends GSheetsService {
       this.fetchAdhocItemsToOrder(),
       this.fetchNextDeliveryDate(),
       this.fetchShippingMethod(),
-      this.fetchCustomerName()
+      this.fetchCustomerName(),
+      this.fetchOrderError()
     ]);
 
-    const [products, adhoc, deliveryDate, method, customerName] = await this.fulfilled(details);
-    return { products, adhoc, orderDate, deliveryDate, method, customerName, orderedBy } as InventoryOrderInfo;
+    const [products, adhoc, deliveryDate, method, customerName, errors] = await this.fulfilled(details);
+    return { products, adhoc, orderDate, deliveryDate, method, customerName, orderedBy, errors } as InventoryOrderInfo;
   }
 
   async fetchListOfProducts() {
