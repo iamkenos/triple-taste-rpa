@@ -11,6 +11,10 @@ export class OOSPage extends BasePage {
   url = this.parameters.env.PCOOS_URL;
   title = "";
 
+  private tfEmail = () => this.page.locator("#customer_email");
+  private tfPassword = () => this.page.locator("#customer_password");
+  private btnLogin = () => this.page.locator("//input[@value='Login']");
+
   private navigation = () => this.page.component(Navigation);
   private btnSearch = () => this.page.locator("//*[@class='nav-search']").first();
   private tfSearch = () => this.btnSearch().locator("//*[@aria-label='Search Site']");

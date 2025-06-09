@@ -7,5 +7,6 @@ exports.default = configure({
     'features/send-emails/**/*.feature',
     'features/update-sheets/*.feature'
   ],
-  require: ['fixtures/*.steps.ts', 'fixtures/**/*.steps.ts']
+  require: ['fixtures/*.steps.ts', 'fixtures/**/*.steps.ts'],
+  stealth: true
 });
