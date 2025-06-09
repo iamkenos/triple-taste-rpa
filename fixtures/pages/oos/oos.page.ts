@@ -52,7 +52,9 @@ export class OOSPage extends BasePage {
     await this.navigate();
     await this.page.context().addCookies([{ name, value, domain, path: "/" }]);
     await this.page.reload();
-    await this.navigation().expect().displayed().poll();
+
+    const cookies = await this.page.context().cookies();
+    await this.navigation().expect().displayed({ message: cookies }).poll();
     await this.navigation().orders();
   }
 

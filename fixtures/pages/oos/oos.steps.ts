@@ -1,4 +1,4 @@
-import { Before, Given, When } from "@cucumber/cucumber";
+import { Before, Given, Status, When } from "@cucumber/cucumber";
 import { OOSPage } from "./oos.page";
 
 import type { This as RPA } from "~/fixtures/rpa.steps";
@@ -16,7 +16,14 @@ Given("the service account logs in to OOS", async function(this: This) {
 });
 
 When("the service account adds each product to order in the OOS cart", async function(this: This) {
-  await this.oos.addToCart();
+  const { products: fixed, adhoc } = this.parameters.gsheets.inventory.order;
+  const products = [...fixed, ...adhoc].filter(i => +i.value);
+
+  if (products.length > 0) {
+    await this.oos.addToCart();
+  } else {
+    return Status.SKIPPED.toLowerCase();
+  }
 });
 
 When("the service account views the OOS cart", async function(this: This) {
