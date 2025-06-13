@@ -1,6 +1,8 @@
+import os from "os";
 import { distance } from "fastest-levenshtein";
 
 import { GSheetsService } from "~/fixtures/services/gsuite/gsheets/gsheets.service";
+import { TelegramBot } from "~/fixtures/services/telegram/telegram.bot";
 import { createDate, Format } from "~/fixtures/utils/date.utils";
 import { EscapeSequence, unescapeJsonRestricted } from "~/fixtures/utils/string.utils";
 
@@ -127,7 +129,7 @@ export class InventoryManagementSheetService extends GSheetsService {
 
   async fetchOrderInfo() {
     const { date: orderDate } = createDate();
-    const orderedBy = unescapeJsonRestricted(this.parameters.webhook);
+    const orderedBy = unescapeJsonRestricted(this.parameters.webhook) || os.userInfo().username;
     const details: PromiseSettledResult<any>[] = await Promise.allSettled([
       this.fetchFixedItemsToOrder(),
       this.fetchAdhocItemsToOrder(),
