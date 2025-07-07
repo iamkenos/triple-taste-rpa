@@ -2,7 +2,6 @@ import os from "os";
 import { distance } from "fastest-levenshtein";
 
 import { GSheetsService } from "~/fixtures/services/gsuite/gsheets/gsheets.service";
-import { TelegramBot } from "~/fixtures/services/telegram/telegram.bot";
 import { createDate, Format } from "~/fixtures/utils/date.utils";
 import { EscapeSequence, unescapeJsonRestricted } from "~/fixtures/utils/string.utils";
 
