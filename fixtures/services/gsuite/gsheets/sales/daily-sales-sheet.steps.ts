@@ -1,4 +1,4 @@
-import { Status, When } from "@cucumber/cucumber";
+import { When } from "@cucumber/cucumber";
 import { createDate, createDateFromNearestWeekday, Day } from "~/fixtures/utils/date.utils";
 
 import type { This as GSHeets } from "~/fixtures/services/gsuite/gsheets/gsheets.steps";
@@ -26,7 +26,4 @@ When("the service account fetches the expected deposit amount for the day", asyn
 
 When("the service account computes the data to invoice", async function(this: This) {
   this.parameters.gsheets.sales.daily.invoice = await this.dailysales.computeDailyInvoiceData();
-
-  const shouldIssueInvoice = this.parameters.gsheets.sales.daily.invoice.adjTotal > 0;
-  if (!shouldIssueInvoice) return Status.SKIPPED.toLowerCase();
 });

@@ -34,8 +34,10 @@ Feature: Update Revenue vs Expenses Sheets
     Then the service account creates expense records for:
       | Service Fee | 15 | Gcash weekly transfer service fee |
 
-  Scenario: Daily Revenue Offset
+  Scenario: Daily Invoices
     Given it's a week day
     When the service account fetches the sales figures for the previous working day
       And the service account computes the data to invoice
-    Then the service account creates an invoice record for the computed data
+    Then the service account creates a walk-in invoice record for the computed data
+      And the service account creates a grab food invoice record for the computed data
+      And the service account creates a food panda invoice record for the computed data

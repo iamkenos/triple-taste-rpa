@@ -29,7 +29,9 @@ export class RevenueAndExpensesSheetService extends GSheetsService {
       reimbursements: "Reimbursements"
     },
     invoice: {
-      default: "Invoice"
+      walkIn: "Walk In",
+      grab: "Grab Food",
+      panda: "Food Panda"
     }
   };
   private ranges = {
@@ -117,10 +119,11 @@ export class RevenueAndExpensesSheetService extends GSheetsService {
     await this.createNewRecord({ sheetName, values });
   }
 
-  async createInvoiceRecord({ date, amount, note }: Partial<ExpenseAndRevenueInfo>) {
-    const sheetName = this.tabs.invoice;
-    const category = this.categories.invoice.default;
-    const values = [date.toFormat(Format.DATE_SHORT_DMY), category, amount, note];
-    await this.createNewRecord({ sheetName, values });
+  async createInvoiceRecord({ date, category, amount, note }: Partial<ExpenseAndRevenueInfo>) {
+    if (amount > 0) {
+      const sheetName = this.tabs.invoice;
+      const values = [date.toFormat(Format.DATE_SHORT_DMY), category, amount, note];
+      await this.createNewRecord({ sheetName, values });
+    }
   }
 }

@@ -35,7 +35,20 @@ When("the service account creates expense records for:", async function(this: Th
   }
 });
 
-When("the service account creates an invoice record for the computed data", async function(this: This) {
+When("the service account creates a walk-in invoice record for the computed data", async function(this: This) {
   const { date, adjTotal: amount } = this.parameters.gsheets.sales.daily.invoice;
-  await this.revxexp.createInvoiceRecord({ date, amount });
+  const category = this.revxexp.categories.invoice.walkIn;
+  await this.revxexp.createInvoiceRecord({ date, amount, category });
+});
+
+When("the service account creates a grab food invoice record for the computed data", async function(this: This) {
+  const { date, grabAmount: amount } = this.parameters.gsheets.sales.daily.invoice;
+  const category = this.revxexp.categories.invoice.grab;
+  await this.revxexp.createInvoiceRecord({ date, amount, category });
+});
+
+When("the service account creates a food panda invoice record for the computed data", async function(this: This) {
+  const { date, pandaAmount: amount } = this.parameters.gsheets.sales.daily.invoice;
+  const category = this.revxexp.categories.invoice.panda;
+  await this.revxexp.createInvoiceRecord({ date, amount, category });
 });
