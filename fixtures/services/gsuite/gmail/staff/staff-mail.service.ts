@@ -24,6 +24,10 @@ export class StaffMailService extends GMailService {
       rvAmount: "[[RV_AMOUNT]]",
       rvDcAmount: "[[RV_DC_AMOUNT]]",
       rvTotalAmount: "[[RV_TOTAL_AMOUNT]]",
+      rvGrabQty: "[[RV_GRAB_QTY]]",
+      rvGrabAmount: "[[RV_GRAB_AMOUNT]]",
+      rvPandaQty: "[[RV_PANDA_QTY]]",
+      rvPandaAmount: "[[RV_PANDA_AMOUNT]]",
       paRcpName: "[[PA_RCP_NAME]]",
       paRcpEmail: "[[PA_RCP_EMAIL]]",
       paRcpAddress: "[[PA_RCP_ADDRESS]]",
@@ -230,7 +234,9 @@ export class StaffMailService extends GMailService {
       .replaceAll(markers.rvQty, `${invoice.adjQty}`)
       .replaceAll(markers.rvAmount, this.format(invoice.adjAmount))
       .replaceAll(markers.rvDcAmount, this.format(invoice.dcAmount))
-      .replaceAll(markers.rvTotalAmount, this.format(invoice.adjTotal));
+      .replaceAll(markers.rvTotalAmount, this.format(invoice.adjTotal))
+      .replaceAll(markers.rvGrabAmount, this.format(invoice.grabAmount))
+      .replaceAll(markers.rvPandaAmount, this.format(invoice.pandaAmount));
 
     const { STAFF_EMAIL_RECIPIENTS: to, STAFF_EMAIL_RECIPIENTS_CC: cc } = this.parameters.env;
     await this.sendEmail({ to, cc, subject, body });
