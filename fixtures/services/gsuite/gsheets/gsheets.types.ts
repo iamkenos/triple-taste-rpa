@@ -133,6 +133,10 @@ export type DailySalesInvoiceData = {
   adjAmount: number;
   /** the adjusted total */
   adjTotal: number;
+  /** the estimated number of cups for grab transactions */
+  grabQty: number;
+  /** the estimated number of cups for panda transactions */
+  pandaQty: number;
 } & DailySales;
 
 export type DepositData = {

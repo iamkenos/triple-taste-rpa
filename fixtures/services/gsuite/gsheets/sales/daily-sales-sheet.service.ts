@@ -94,12 +94,24 @@ export class DailySalesSheetService extends GSheetsService {
     const cohAndGCashAmount = figures.cohAmount + figures.gCashAmount;
     const adjAmount = cohAndGCashAmount - (cohAndGCashAmount * adjRate);
     const adjTotal = adjAmount - figures.dcAmount;
-
+    const grabAndPandaQty = figures.qty - adjQty;
+    const grabAndPandaAmount = figures.grabAmount + figures.pandaAmount;
+    let grabQty = 0, grabRatio = 0, pandaQty = 0, pandaRatio = 0;
+    if (figures.grabAmount > 0) {
+      grabRatio = figures.grabAmount / grabAndPandaAmount;
+      grabQty = Math.floor(grabAndPandaQty * grabRatio);
+    }
+    if (figures.pandaAmount > 0) {
+      pandaRatio = figures.pandaAmount / grabAndPandaAmount;
+      pandaQty = Math.floor(grabAndPandaQty * pandaRatio);
+    }
     return {
       ...figures,
       adjQty,
       adjAmount,
-      adjTotal
+      adjTotal,
+      grabQty,
+      pandaQty
     } as DailySalesInvoiceData;
   }
 }

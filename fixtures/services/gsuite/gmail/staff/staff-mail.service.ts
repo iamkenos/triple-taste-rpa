@@ -235,7 +235,9 @@ export class StaffMailService extends GMailService {
       .replaceAll(markers.rvAmount, this.format(invoice.adjAmount))
       .replaceAll(markers.rvDcAmount, this.format(invoice.dcAmount))
       .replaceAll(markers.rvTotalAmount, this.format(invoice.adjTotal))
+      .replaceAll(markers.rvGrabQty, `${invoice.grabQty}`)
       .replaceAll(markers.rvGrabAmount, this.format(invoice.grabAmount))
+      .replaceAll(markers.rvPandaQty, `${invoice.pandaQty}`)
       .replaceAll(markers.rvPandaAmount, this.format(invoice.pandaAmount));
 
     const { STAFF_EMAIL_RECIPIENTS: to, STAFF_EMAIL_RECIPIENTS_CC: cc } = this.parameters.env;
