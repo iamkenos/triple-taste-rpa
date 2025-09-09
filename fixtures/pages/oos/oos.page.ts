@@ -41,7 +41,7 @@ export class OOSPage extends BasePage {
   private lblOrderConfirmation = () => this.page.locator("//h2[contains(text(),'Thank you! Your order has been sent for review.')]");
 
   private tblOrders = () => this.page.locator("#orderTab");
-  private trOrderFor = (identifier: string) => this.tblOrders().locator(`//tbody//tr[td[contains(.,'${identifier}')]]`);
+  private trOrderFor = (identifier: string) => this.tblOrders().locator(`//tbody//tr[td[contains(.,'${identifier}')]]`).first();
   private tdPOR = (identifier: string) => this.trOrderFor(identifier).locator("//td[2]//a");
   private tdStatus = (identifier: string) => this.trOrderFor(identifier).locator("//td[4]");
   private tdAmount = (identifier: string) => this.trOrderFor(identifier).locator("//td[10]");

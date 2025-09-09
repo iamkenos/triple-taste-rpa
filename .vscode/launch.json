@@ -11,7 +11,7 @@
       "console": "integratedTerminal",
       "outputCapture": "std",
       "cwd": "${workspaceFolder}",
-      "runtimeExecutable": "npm",
+      "runtimeExecutable": "/Users/a/.nvm/versions/node/v20.10.0/bin/npm",
       "runtimeArgs": ["run-script", "start"],
       "outFiles": [
         "${workspaceFolder}/**/*.ts",
@@ -23,9 +23,36 @@
         "TAGS": "@debug",
         "PATHS": "features/"
       }
+    },
+    {
+      "name": "create order",
+      "type": "node",
+      "request": "launch",
+      "console": "integratedTerminal",
+      "outputCapture": "std",
+      "cwd": "${workspaceFolder}",
+      "runtimeExecutable": "/Users/a/.nvm/versions/node/v20.10.0/bin/npm",
+      "runtimeArgs": ["run-script", "start"],
+      "outFiles": [
+        "${workspaceFolder}/**/*.ts",
+        "${workspaceFolder}/node_modules/@iamkenos/kyoko/build/**/*.js"
+      ],
+      "env": {
+        "HEADLESS": "true",
+        "DEBUG": "true",
+        "TAGS": "@create_order",
+        "PATHS": "features/webhooks/triggered.feature",
+        "PCOOS_PKEY": "${input:pcoosKey}"
+      }
     }
   ],
   "inputs": [
+    {
+      "id": "pcoosKey",
+      "type": "promptString",
+      "default": "",
+      "description": "The OOS token"
+    },
     {
       "id": "tags",
       "type": "promptString",

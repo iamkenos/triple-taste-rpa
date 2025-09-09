@@ -26,6 +26,7 @@ export class InventoryManagementSheetService extends GSheetsService {
     forecast: "Forecast"
   };
   private functions = {
+    orderDate: "=F_NEXT_ORDER_SCHEDULE_DATE(0)",
     nextDeliveryDate: "=F_NEXT_ORDER_DELIVERY_DATE(0)"
   };
   private ranges = {
@@ -242,6 +243,9 @@ export class InventoryManagementSheetService extends GSheetsService {
     const arrivalDateRevertRequest = this.batchUpdateUserEnteredFormulaValueRequest(
       { sheetId, row: arrivalDateRange.row, col: arrivalDateRange.col, value: this.functions.nextDeliveryDate }
     );
+    const orderDateRevertRequest = this.batchUpdateUserEnteredFormulaValueRequest(
+      { sheetId, row: arrivalDateRange.row, col: arrivalDateRange.col - 2, value: this.functions.orderDate }
+    );
 
     const { address: toOrder } = await this.fetchNamedRangeInfo({ name: this. ranges.R_MASTER_TO_ORDER_QTY_PORTAL });
     const { address: ordered } = await this.fetchNamedRangeInfo({ name: this. ranges.R_MASTER_ORDER_QTY });
@@ -258,7 +262,7 @@ export class InventoryManagementSheetService extends GSheetsService {
       });
 
     const cleanedRevertOrderQtyRequests = productsRevertOrderQtyRequests.slice(0, -2);
-    const requests = [arrivalDateRevertRequest, ...cleanedRevertOrderQtyRequests];
+    const requests = [arrivalDateRevertRequest, orderDateRevertRequest, ...cleanedRevertOrderQtyRequests];
 
     const requestBody = { requests };
     await this.batchUpdate({ requestBody });
