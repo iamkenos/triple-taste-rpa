@@ -1,6 +1,6 @@
 
 import path from "path";
-import { string } from "@iamkenos/kyoko/common";
+import { string } from "@iamkenos/kyoko";
 import { Ext, MimeType } from "~/fixtures/utils/file.utils";
 
 import { GMailService } from "~/fixtures/services/gsuite/gmail/gmail.service";

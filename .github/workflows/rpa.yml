@@ -47,14 +47,16 @@ jobs:
           PARALLEL: "0"
           HEADLESS: true
         run: npm start
+      - name: Generate report
+        run: npm run results
       - name: Post RPA cleanup
         run: |
-          echo Removing downlaods
+          echo Removing downloads
           rm -rf downloads/
       - name: Upload Artifact
         if: ${{ failure() }}
         uses: actions/upload-artifact@v4
         with:
           name: results
-          path: results/report.html
+          path: results/allure/html/index.html
           retention-days: 3

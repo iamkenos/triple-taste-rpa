@@ -130,7 +130,7 @@ export class OOSPage extends BasePage {
     const date = deliveryDate.toFormat(Format.DATE_SHORT_MDY.replaceAll("-", "/"));
     await this.navigate();
 
-    const action = async() => await this.page.reload();
+    const action: any = async() => await this.page.reload();
     const condition = this.trOrderFor(date).expect().exists();
 
     await this.tblOrders().doUntil(action, condition);

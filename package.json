@@ -5,8 +5,7 @@
   "scripts": {
     "prestart": "playwright install --with-deps chromium",
     "start": "cucumber-js -c cucumber.js",
-    "preresults": "allure -q generate results/allure/ -c -o results/allure/html/",
-    "results": "allure open results/allure/html/",
+    "results": "allure generate --single-file results/allure/ -c -o results/allure/html/",
     "webhook-rpa": "cucumber-js -c cucumber.webhook.js",
     "webhook": "npx wrangler dev",
     "handler": "ts-node src/handler.ts",
@@ -23,7 +22,7 @@
   "author": "iamkenos <alexis.matunog@gmail.com>",
   "license": "ISC",
   "dependencies": {
-    "@iamkenos/kyoko": "^0.5.2",
+    "@iamkenos/kyoko": "^0.9.1",
     "@types/nodemailer": "^6.4.17",
     "axios": "^1.9.0",
     "cors": "^2.8.5",

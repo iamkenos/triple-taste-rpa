@@ -20,12 +20,12 @@ export class RPA extends ProcessAutomation<Parameters> {
   async fulfilled<T>(r: PromiseSettledResult<T>[]) {
     await this.page.expect({ timeout: 1 })
       .setName("Expected all promises to be fulfilled")
-      .truthy(() => r.every(v => v.status === "fulfilled")).poll();
+      .predicate(() => r.every(v => v.status === "fulfilled")).poll();
     return r.map((v: PromiseFulfilledResult<T>) => v.value);
   }
 
   async createPDF(content: string, path: string, landscape = false) {
-    const pdfWiz = await this.context.newPage();
+    const pdfWiz = await this.browser.newPage();
     await pdfWiz.setContent(content);
     await pdfWiz.pdf({ path, format: "A4", printBackground: true, landscape });
     await pdfWiz.close();

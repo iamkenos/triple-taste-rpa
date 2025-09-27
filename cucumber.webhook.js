@@ -1,9 +1,14 @@
+const dotenv = require('@dotenvx/dotenvx');
 const { configure } = require('@iamkenos/kyoko/config');
 
+dotenv.config()
 exports.default = configure({
-  contextOptions: { timezoneId: 'Asia/Manila' },
-  shouldUseVideoAttachment: true,
-  paths: ['features/webhooks/*.feature'],
+  browserOptions: {
+    headless: process.env.HEADLESS !== 'false',
+    recordVideo: true,
+    browserContextArgs: { timezoneId: 'Asia/Manila' }
+  },
+  paths: process.env.PATHS ? [...process.env.PATHS] : ['features/webhooks/*.feature'],
   require: ['fixtures/*.steps.ts', 'fixtures/**/*.steps.ts'],
-  stealth: true
+  tags: process.env.TAGS ?? '',
 });

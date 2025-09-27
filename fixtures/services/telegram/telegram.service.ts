@@ -1,5 +1,3 @@
-
-
 import { TelegramBot } from "./telegram.bot";
 import { RPA } from "~/fixtures/rpa.app";
 import { EscapeSequence } from "~/fixtures/utils/string.utils";

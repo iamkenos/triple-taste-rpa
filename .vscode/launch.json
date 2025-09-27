@@ -38,15 +38,21 @@
         "${workspaceFolder}/node_modules/@iamkenos/kyoko/build/**/*.js"
       ],
       "env": {
-        "HEADLESS": "true",
         "DEBUG": "true",
         "TAGS": "@create_order",
         "PATHS": "features/webhooks/triggered.feature",
-        "PCOOS_PKEY": "${input:pcoosKey}"
+        "PCOOS_PKEY": "${input:pcoosKey}",
+        "HEADLESS": "${input:headless}"
       }
     }
   ],
   "inputs": [
+    {
+      "id": "headless",
+      "type": "promptString",
+      "default": "true",
+      "description": "Should run in headless?"
+    },
     {
       "id": "pcoosKey",
       "type": "promptString",

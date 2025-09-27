@@ -1,5 +1,5 @@
 import cors from "cors";
-import dotenv from "dotenv";
+import dotenv from "@dotenvx/dotenvx";
 import express from "express";
 import path from "path";
 

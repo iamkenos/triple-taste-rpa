@@ -1,7 +1,7 @@
 import { spawn } from "child_process";
 
 import axios from "axios";
-import dotenv from "dotenv";
+import dotenv from "@dotenvx/dotenvx";
 import fs from "fs";
 import path from "path";
 

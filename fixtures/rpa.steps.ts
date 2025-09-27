@@ -1,9 +1,9 @@
-import "dotenv/config";
+import "@dotenvx/dotenvx";
 import fs from "fs";
 
 import { DateTime, DateTimeUnit } from "luxon";
 import { AfterAll, Before, DataTable, Given, Status } from "@cucumber/cucumber";
-import { World } from "@iamkenos/kyoko/core";
+import { Context } from "@iamkenos/kyoko";
 import {
   createDate,
   Day,
@@ -140,7 +140,7 @@ export interface Parameters {
   webhook: any;
 }
 
-export interface This extends World<Parameters> {}
+export interface This extends Context<Parameters> {}
 
 Before({}, async function(this: This) {
   this.parameters.env = process.env as any;

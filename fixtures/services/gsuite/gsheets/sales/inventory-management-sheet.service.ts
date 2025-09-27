@@ -337,7 +337,7 @@ export class InventoryManagementSheetService extends GSheetsService {
 
     await this.page.expect({ timeout: 1 })
       .setName("Expected inventory data to be parsed correctly")
-      .truthy(missing.length !== items.length, { missing: items }).poll();
+      .predicate(missing.length !== items.length, { missing: items }).poll();
     return { remaining, missing };
   }
 

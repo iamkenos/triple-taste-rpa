@@ -1,10 +1,14 @@
-import { Component, LocatorFilters } from "@iamkenos/kyoko/core";
-import { ExpectedConditionKwargs, ExpectedConditionOptions, LocatorConditions } from "@iamkenos/kyoko/conditions";
+import {
+  Component,
+  ExpectedConditionKwargs,
+  ExpectedConditionOptions,
+  LocatorConditions
+} from "@iamkenos/kyoko";
 
 export class Shipping extends Component {
 
-  constructor(filters?: LocatorFilters) {
-    super("#shippingMethod-collapsible", filters);
+  constructor() {
+    super("#shippingMethod-collapsible");
   }
 
   rdMethod = (text: string) => this.page().locator(`//label[contains(@for,'shipping_methods')][contains(.,'${text}')]`);
@@ -28,7 +32,6 @@ export class Shipping extends Component {
 
 class ShippingConditions extends LocatorConditions<Shipping> {
 
-  // @ts-ignore
   optionSelected(text: string, kwargs?: ExpectedConditionKwargs) {
     const locator = this.locator.rdMethod(text);
     return locator.expect().attributeEquals("data-option-selected", "true", kwargs);

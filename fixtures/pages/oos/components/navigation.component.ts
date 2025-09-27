@@ -1,15 +1,18 @@
-import { Component, LocatorFilters } from "@iamkenos/kyoko/core";
-import { ExpectedConditionKwargs, ExpectedConditionOptions, LocatorConditions } from "@iamkenos/kyoko/conditions";
+import {
+  Component,
+  ExpectedConditionKwargs,
+  ExpectedConditionOptions,
+  LocatorConditions
+} from "@iamkenos/kyoko";
 
 export class Navigation extends Component {
 
-  constructor(filters?: LocatorFilters) {
-    super("//nav[@role='navigation']", filters);
+  constructor() {
+    super("//nav[@role='navigation']");
   }
 
   navItem = (text: string) => this.locator("//ul/li//a", { hasText: text });
 
-  // @ts-ignore
   expect(options?: ExpectedConditionOptions) {
     return new NavigationConditions(this, options);
   }
@@ -27,7 +30,6 @@ export class Navigation extends Component {
 
 class NavigationConditions extends LocatorConditions<Navigation> {
 
-  // @ts-ignore
   active(text: string, kwargs?: ExpectedConditionKwargs) {
     const locator = this.locator.navItem(text);
     return locator.expect().attributeEquals("class", "current", kwargs);

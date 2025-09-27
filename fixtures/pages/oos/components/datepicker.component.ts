@@ -1,12 +1,13 @@
-import { Component, Locator, LocatorFilters } from "@iamkenos/kyoko/core";
+import { Locator } from "playwright";
+import { Component } from "@iamkenos/kyoko";
 import { createDate, Format } from "~/fixtures/utils/date.utils";
 
 import type { DateTime } from "luxon";
 
 export class DatePicker extends Component {
 
-  constructor(filters?: LocatorFilters) {
-    super("#ui-datepicker-div", filters);
+  constructor() {
+    super("#ui-datepicker-div");
   }
 
   tfDeliveryDate = () => this.page().locator("#request-deliver-date");
