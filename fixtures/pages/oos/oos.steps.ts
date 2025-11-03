@@ -34,6 +34,10 @@ When("the service account accepts any products subject for OOS auto issuance", a
   this.parameters.gsheets.inventory.order.autoIssuance = await this.oos.acknowledgeAutoIssuance();
 });
 
+When("the service checks for any available credit memo discount codes", async function(this: This) {
+  await this.oos.checkForCreditMemo();
+});
+
 When("the service account selects the delivery date and checks out the OOS cart contents", async function(this: This) {
   await this.oos.checkout();
 });

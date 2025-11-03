@@ -33,6 +33,7 @@ export class OOSPage extends BasePage {
   private lblSubTotal = () => this.page.locator("//*[@class='total-price']/p");
   private divModalAutoIssuance = () => this.page.locator("//div[contains(@class,'modal')][contains(.,'Auto Issuance')]");
   private lblListAutoIssuance = () => this.divModalAutoIssuance().locator("//div[contains(@class,'html-container')]");
+  private divModalCreditMemo = () => this.page.locator("//div[contains(@class,'modal')][contains(.,'Credit Memo')]");
   private btnAcceptAutoIssuance = () => this.divModalAutoIssuance().locator("//button", { hasText: "OK" });
   private btnCheckout = () => this.page.locator("#checkoutBtnId");
 
@@ -110,6 +111,12 @@ export class OOSPage extends BasePage {
       await this.btnAcceptAutoIssuance().clickUntil(autoIssuanceNotice.waitUntil({ timeout }).displayed({ not: true }));
       return products;
     }
+  }
+
+  async checkForCreditMemo() {
+    const timeout = 1000;
+    const autoIssuanceNotice = this.divModalCreditMemo();
+    await autoIssuanceNotice.expect({ timeout }).displayed({ not: true }).poll();
   }
 
   async checkout() {
