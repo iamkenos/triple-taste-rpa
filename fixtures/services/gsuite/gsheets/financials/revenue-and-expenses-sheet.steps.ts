@@ -19,7 +19,7 @@ When("the service account creates a/an {input_string} with {input_string} expens
 });
 
 When("the service account creates an expense record for the newly created order", async function(this: This) {
-  const { amount: cost, por: note, orderDate: date } = this.parameters.gsheets.inventory.order;
+  const { amount: cost, por: note, deliveryDate: date } = this.parameters.gsheets.inventory.order;
   const category = this.revxexp.categories.expenses.cog;
   const amount = this.revxexp.parseFloat(cost);
   await this.revxexp.createExpensesRecord({ date, category, amount, note });
