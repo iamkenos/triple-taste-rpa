@@ -5,9 +5,9 @@ Feature: Webhook Triggered Processes
     Given the service account fetches the order details from the inventory sheet
     Then the service account sends any order ratio errors on the ops channel
     When the service account logs in to OOS
+      And the service account accepts any products subject for OOS auto issuance
       And the service account adds each product to order in the OOS cart
       And the service account views the OOS cart
-      And the service account accepts any products subject for OOS auto issuance
       And the service account selects the delivery date and checks out the OOS cart contents
       And the service account completes the OOS order
       And the service account extracts the OOS order details

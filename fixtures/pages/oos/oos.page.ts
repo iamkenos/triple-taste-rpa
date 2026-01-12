@@ -31,10 +31,10 @@ export class OOSPage extends BasePage {
   private datepicker = () => this.page.component(DatePicker);
   private btnViewCart = () => this.page.locator("#cartToggle");
   private lblSubTotal = () => this.page.locator("//*[@class='total-price']/p");
-  private divModalAutoIssuance = () => this.page.locator("//div[contains(@class,'modal')][contains(.,'Auto Issuance')]");
-  private lblListAutoIssuance = () => this.divModalAutoIssuance().locator("//div[contains(@class,'html-container')]");
+  private divModalAutoIssuance = () => this.page.locator("//div[contains(@class,'popup-overlay')][contains(.,'Auto Issuance')]");
+  private lblListAutoIssuance = () => this.divModalAutoIssuance().locator("//div/div").nth(1);
   private divModalCreditMemo = () => this.page.locator("//div[contains(@class,'modal')][contains(.,'Credit Memo')]");
-  private btnAcceptAutoIssuance = () => this.divModalAutoIssuance().locator("//button", { hasText: "OK" });
+  private btnAcceptAutoIssuance = () => this.divModalAutoIssuance().locator("//button", { hasText: "Add" });
   private btnCheckout = () => this.page.locator("#checkoutBtnId");
 
   private shipping = () => this.page.component(Shipping);
@@ -102,6 +102,8 @@ export class OOSPage extends BasePage {
   }
 
   async acknowledgeAutoIssuance() {
+    await this.btnViewCart().click();
+
     const timeout = 3000;
     const autoIssuanceNotice = this.divModalAutoIssuance();
     const hasAutoIssuance = await autoIssuanceNotice.waitUntil({ timeout }).displayed().poll();
