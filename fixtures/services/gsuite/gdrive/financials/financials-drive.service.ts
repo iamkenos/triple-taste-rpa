@@ -64,7 +64,7 @@ export class FinancialsDriveService extends GDriveService {
         const { id: parent } = await this.createQFolderUnderReceiptsFor(date);
         const { formatted: prefix } = createDate({ from: date, format: Format.DATE_SHORT });
         const filepath = path.join(downloadsDir, name);
-        const filename = `${prefix}_PC_OR_${name}`;
+        const filename = `${prefix}_PC_OR_${name.replace("-SI", "_SI")}`;
 
         const body = fs.createReadStream(filepath);
         await this.createFileUnder({ parent, filename, body, mimeType });

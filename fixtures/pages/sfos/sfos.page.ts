@@ -70,7 +70,7 @@ export class SFOSPage extends BasePage {
   async findNewInvoices() {
     const { sfos } = this.parameters.gdrive.financials.receipts;
     const invoices = await this.getDisplayedInvoices();
-    const result = invoices.filter(invoice => !sfos.find(filename => filename.includes(invoice.id)));
+    const result = invoices.filter(invoice => !sfos.find(filename => filename.includes(invoice.id) || filename.includes(invoice.id.replace("-SI", "_SI"))));
     this.logger.debug("%s new invoices available.", result.length);
     return result;
   }

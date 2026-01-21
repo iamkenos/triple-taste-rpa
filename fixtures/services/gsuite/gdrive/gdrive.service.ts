@@ -69,6 +69,7 @@ export class GDriveService extends GSuiteService {
     const query = () => this.drive.connection.files.list({
       pageSize: 1000,
       q: "'me' in owners and 'root' in parents and not trashed"
+      // q: "'me' in owners and name contains '202512' and name contains 'PC_OR_CIPC' and not trashed"
     });
 
     const response = await query();
