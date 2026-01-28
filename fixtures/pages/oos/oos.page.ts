@@ -51,9 +51,11 @@ export class OOSPage extends BasePage {
     const domain = new URL(this.url).hostname;
     const { PCOOS_USER: name, PCOOS_PKEY: value } = this.parameters.env;
     await this.navigate();
+    await this.page.waitForTimeout(3000);
     await this.page.context().addCookies([{ name, value, domain, path: "/" }]);
     await this.page.reload();
 
+    await this.page.waitForTimeout(3000);
     const cookies = await this.page.context().cookies();
     await this.navigation().expect().displayed({ message: cookies }).poll();
     await this.navigation().orders();
