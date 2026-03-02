@@ -1,9 +1,8 @@
 {
   "cucumber.glue": [
-    "node_modules/@iamkenos/kyoko/src/core/gherkin/**/*.{steps,glue}.ts",
+    "node_modules/@iamkenos/kyoko/src/plugins/gherkin/**/*.ts",
     "fixtures/**/*.{steps,glue}.ts"
   ],
-  "cucumberautocomplete.steps": ["fixtures/**/*.{steps,glue}.{js,ts}"],
   "editor.formatOnSave": true,
   "eslint.validate": ["typescript"],
   "editor.codeActionsOnSave": { "source.fixAll.eslint": "explicit" },
