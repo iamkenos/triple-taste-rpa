@@ -19,9 +19,9 @@ export class DatePicker extends Component {
 
   private async open() {
     const action = async() => {
-      await this.lblDeliveryDate().click();
       await this.tfDeliveryDate().hoverIntoView();
-      await this.tfDeliveryDate().click();
+      await this.tfDeliveryDate().focus();
+      await this.tfDeliveryDate().press("Space");
     };
     await this.doUntil(action, this.expect().displayed());
   }

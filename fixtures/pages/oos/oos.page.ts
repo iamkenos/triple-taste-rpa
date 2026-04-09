@@ -24,6 +24,7 @@ export class OOSPage extends BasePage {
   private headerProduct = (hasText: string) => this.page.locator("//header[contains(@class,'product-title')]", { hasText });
 
   private tfQty = () => this.page.locator("#quantity");
+  private lblCartCount = () => this.page.locator("#cartCount");
   private btnAddToCart = () => this.page.locator("#product-add-to-cart");
   private divModal = (type="success") => this.page.locator(`//div[contains(@class,'${type}-modal')]//div[contains(@class,'content')]`);
   private btnModalClose = () => this.divModal().locator("//a[contains(@class,'close')]");
@@ -41,11 +42,11 @@ export class OOSPage extends BasePage {
   private btnCompleteOrder = () => this.page.locator("#checkout-pay-button");
   private lblOrderConfirmation = () => this.page.locator("//h2[contains(text(),'Thank you! Your order has been sent for review.')]");
 
-  private tblOrders = () => this.page.locator("#orderTab");
+  private tblOrders = () => this.page.locator("#orderDeck");
   private trOrderFor = (identifier: string) => this.tblOrders().locator(`//tbody//tr[td[contains(.,'${identifier}')]]`).first();
   private tdPOR = (identifier: string) => this.trOrderFor(identifier).locator("//td[2]//a");
   private tdStatus = (identifier: string) => this.trOrderFor(identifier).locator("//td[4]");
-  private tdAmount = (identifier: string) => this.trOrderFor(identifier).locator("//td[10]");
+  private tdAmount = (identifier: string) => this.trOrderFor(identifier).locator("//td[9]");
 
   async login() {
     const domain = new URL(this.url).hostname;
@@ -78,6 +79,11 @@ export class OOSPage extends BasePage {
     await this.headerProduct(product).expect().displayed().poll();
   }
 
+  async getCartCount() {
+    const count = await this.lblCartCount().textContent();
+    return count || "";
+  }
+
   async addToCart() {
     const { products: fixed, adhoc } = this.parameters.gsheets.inventory.order;
     const products = [...fixed, ...adhoc].filter(i => +i.value);
@@ -92,9 +98,11 @@ export class OOSPage extends BasePage {
       await this.tfQty().clear();
       await this.tfQty().fill(value);
       await this.tfQty().expect().valueEquals(value).poll();
+
+      const cartCountBefore = await this.getCartCount();
+      await this.lblCartCount().expect().textEquals(cartCountBefore).poll();
       await this.btnAddToCart().click();
-      await this.divModal().expect().textContains(product).poll();
-      await this.btnModalClose().click();
+      await this.lblCartCount().expect().textEquals(cartCountBefore, { not: true }).poll();
     }
   }
 
@@ -137,8 +145,8 @@ export class OOSPage extends BasePage {
   }
 
   async extractOrderDetails() {
-    const { deliveryDate } = this.parameters.gsheets.inventory.order;
-    const date = deliveryDate.toFormat(Format.DATE_SHORT_MDY.replaceAll("-", "/"));
+    const { orderDate } = this.parameters.gsheets.inventory.order;
+    const date = orderDate.toFormat(Format.DATE_SHORT_MDY.replaceAll("-", "/"));
     await this.navigate();
 
     const action: any = async() => await this.page.reload();
