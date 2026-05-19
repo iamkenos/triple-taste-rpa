@@ -8,7 +8,7 @@ import {
 export class Shipping extends Component {
 
   constructor() {
-    super("#shippingMethod-collapsible");
+    super("//*[@id='shippingMethod']");
   }
 
   rdMethod = (text: string) => this.page().locator(`//label[contains(@for,'shipping_methods')][contains(.,'${text}')]`);
@@ -19,12 +19,12 @@ export class Shipping extends Component {
     return new ShippingConditions(this, options);
   }
 
-  async open() {
-    await this.clickUntil(this.expect().attributeEquals("aria-expanded", "true"));
+  async open(method: string) {
+    await this.clickUntil(this.rdMethod(method).expect().displayed());
   }
 
   async select(method: string) {
-    await this.open();
+    await this.open(method);
     await this.rdMethod(method).clickUntil(this.expect().optionSelected(method));
     await this.lblAmount().expect().textEmpty({ not: true }).poll();
   }
